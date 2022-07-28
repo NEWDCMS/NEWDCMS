@@ -1,0 +1,189 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Users;
+@model UserRoleModel
+
+<section id="content_wrapper">
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">角色管理</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">系统管理</a>
+                </li>
+                <li class="crumb-trail">添加角色</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 添加角色
+                        </div>
+                    </div>
+                    <div class="panel-body p10 pt10">
+                        <div class="tab-block mb25">
+                            <ul class="nav nav-tabs tabs-bg">
+                                <li class="active">
+                                    <a href="#tab10_1" data-toggle="tab" aria-expanded="true">基本信息</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div id="tab10_1" class="tab-pane active">
+                                    <form asp-action="Create" asp-controller="UserRole" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="UserRoleForm">
+                                        @await Html.PartialAsync("_CreateOrUpdate", Model)
+                                    </form>
+                                </div>
+                                <div id="tab10_2" class="tab-pane">
+                                    <div class="alert alert-danger alert-dismissable">
+                                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                        <i class="fa fa-remove pr10"></i>暂无相关信息
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+
+    <!-- End: Content -->
+</section>
+
+@{
+//Html.AddCssFileParts(ResourceLocation.Head, "~/assets/skin/default_skin/css/theme.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Toastr/toastr.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Tables/bootstrap-table.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Content/Site.css");
+}
+
+@section CurPageScripts
+{
+    @{
+//Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/jquery.treegrid.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/locale/bootstrap-table-zh-CN.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table-treegrid.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");
+    }
+
+    <script type="text/javascript">
+
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+
+
+
+
+            $("#FormSubmit").click(function () {
+
+                var validator = $("#StoreForm").validate({
+                    /* @@validation states + elements
+                    ------------------------------------------- */
+                    errorClass: "text-danger",
+                    validClass: "text-success",
+                    errorElement: "em",
+                    /* @@validation rules
+                    ------------------------------------------ */
+                    rules: {
+                        //SystemName: {
+                        //    required: true
+                        //},
+                        //Name: {
+                        //    required: true
+                        //}
+                    },
+                    messages: {
+                        //SystemName: {
+                        //    required: '请输入系统名称'
+                        //},
+                        //Name: {
+                        //    required: '请输入角色名称'
+                        //}
+                    },
+                    /* @@validation highlighting + error placement
+                    ---------------------------------------------------- */
+                    highlight: function (element, errorClass, validClass) {
+                        $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                    },
+                    unhighlight: function (element, errorClass, validClass) {
+                        $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                    },
+                    errorPlacement: function (error, element) {
+                        if (element.is(":radio") || element.is(":checkbox")) {
+                            element.closest('.option-group').after(error);
+                        } else {
+                            //error.insertAfter(element.parent());
+                            element.parent().append(error);
+                        }
+                    },
+                    submitHandler: function (form) {
+                        //alert("submitted");
+                        form.submit();
+                    }
+                });
+            });
+
+            //$("input[name='IsSystemRole']").change(function () {
+            //    if (this.checked == false) {
+            //        $("#SystemNameDiv").css("display", "none")
+            //    }
+            //    else {
+            //        $("#SystemNameDiv").css("display", "block")
+            //    }
+
+            //});
+            $("input[name='SystemName']").on('keyup', function () {
+                this.value = this.value.replace(/[\W|\_]/g, function () {
+                    return ''
+                })
+            })
+
+        });
+    </script>
+}
+
+

@@ -1,0 +1,5 @@
+﻿@{
+    //客户选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+    
+}

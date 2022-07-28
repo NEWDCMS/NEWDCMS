@@ -1,0 +1,519 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Report;
+@using DCMS.Core.Domain.Common;
+
+@model VisitOnlineModel
+
+@{
+    var userid = Context.Request.Query["userid"].ToString();
+    var date = Context.Request.Query["date"].ToString();
+}
+
+
+
+
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">报表</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">员工报表</a>
+                </li>
+                <li class="crumb-trail">拜访达成表(按线路)</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 业务
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+                        <div id="datetimepicker3">
+                        </div>
+                        <table class="table table-striped table-bordered table-hover" style="border-top: 1px solid #eeeeee;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">业务</th>
+                                    <th class="text-center">查看线路</th>
+                                </tr>
+                            </thead>
+                            <tbody id="BusinessUsers">
+                                @foreach (var u in Model.BusinessUsers)
+                                {
+                                    <tr>
+                                        <td class="text-center">@u.Text</td>
+                                        <td class="text-center">
+                                            <a href="?userid=@u.Value">
+
+                                                @if (userid == u.Value)
+                                                {
+                                                    <i class="glyphicon glyphicon-check mr5"></i>
+                                                }
+                                                else
+                                                {
+                                                    <text>查看 </text>
+                                                }
+
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-10">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 线路
+                        </div>
+                        <ul class="nav panel-tabs">
+                            @{
+                                int index = 0;
+                                foreach (var l in Model.Lines)
+                                {
+                                <li class="@(index == 0 ? "active" : "")">
+                                    <a href="#tab_@l.LineId" data-toggle="tab">@l.LineName</a>
+                                </li>
+                                    index++;
+                                }
+                            }
+                        </ul>
+                    </div>
+                    <div class="panel-body">
+                        <div class="admin-form theme-primary">
+                            <div class="tab-content pn pt10 border-none">
+
+
+                                @{
+                                    index = 0;
+                                    foreach (var l in Model.Lines)
+                                    {
+                                    <div id="showTimeLine_@l.LineId" class="tab-pane @(index==0?"active":"")">
+
+                                        @{
+                                                var j = 0;
+                                                foreach (var t in l.VisitRecords)
+                                                {
+
+                                                    int hour = t.OnStoreStopSeconds ?? 0 / 3600;
+                                                    int min = (t.OnStoreStopSeconds ?? 0 - hour * 3600) / 60;
+                                                    int sen = t.OnStoreStopSeconds ?? 0 - hour * 3600 - min * 60;
+                                                    TimeSpan ts = new TimeSpan(0, 0, t.OnStoreStopSeconds ?? 0);
+
+                                            <div class="timeline-single" id="timeline">
+                                                <div class="row">
+                                                    <div class="col-sm-6 left-column">
+
+                                                        <div class="timeline-item">
+                                                            @if(t.SignTypeId==2){
+                                                            <div class="timeline-icon" style="font-size: 12px;
+        color: #fff;
+        background: #4a89dc;
+        box-shadow: 0 0 0 5px #4a89dc;">
+                                                                @(j+1)
+                                                            </div>
+                                                            }else
+                                                            {
+                                                            <div class="timeline-icon" style="        font-size: 12px;
+        color: #fff;
+        background: #ff0000;
+        box-shadow: 0 0 0 5px #ff0000;">
+                                                                @(j+1)
+                                                            </div>
+                                                                    }
+
+                                                            <div class="panel">
+                                                                <div class="panel-heading pn pl10">
+                                                                    @t.TerminalName
+                                                                </div>
+
+
+                                                                @if(t.SignTypeId==1)
+                                                                            {
+                                                                <div class="panel-body">
+                                                                    <div>访店中...</div>
+                                                                </div>
+
+                                                            }
+
+
+                                                                @if(t.SignTypeId>0)
+                                                                            {
+
+                                                                <div class="panel-body">
+                                                                    <div>在店: @(ts.Hours + "时 "+ ts.Minutes + "分 "  + ts.Seconds + " 秒")</div>
+
+
+                                                                    <div>签到:@t.SigninDateTime</div>
+                                                                    <div>签退：@t.SignOutDateTime</div>
+                                                                </div>
+                                                                            }
+
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                                    j++;
+                                                }
+                                        }
+
+
+
+                                    </div>
+                                        index++;
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+</section>
+
+
+@*template-user-events*@
+<script id="template-user-events" type="text/x-tmpl">
+    {% if(o.data!=null){ %}
+        {% for (var i=0,user;user=o.data[i]; i++) { %}
+        <tr>
+            <td class="p10">
+                 <b>{%=user.BusinessUserName%}</b></td>
+                <td class="text-center"><b>{%=user.VisitedCount%}</b></td>
+                <td class="text-center"><b>{%=user.NoVisitedCount%}</b></td>
+                <td class="text-center"><b>{%=user.ExceptVisitCount%}</b></td>
+                <td class="text-center"><a class="btn btn-sm ml showTracks" data-json="{%=JSON.stringify(user.VisitRecords)%}" data-tracks="{%=JSON.stringify(user.RealTimeTracks)%}"><i class="glyphicon glyphicon-check mr5"></i> 查看</a></td>
+        </tr>
+        {% } %}
+    {% } %}
+</script>
+
+@*template-timeline-events*@
+<script id="template-timeline-events" type="text/x-tmpl">
+    {% if(o.data!=null){ %}
+    {% for (var i=0,track;track=o.data[i]; i++) { %}
+    <div class="timeline-divider mtn">
+        <div>{%=$(this).crtTimeFtt('yyyy-MM-dd hh:mm:ss',track.SigninDateTime)%}</div>
+    </div>
+    <div class="row pbn mbn">
+        <div class="col-sm-12 pbn mbn">
+            <div class="timeline-item">
+
+                <div class="panel mb10">
+                    <div class="panel-heading pn pl10">
+                        <span style="font-size:14px">{%=track.TerminalName%}</span>
+                    </div>
+                    <div class="panel-body">
+                        <div>
+                            <ul id="fa-icon-list" class="fa-icon-list mbn">
+                                <li class="fa-icon-wrap" style="height:unset"><i class="fa fa-suitcase"></i> 销订 <br />{%=track.SaleOrderAmount%}</li>
+                                <li class="fa-icon-wrap" style="height:unset"><i class="fa fa-shopping-cart"></i> 销售<br />{%=track.SaleAmount%}</li>
+                                <li class="fa-icon-wrap" style="height:unset"><i class="fa fa-reply-all"></i> 退订<br />{%=track.ReturnOrderAmount%}</li>
+                                <li class="fa-icon-wrap" style="height:unset"><i class="fa fa-truck"></i> 退货<br />{%=track.ReturnAmount%}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+    <div style="text-align:right">
+                        签到: {%=track.SigninDateTime%}
+                        签退：{%=track.SignOutDateTime%}
+    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% } %}
+    {% } %}
+</script>
+
+
+@section CurPageScripts
+{
+    <script type="text/javascript">
+
+        //这块需要追加到 Common.js
+        ; (function ($) {
+            $.fn.extend({
+                //时间格式化 format：yyyy-MM-dd hh:mm:ss
+                crtTimeFtt(format, value) {
+                    var crtTime = new Date(value);
+                    return this.dateFtt(format, crtTime);
+                },
+                //时间格式化
+                dateFtt(fmt, date) {
+                    var o = {
+                        "M+": date.getMonth() + 1,                 //月份
+                        "d+": date.getDate(),                    //日
+                        "h+": date.getHours(),                   //小时
+                        "m+": date.getMinutes(),                 //分
+                        "s+": date.getSeconds(),                 //秒
+                        "q+": Math.floor((date.getMonth() + 3) / 3), //季度
+                        "S": date.getMilliseconds()             //毫秒
+                    };
+                    if (/(y+)/.test(fmt))
+                        fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+                    for (var k in o)
+                        if (new RegExp("(" + k + ")").test(fmt))
+                            fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                    return fmt;
+                },
+                //计算时间差
+                calcTime: function (invalidTime, validTime) {
+                    var secs1 = (new Date().getTime() / 1000) - parseFloat(validTime);
+                    var secs2 = parseFloat(invalidTime) - parseFloat(validTime);
+                    var retStr = "";
+                    if (secs1 > 5) {
+                        retStr += this.secondsToString(secs1) + " 前";
+                    }
+                    if (secs2 > 5) {
+                        retStr += " for " + this.secondsToString(secs2);
+                    }
+                    return retStr;
+                },
+                //计算时间差
+                calcDateTime: function (beginTime, endTime) {
+                    var str = "";
+                    var begintime_ms = Date.parse(new Date(beginTime.replace(/-/g, "/")));
+                    var endtime_ms = Date.parse(new Date(endTime.replace(/-/g, "/")));
+                    //时间差的毫秒数
+                    var dateSpan = endtime_ms - begintime_ms;
+                    //相差天数
+                    var days = Math.floor(dateSpan / (24 * 3600 * 1000));
+                    //计算天数后剩余的毫秒数
+                    var leave1 = dateSpan % (24 * 3600 * 1000);
+                    var hours = Math.floor(leave1 / (3600 * 1000));
+                    //计算小时数后剩余的毫秒数
+                    var leave2 = leave1 % (3600 * 1000);
+                    var minutes = Math.floor(leave2 / (60 * 1000));
+                    //计算分钟数后剩余的毫秒数
+                    var leave3 = leave2 % (60 * 1000);
+                    var seconds = Math.round(leave3 / 1000);
+
+                    if (days > 0)
+                        str += days + "天";
+                    if (hours > 0)
+                        str += hours + "时";
+                    if (minutes >= 0)
+                        str += minutes + "分";
+                    if (seconds >= 0)
+                        str += seconds + "秒";
+
+                    return str;
+                },
+                //时间转化
+                secondsToTime: function (secs) {
+                    var hours = Math.floor(secs / (60 * 60));
+                    var divisor_for_minutes = secs % (60 * 60);
+                    var minutes = Math.floor(divisor_for_minutes / 60);
+                    var divisor_for_seconds = divisor_for_minutes % 60;
+                    var seconds = Math.ceil(divisor_for_seconds);
+                    var obj = {
+                        "h": hours,
+                        "m": minutes,
+                        "s": seconds
+                    };
+                    return obj;
+                },
+                //时间转化
+                secondsToString: function (secs) {
+                    obj = this.secondsToTime(secs);
+                    secStr = obj.s + " 秒";
+                    minStr = "";
+                    hrStr = "";
+                    if (obj.s > 1) {
+                        secStr += "s";
+                    }
+                    if (obj.m > 0) {
+                        minStr = obj.m + " 分";
+                        if (obj.m > 1) {
+                            minStr += "s";
+                        }
+                        secStr = "";
+                    }
+                    if (obj.h > 0) {
+                        hrStr = obj.h + " 时";
+                        if (obj.h > 1) {
+                            hrStr += "s";
+                        }
+                        minStr = "";
+                        secStr = "";
+                    }
+                    return hrStr + " " + minStr + " " + secStr;
+                },
+                //用于排序跟踪时间线
+                sortBy: function (attr, rev) {
+                    var of;
+                    if ("undefined" == typeof rev) {
+                        of = 1;
+                    }
+                    else {
+                        of = (rev) ? 1 : -1;
+                    }
+                    return function (a, b) {
+                        a = a[attr];
+                        b = b[attr];
+                        if (a < b) {
+                            return of * -1;
+                        }
+                        if (a > b) {
+                            return of * 1;
+                        }
+                        return 0;
+                    }
+                },
+                //载入业务员
+                loadBusinessUsers: function (date) {
+                    $.ajax({
+                        type: 'GET',
+                        cache: true,
+                        url: "/visitStore/getBusinessUserTracks?signinDateTime=" + date + "&r=" + Math.random(),
+                        dataType: "json",
+                        beforeSend: function () {
+                            $("#BusinessUsers").html("<img src='@LayoutExtensions.ResourceServerUrl("/Content/images/loading.gif")'/>");
+                        },
+                        success: function (result) {
+                            if (result.Data != null && result.Data.length > 0) {
+                                $(this).showBusinessUsers(result.Data, $("#BusinessUsers"));
+                            }
+                            else {
+                                $(this).showAlert("BusinessUsers", "抱歉，获取服务器端数据失败，您可以尝试刷新.", false);
+                            }
+                        },
+                        error: function (msg) {
+                            $(this).showAlert("BusinessUsers", "抱歉，获取服务器端数据失败，您可以尝试刷新.", false);
+                        }
+                    });
+                },
+                //载入时间线
+                showTrackTimeLine: function (json, obj) {
+                    json.sort($(this).sortBy('SigninDateTime', false));
+                    var temps = tmpl("template-timeline-events");
+                    var result = this.renderTemplate(temps, json, obj);
+                },
+                //解析业务员
+                showBusinessUsers: function (json, obj) {
+                    var temps = tmpl("template-user-events");
+                    var result = this.renderTemplate(temps, json, obj);
+                },
+                //解析模板
+                renderTemplate: function (func, data, obj) {
+                    if (!func) {
+                        return $();
+                    }
+                    //console.log({ data: data });
+                    var result = func({ data: data });
+                    return obj.html(result).children();
+                },
+                //友好提示
+                showAlert: function (obj, msg, close) {
+                    var html = "<div class=\"alert alert-sm alert-border-left alert-danger light alert-dismissable\">";
+                    if (close) {
+                        html += "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">×</button>"
+                    }
+                    html += "<i class=\"fa fa-info pr10\"></i><strong>" + msg + "</strong></div>";
+                    $("#" + obj + "").html(html);
+                }
+            });
+        })(jQuery);
+
+
+        var index = 0;
+        var timer, count, currentCount = 0;
+
+        jQuery(document).ready(function () {
+            "use strict";
+            Core.init();
+            Demo.init();
+
+            //权限提示
+            //if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+            //    $('#alert-demo-2').fadeToggle();
+            //    setTimeout(function () {
+            //        $('#alert-demo-2').fadeToggle();
+            //    }, 3000);
+            //}
+
+            //$("[data-toggle='tooltip']").tooltip();
+
+            // 初始日历选择器
+            $('#datetimepicker3').datetimepicker({
+                locale: 'zh-cn',
+                format: "YYYY-MM-DD",
+                startDate: '@date',
+                todayBtn: true,
+                language: 'zh-CN',
+                initialDate:'@date',
+                inline: true
+            });
+            $("#datetimepicker3").on("dp.change", function (e) {
+                ///$(this).loadBusinessUsers($(this).crtTimeFtt("yyyy-MM-dd", e.date));
+                console.log($(this).crtTimeFtt("yyyy-MM-dd", e.date))
+                //date
+                window.location.href = "?userid=@userid&date=" + $(this).crtTimeFtt("yyyy-MM-dd", e.date);
+            });
+
+            //初始用户数据
+            //$(this).loadBusinessUsers();
+            $(document).on("click", ".showTracks", function () {
+
+                var tracks = $(this).attr("data-json");
+                var realTimeTracks = $(this).attr("data-tracks");
+                if (tracks != null && JSON.parse(tracks) != null && JSON.parse(tracks).length > 0) {
+                    var points = [];
+                    $(this).showTrackTimeLine(JSON.parse(tracks), $("#showTimeLine1"));
+                }
+                else {
+                    $(this).showAlert("sidebar-right-tab1", "抱歉，该业务员无可用跟踪，您可以尝试刷新.", false);
+                }
+            });
+
+        });
+    </script>
+}
+
+

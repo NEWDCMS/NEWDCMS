@@ -1,0 +1,161 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+
+@model AdvanceReceiptBillModel
+@*打印区域*@
+<div id="printData"></div>
+<input asp-for="Id" type="hidden" />
+<input asp-for="CustomerId" type="hidden" />
+<input asp-for="BillTypeEnumId" type="hidden" />
+
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-warning alert-dismissable mt10 mb10">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+@if (Model.AuditedStatus || Model.ReversedStatus)
+{
+    @await Html.PartialAsync("_Watermark")
+}
+
+@if (Model.Id != 0 && !string.IsNullOrEmpty(@Model.BillBarCode))
+{
+    <div class="row mtn mb10">
+        <div class="col-sm-2">
+        </div>
+        <div class="col-md-2 pt20">
+            <div class="form-group mbn">
+                <lable class="col-lg-4 control-label">编号：</lable>
+                <div class="col-lg-8">
+                    <input asp-for="BillNumber" class="form-control-bb input-sm pbn pln prn" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 pt20">
+            <div class="form-group mbn">
+                <lable class="col-lg-4 control-label">制单：</lable>
+                <div class="col-lg-8">
+                    <input asp-for="MakeUserName" class="form-control-bb input-sm pbn pln prn" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 pt20">
+            <div class="form-group mbn">
+                <lable class="col-lg-4 control-label">审核：</lable>
+                <div class="col-lg-8">
+                    <input asp-for="AuditedUserName" class="form-control-bb input-sm pbn pln prn" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <img class="media-object mn thumbnail pull-right" src="@Model.BillBarCode" />
+        </div>
+    </div>
+}
+
+<div class="form-group">
+    <label asp-for="CustomerId" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-2">
+        <div class="input-group">
+            <dcms-input asp-for="CustomerName" class="form-control" placeholder="客户..." asp-readonly="@(Model.AuditedStatus)" />
+
+            <span class="input-group-btn">
+                <button id="btn_search_customer" type="button" class="btn btn-default" @(Model.AuditedStatus ? "disabled" : "")>
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="Payeer" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-2">
+        <dcms-select asp-for="Payeer" asp-items="@Model.Payeers" asp-default="收款人" asp-disabled="@(Model.AuditedStatus)" />
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+<div class="form-group">
+    <label asp-for="CreatedOnUtc" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-2">
+        <dcms-editor asp-for="CreatedOnUtc" placeholder="收款日期." readonly="@Model.AuditedStatus" />
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="AccountingOptionId" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-2">
+        <dcms-select asp-for="AccountingOptionId" asp-items="@Model.AccountingOptions" asp-default="预收款账户" asp-disabled="@(Model.AuditedStatus)" />
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+
+
+
+<div class="form-group">
+    <label asp-for="AdvanceAmount" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-2">
+        <dcms-input asp-for="AdvanceAmount" class="form-control-bb input-sm pbn pln prn decimal" placeholder="预收款金额..." asp-readonly="@(Model.AuditedStatus)" />
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="DiscountAmount" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-2">
+        <dcms-input asp-for="DiscountAmount" class="form-control-bb input-sm pbn pln prn decimal" placeholder="优惠金额..." asp-readonly="@(Model.AuditedStatus)" />
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+<div class="row mb20" id="AdvanceReceipt_Partial_Form">
+    <div class="col-sm-2">
+    </div>
+    <!--//////////以下块为收款账户引用//////////-->
+
+    <div id="CollectionAccountBox" class="col-sm-2">
+        @foreach (var acc in Model.Items)
+        {
+            <span class="pull-left control-label mr10">@acc.Name:</span>
+            <span class="pull-left">
+                <input class="form-control-bb input-sm pbn pln prn" data-val="true" id="CollectionAmount_@acc.AccountingOptionId" name="CollectionAmount" type="text" data-account="@acc.AccountingOptionId" value="@acc.CollectionAmount.ToString("0.00")" @(Model.AuditedStatus ? "readonly='readonly'" : "")>
+            </span>
+        }
+    </div>
+
+    <div class="col-sm-3">
+        <button id="Accounting_AsyncSearchSelectPopup" type="button" class="btn btn-default btn-sm" @((Model.AuditedStatus) || (Model.Items.Count <= 0) ? "disabled" : "")>
+            <span class="glyphicon glyphicon-check"></span> 更改收款账户
+        </button>
+
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="OweCash" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-2">
+        <dcms-input asp-for="OweCash" class="form-control-bb input-sm pbn pln prn decimal" placeholder="欠款金额..." asp-readonly="true" />
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+<div class="form-group">
+    <label asp-for="Remark" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-4">
+        <dcms-input asp-for="Remark" class="form-control" placeholder="备注..." asp-readonly="@(Model.AuditedStatus)" />
+    </div>
+</div>

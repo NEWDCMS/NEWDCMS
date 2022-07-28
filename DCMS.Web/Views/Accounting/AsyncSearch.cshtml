@@ -1,0 +1,220 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model AccountingOptionListModel
+
+<div class="row">
+    <div class="col-md-12" id="AccountingDataTree">
+        <input type="hidden" id="AccountCodeTypeIds" name="AccountCodeTypeIds" value="@Model.AccountCodeTypeIds" />
+        <input type="hidden" name="StoreId" id="StoreId" value="@Model.StoreId" />
+        <input type="hidden" name="SearchManufacturerId" id="SearchManufacturerId" value="@Model.ManufacturerId" />
+        <input type="hidden" name="SearchTerminalId" id="SearchTerminalId" value="@Model.TerminalId" />
+        <input type="hidden" name="Multi" id="Multi" value="@Model.Multi" />
+        <input type="hidden" name="Self" id="Self" value="@Model.Self" />
+        <input type="hidden" name="ifcheck" id="ifcheck" value="@Model.ifcheck" />
+        <input type="hidden" name="PageTable" id="PageTable" value="@Model.PageTable" />
+        <input type="hidden" name="selectIndex" id="selectIndex" value="@Model.selectIndex" />
+        <table id="AccountingOptions" class="table table-striped table-bordered table-hover"></table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $table = $("#AccountingOptions");
+        $table.bootstrapTable({
+            url: "/Accounting/AsyncAccountingOptions",
+            pagination: false,
+            sidePagination: "server",
+            idField: 'id',
+            pageNumber: 1,
+            pageSize: 100,
+            pageList: [10, 25, 50, 100],
+            dataType: 'json',
+            treeView: true,
+            treeId: "number",
+            treeField: "name",
+            treeCollapseAll: false,
+            formatNoMatches: function () {
+                return '没有找到匹配的记录，请尝试选择科目类别！';
+            },
+            rowAttributes: function (row, index) {
+                return {
+                    xx: index
+                };
+            },
+            queryParams: function (params) {
+                var param =
+                {
+                    storeId: $("#StoreId").val(),
+                    accountCodeTypeIds: $("#AccountCodeTypeIds").val(),
+                    manufacturerId: $("#SearchManufacturerId").val(),
+                    terminalId: $("#SearchTerminalId").val(),
+                    multi: $("#Multi").val(),
+                    self: $("#Self").val(),
+                };
+                return param;
+            },
+            columns: [
+                {
+                    field: 'checkfile',
+                    checkbox: true,
+                    formatter: function (value, row, index) {
+                        if (row.check == true) {
+                            return { checked: true };
+                        }
+                    }
+                },
+                {
+                    field: 'checkradio',
+                    radio: true,
+                    visible: false,
+                    formatter: function (value, row, index) {
+                        if (row.check == true) {
+                            return { checked: true };
+                        }
+                    }
+                },
+                {
+                    field: 'name',
+                    title: '科目名称',
+                    width: '200', align: 'left'
+                },
+                {
+                    field: 'code',
+                    title: '科目代码',
+                    sortable: false,
+                    align: 'left',
+                    width: '200'
+                },
+                {
+                    field: 'parentId',
+                    visible: false
+                },
+                {
+                    field: 'enabled',
+                    title: '余额',
+                    sortable: false,
+                    visible: false,
+                    align: 'right',
+                    formatter: function (value, row, index) {
+                        if (row.isLeaf && row.parentId > 0) {
+                            debugger
+                            if (row.balance == undefined) {
+                                return '<span class="label label-success">￥0</span>';
+                            } else {
+                                return '<span class="label label-success">￥' + row.balance + '</span>';
+                            }
+
+                        }
+                    }
+                },
+                {
+                    field: 'operate',
+                    title: '操作',
+                    align: 'center',
+                    width: '100',
+                    events:
+                    {
+                        'click .rowedit': function (e, value, row, index) {
+                            roweditEvent(row, index);
+                        }
+                    },
+                    formatter: function (value, row, index) {
+                        if (row.isLeaf && row.parentId > 0) {
+                            return ['<button type="button" class="btn btn-sm btn-info rowedit mr5"><i class="fa fa-check mr5" ></i>选择</button>'].join('');
+                        }
+                    }
+                },
+            ],
+            onLoadSuccess: function (data) {
+                // console.log(data);
+                if ($("#ifcheck").val() == 1) {
+                    $table.bootstrapTable('hideColumn', 'checkfile');//隐藏上述variablevalue列
+                } else {
+                    $table.bootstrapTable('hideColumn', 'checkradio');//隐藏上述variablevalue列
+                }
+            },
+            onCheck: function (row, $element) {
+                var index = $element.parent().parent().attr("data-index");
+                roweditEvent(row, index);
+            }
+        });
+        var roweditEvent = function (row, index) {
+            if ($("#ifcheck").val() == 1) {
+                var modal = $("#AccountingModalWindow");
+                var options = [];
+                options.push(row);
+                if (options.length == 0 || options.length > 1) {
+                    $(this).showToastr("只能选择一个会计科目！");
+                    return false;
+                }
+                if (options[0].children != null) {
+                    $(this).showToastr("请选择科目子目录！");
+                    return false;
+                }
+                if ($("#PageTable").val() != "") {
+                    $("#@Model.PageTable").bootstrapTable('updateRow', {
+                        index: $("#selectIndex").val(), row: { AccountingOptionId: options[0].Id, AccountingOptionName: options[0].name, AccountCodeTypeId: options[0].AccountCodeTypeId }
+                    });
+                }
+                else {
+                    $("#AccountingOptionId").val(options[0].Id);
+                    $("#AccountCodeTypeId").val(options[0].accountCodeTypeId);
+                    $("#AccountingOptionName").val(options[0].name);
+                }
+
+                modal.modal('hide');
+            }
+            else {
+                if (!row.isLeaf || row.parentId == 0) {
+                    $(this).showToastr("请选择子项!");
+                    return false;
+                }
+
+                var allTableData = $table.bootstrapTable('getData');
+                var rows = [];
+
+                if (rows.length == 0)
+                    rows.push(row);
+
+                $.each(allTableData, function (i, item) {
+                    if (item.check) {
+                        if (!rows.includes(item))
+                            rows.push(item);
+                    }
+                });
+
+                //console.log(row);
+                if ($("#Multi").val() == 1) {
+                    var counter = 0;
+                    $.each(rows, function (i, same) {
+                        if (same.parentId == row.parentId) {
+                            counter++;
+                        }
+                    });
+
+                    if (rows.length >= 2) {
+                        if (counter >= 2) {
+                            $(this).showToastr("多项，同级别科目只能选择1项！");
+                            return false;
+                        }
+                        else if (rows.length > 2) {
+                            $(this).showToastr("多项，不同级别科目最多支持2个账户！");
+                            return false;
+                        }
+                    }
+                }
+                else {
+                    if (rows.length > 1) {
+                        $(this).showToastr("单项会计科目，最多支持1个账户！");
+                        return false;
+                    }
+                }
+                $table.bootstrapTable('updateRow', { index: index, row: { check: !row.check, checkfile: !row.check } });
+            }
+        }
+    });
+</script>
+

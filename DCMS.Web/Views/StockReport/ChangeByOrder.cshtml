@@ -1,0 +1,340 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+@using DCMS.ViewModel.Models.WareHouses;
+@using System.Collections.Generic;
+@using System.Linq;
+@using DCMS.Core.Domain.Common;
+
+
+@model StockChangeSummaryOrderListModel
+
+
+<section id="content_wrapper">
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">仓库</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">库存报表</a>
+                </li>
+                <li class="crumb-trail">库存变化表(按单据)</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <form asp-action="ChangeByOrder" asp-controller="StockReport" method="get" id="formSearch" novalidate="novalidate">
+
+                    <div class="panel panel-default" id="panel0">
+                        <div class="panel-heading">
+                            <span class="glyphicon glyphicon-search"></span> 高级搜索
+                            <a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedSearch"><i class="fa fa-angle-double-right"></i></a>
+                        </div>
+                        <div class="panel-body p10">
+
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <div class="input-group">
+                                        <input asp-for="ProductId" type="hidden" />
+                                        <input asp-for="ProductName" class="form-control" placeholder="商品名称..." />
+                                        <span class="input-group-btn">
+                                            <button id="btn_search_product" type="button" class="btn btn-default">
+                                                <span class="glyphicon glyphicon-search"></span>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="WareHouseId" asp-items="@Model.WareHouses" asp-default="仓库" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="CategoryId" asp-items="@Model.Categories" asp-default="商品类别" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="BillType" asp-items="@Model.BillTypes" asp-default="单据类型" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <input asp-for="BillCode" class="form-control" placeholder="单据号..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-editor asp-for="StartTime" placeholder="开始..." />
+                                </div>
+                            </div>
+
+                            <div class="row mt10">
+                                <div class="col-sm-2">
+                                    <dcms-editor asp-for="EndTime" placeholder="结束..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select-bool asp-for="CrossMonth" asp-items="@(new string[] {  "是", "否"})" asp-default="只过滤当月" />
+                                </div>
+                                <div class="col-sm-8">
+                                    <button id="btn_query" type="submit" class="btn btn-primary btn-block">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 报表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+
+                        <div id="toolbar" class="btn-group mb10">
+                            <a href="@Url.Action("ChangeByOrder")" class="btn btn-default btn-sm mr5">
+                                <span class="glyphicon glyphicon-refresh mr5"></span>重置
+                            </a>
+                            <a id="btn_export" href="@Url.Action("ExportChangeByOrder",new {Model.ProductId,Model.CategoryId,Model.BillType,Model.WareHouseId,Model.BillCode,Model.StartTime,Model.EndTime})" class="btn btn-info btn-sm mr5">
+                                <span class="glyphicon glyphicon-export mr5"></span>导出
+                            </a>
+                        </div>
+
+                        <table class="table table-striped table-bordered table-hover">
+                            <tr>
+                                <th class="text-left"><div class="th-inner">单据编号</div></th>
+                                <th class="text-left"><div class="th-inner">类型</div></th>
+                                <th class="text-left"><div class="th-inner">仓库/供应商</div></th>
+
+                                <th class="text-center"><div class="th-inner">审核时间</div></th>
+                                <th class="text-center"><div class="th-inner">交易时间</div></th>
+                                <th class="text-left"><div class="th-inner">商品名称</div></th>
+                                <th class="text-left"><div class="th-inner">条形码</div></th>
+                                <th class="text-left"><div class="th-inner">单位换算</div></th>
+                                <th class="text-right"><div class="th-inner">增加数量</div></th>
+                                <th class="text-right"><div class="th-inner">减少数量</div></th>
+                                <th class="text-right"><div class="th-inner">库存数量</div></th>
+                            </tr>
+
+                            @{
+                                if (Model.Items != null && Model.Items.Count > 0)
+                                {
+                                @foreach (var product in Model.Items)
+                                    {
+                                        bool samem = true;
+                                        if (product.AuditedDate.HasValue)
+                                        {
+                                            if (!product.CreatedOnUtc.ToString("yy-MM").Equals(product.AuditedDate.Value.ToString("yy-MM")))
+                                            {
+                                                samem = false;
+                                            }
+                                        }
+
+                                <tr>
+
+                                    <td class="text-left">
+                                        <a href="@product.LinkUrl" target="_blank">
+
+
+                                            @if(product.Difference)
+                                 {
+                                            @product.BillCode
+                                }
+                                 else
+                                 {
+                                            <span class="label  label-danger mr5 mb10 ib lh15"> @product.BillCode </span>
+                                }
+                                        </a>
+                                    </td>
+                                    <td class="text-left">@product.BillTypeName</td>
+                                    <td class="text-left">
+                                        <a href="/stockreport/list?WareHouseId=@product.WareHouseId" target="_blank" data-trigger="hover" title="" data-container="body" data-toggle="popover" data-placement="top" data-content="@product.CustomerSupplier" data-original-title="">
+                                            @product.WareHouseName
+                                        </a>
+                                    </td>
+
+                                    <td class="text-center">@(product.AuditedDate.HasValue ? product.AuditedDate.Value.ToString("yyyy/MM/dd HH:mm:ss") : "")</td>
+                                    <td class="text-center">@product.CreatedOnUtc.ToString("yyyy/MM/dd HH:mm:ss")</td>
+                                    <td class="text-left">
+                                        <a href="/product/edit?id=@product.ProductId" target="_blank" data-trigger="hover" title="" data-container="body" data-toggle="popover" data-placement="top" data-content="@product.ProductSKU" data-original-title="">
+                                            @product.ProductName
+                                        </a>
+                                    </td>
+                                    <td class="text-left">@product.BarCode</td>
+                                    <td class="text-left">@product.UnitConversion</td>
+
+
+                                    <td class="text-right">
+                                        <b style="color:@(samem?"#000":"#ff0000")">
+                                            @(product.UsableQuantityChange > 0 ? product.UsableQuantityChange : 0)
+                                        </b>
+                                        <br />
+                                        <span style="color: #ddd">@(product.UsableQuantityChange > 0 ? product.UsableQuantityChangeConversion : "")</span>
+                                    </td>
+                                    <td class="text-right">
+                                        <b style="color:@(samem?"#000":"#ff0000")">
+                                            @(product.UsableQuantityChange < 0 ? product.UsableQuantityChange : 0)
+                                        </b>
+                                        <br />
+                                        <span style="color: #ddd">@(product.UsableQuantityChange < 0 ? product.UsableQuantityChangeConversion : "")</span>
+                                    </td>
+                                    <td class="text-right">
+                                        <b style="color:@(samem?"#000":"#ff0000")">
+                                            @product.UsableQuantityAfter
+                                        </b>
+                                        <br />
+                                        <span style="color:#ddd"> @product.UsableQuantityAfterConversion</span>
+                                    </td>
+
+                                </tr>
+                                    }
+
+
+                                <tr>
+                                    <td colspan="8">总计：</td>
+                                    <td class="text-right">
+                                        @(Model.Items.Sum(s => s.UsableQuantityChange)>0? Model.Items.Sum(s => s.UsableQuantityChange):0)
+                                        <br />
+                                        @if (Model.Items.Sum(s => s.UsableQuantityChange) > 0)
+                                            {
+                                        <span style="color:#ddd">
+                                            @Html.Raw($"<b>{Model.Items.Sum(s => s.UsableQuantityChangePart.Item1)} 大 {Model.Items.Sum(s => s.UsableQuantityChangePart.Item2)} 中 {Model.Items.Sum(s => s.UsableQuantityChangePart.Item3)}  小</b>")
+                                        </span>
+                                            }
+                                    </td>
+                                    <td class="text-right">
+                                        @(Model.Items.Sum(s => s.UsableQuantityChange)<0? Model.Items.Sum(s => s.UsableQuantityChange):0)
+                                        <br />
+                                        @if (Model.Items.Sum(s => s.UsableQuantityChange) < 0)
+                                            {
+                                        <span style="color:#ddd">
+                                            @Html.Raw($"<b>{Model.Items.Sum(s => s.UsableQuantityChangePart.Item1)} 大 {Model.Items.Sum(s => s.UsableQuantityChangePart.Item2)} 中 {Model.Items.Sum(s => s.UsableQuantityChangePart.Item3)}  小</b>")
+                                        </span>
+                                            }
+                                    </td>
+                                    <td class="text-right">
+                                        @Model.Items.Sum(s => s.UsableQuantityAfter)
+                                        <br />
+                                        <span style="color:#ddd">
+                                            @Html.Raw($"<b>{Model.Items.Sum(s => s.UsableQuantityChangeAfterPart.Item1)} 大 {Model.Items.Sum(s => s.UsableQuantityChangeAfterPart.Item2)} 中 {Model.Items.Sum(s => s.UsableQuantityChangeAfterPart.Item3)}  小</b>")
+                                        </span>
+                                    </td>
+                                </tr>
+                                }
+                                else
+                                {
+                                <tr class="no-records-found"><td class="text-center" colspan="11">没有找到匹配的记录</td></tr>
+                                }
+                            }
+                        </table>
+
+                        @{
+                            var pager = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+                        }
+
+                        @if (!pager.IsEmpty())
+                        {
+                        <div class="fixed-table-pagination" style="display: block;">
+                            @Html.Raw(pager.ToString())
+                        </div>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- End: Content -->
+</section>
+
+
+
+@await Html.PartialAsync("_Windows", Model)
+
+
+
+
+@section CurPageScripts
+{
+
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //高级搜索
+            $("#panel0 #AdvancedSearch").click(function () {
+                var ico = $(this).find(".fa");
+                if (ico.hasClass('fa-angle-double-right'))
+                    ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+                else
+                    ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+                $("#panel0").find(".panel-body").toggleClass("hidden fadeIn");
+            });
+
+            //商品列表选择赋值
+            window.operateEventsPop = {
+                'click .rowSelect': function (e, value, row, index) {
+                    var index = $(this).attr("data-id");
+                    var keys = Object.keys(row.Units);
+                    $("#ProductName").val(row.Name);
+                    $("#ProductId").val(row.Id);
+                    $('#ModalProductWindows').modal('hide');
+                }
+            };
+            $("#btn_search_product").click(function () {
+                $(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup", null, "选择商品", $("#ProductModalForm"),
+                    function () { });
+            });
+
+            //防止重复查询
+            var queryNumber = 1;
+            $("#btn_query").click(function () {
+                if (queryNumber > 1) {
+                    return false;
+                }
+                queryNumber = queryNumber + 1;
+            });
+
+
+            //用户修改商品名称，将商品Id置零
+            $("#ProductName").bind("change", function () {
+                $("#ProductId").val(0);
+            });
+
+        });
+    </script>
+}

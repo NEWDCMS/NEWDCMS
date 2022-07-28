@@ -1,0 +1,46 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Products;
+
+@model ProductCombinationModel
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="CombinationId" type="hidden" />
+
+<div class="form-group">
+	<label asp-for="ProductId" asp-postfix=":" class="col-lg-3 control-label"/>
+	@Html.HiddenFor(model => model.ProductId)
+	<div class="col-lg-8">
+		<div class="input-group">
+			<input asp-for="ProductName" class = "form-control" placeholder = "商品..."/>
+			<span class="input-group-btn">
+				<button id="AsyncSearchSelectPopup" type="button" class="btn btn-default" data-id="@Model.ProductId">
+					<span class="glyphicon glyphicon-search"></span>
+				</button>
+			</span>
+		</div>
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="Quantity" asp-postfix=":" class="col-lg-3 control-label"/>
+	<div class="col-lg-8">
+		<input asp-for="Quantity" class = "form-control" placeholder = "Quantity..."/>
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="UnitId" asp-postfix=":" class="col-lg-3 control-label"/>
+    <div class="col-lg-8">
+        <dcms-select asp-for="UnitId" asp-items="@Model.Units" class="form-control" />
+    </div>
+</div>
+
+<div class="form-group">
+	<label asp-for="DisplayOrder" asp-postfix=":" class="col-lg-3 control-label"/>
+	<div class="col-lg-8">
+		<input asp-for="DisplayOrder" class = "form-control" placeholder = "DisplayOrder..."/>
+	</div>
+</div>

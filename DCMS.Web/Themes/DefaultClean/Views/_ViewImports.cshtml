@@ -1,0 +1,22 @@
+﻿@inherits DCMS.Web.Framework.Mvc.Razor.DCMSRazorPage<TModel>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, DCMS.Web.Framework
+@addTagHelper *, MiniProfiler.AspNetCore.Mvc
+
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@using DCMS.Web.Extensions
+@using DCMS.Web.Framework
+@using DCMS.Web.Framework.Extensions
+@using DCMS.Web.Framework.Infrastructure
+@using DCMS.Web.Framework.Models
+@using DCMS.Web.Framework.Security.Captcha
+@using DCMS.Web.Framework.Security.Honeypot
+@using DCMS.Web.Framework.UI
+@using DCMS.ViewModel.Models.Products
+@using DCMS.ViewModel.Models.Common
+@using DCMS.ViewModel.Models.Users
+@using DCMS.ViewModel.Models.News
+@using DCMS.Core
+@using DCMS.Core.Infrastructure

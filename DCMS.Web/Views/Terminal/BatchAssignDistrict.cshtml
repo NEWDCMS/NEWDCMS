@@ -1,0 +1,61 @@
+﻿<div class="row">
+    <div class="col-md-12">
+        <div id="DistrictTreeModal"> </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        var treeData = [];
+        treeData.push({ id: 0, title: " 全部", expanded: true, folder: false, children: [] });
+        var getTreeData = function () {
+            $.ajax({
+                url: "/Terminal/GetDistrictFancyTree",
+                async: true,
+                success: function (res) {
+                    if (res != null) {
+                        if (res.length != 0) {
+                            var node = treeData.find(item => item.id == 0);
+                            node.folder = true;
+                            node.expanded = true;
+                            node.children = res;
+                        }
+                    }
+                    $('#DistrictTreeModal').fancytree("getTree").reload(treeData);
+                }
+            });
+        }
+        $('#DistrictTreeModal').fancytree({
+            extensions: ["dnd", "edit"],
+            //titlesTabbable: true,
+            debugLevel: 2,
+            @* source: toTree(@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.DistrictList))),*@
+            source: treeData,
+            //source: getTreeData(),
+            dnd: {
+                autoExpandMS: 400,
+                focusOnClick: true,
+                preventVoidMoves: true, // Prevent dropping nodes 'before self', etc.
+                preventRecursiveMoves: true, // Prevent dropping nodes on own descendants
+                dragStart: function (node, data) { return true; },
+                dragEnter: function (node, data) { return true; },
+                dragDrop: function (node, data) { data.otherNode.moveTo(node, data.hitMode); }
+            },
+            activate: function (event, data) {
+                //alert("activate " + data.node);
+            },
+            lazyLoad: function (event, data) {
+                //data.result = [{ "title": "Sub item", "lazy": true }, { "title": "Sub folder", "folder": true, "lazy": true }]
+                //[{ "title": "Sub item", "lazy": true }, { "title": "Sub folder", "folder": true, "lazy": true }]
+            },
+            click: function (event, data) {
+                if (data.node.children != null && data.node.children.length > 0) {
+                    $(this).showToastr("请选择子片区！");
+                    return false;
+                }
+                $("#hid_AssignDistrictId").val(data.node.data.id);
+            }
+        });
+        getTreeData();
+    });
+</script>

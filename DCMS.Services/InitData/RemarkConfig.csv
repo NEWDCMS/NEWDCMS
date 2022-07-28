@@ -1,0 +1,80 @@
+[
+	{
+		"Id": 145,
+		"StoreId": 361,
+		"Name": "费用",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 146,
+		"StoreId": 361,
+		"Name": "付款未到货",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 147,
+		"StoreId": 361,
+		"Name": "搭赠",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 148,
+		"StoreId": 361,
+		"Name": "兑奖",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 149,
+		"StoreId": 361,
+		"Name": "捆绑",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 150,
+		"StoreId": 361,
+		"Name": "满立减",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 151,
+		"StoreId": 361,
+		"Name": "1元换购",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 152,
+		"StoreId": 361,
+		"Name": "空瓶兑换",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 153,
+		"StoreId": 361,
+		"Name": "费用货补",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 154,
+		"StoreId": 361,
+		"Name": "代垫",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 155,
+		"StoreId": 361,
+		"Name": "商品抵费用",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 156,
+		"StoreId": 361,
+		"Name": "有成本兑奖赠酒",
+		"RemberPrice": "true"
+	},
+	{
+		"Id": 157,
+		"StoreId": 361,
+		"Name": "空瓶箱换酒",
+		"RemberPrice": "true"
+	}
+]

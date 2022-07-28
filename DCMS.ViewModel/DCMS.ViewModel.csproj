@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net6.0</TargetFramework>
+	  <Nullable>disable</Nullable>
+	<Version>3.0.0.1</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<Compile Remove="Models\Messages\CampaignListModel.cs" />
+	<Compile Remove="Models\Messages\CampaignModel.cs" />
+	<Compile Remove="Models\Messages\CampaignSearchModel.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\DCMS.Core\DCMS.Core.csproj" />
+	<ProjectReference Include="..\DCMS.Data\DCMS.Data.csproj" />
+	<ProjectReference Include="..\DCMS.Web.Framework\DCMS.Web.Framework.csproj" />
+  </ItemGroup>
+
+</Project>

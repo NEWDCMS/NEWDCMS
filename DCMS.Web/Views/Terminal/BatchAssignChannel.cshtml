@@ -1,0 +1,20 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+@model DCMS.ViewModel.Models.Terminals.ChannelListModel
+
+<div class="row">
+    <lable class="col-lg-2 control-label">
+        终端渠道
+    </lable>
+    <div class="col-lg-8">
+            <dcms-select asp-for="ChannelId" asp-items="@Model.Items" asp-default="渠道" />
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $("#ChannelId").change(function () {
+            $("#hid_AssignChannelId").val($("#ChannelId").val());
+        });
+    });
+</script>

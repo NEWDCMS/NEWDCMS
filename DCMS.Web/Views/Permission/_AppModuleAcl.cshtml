@@ -1,0 +1,69 @@
+﻿@using DCMS.ViewModel.Models.Users;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+@model UserModuleACLModel
+
+<input asp-for="UserId" type="hidden" />
+<div class="panel">
+
+
+    @if (Model.MenuTrees != null && Model.MenuTrees.Count > 0)
+    {
+        int aj = 0;
+        foreach (var module in Model.MenuTrees)
+        {
+            <table class="table table-striped table-bordered table-hover" style="border-top: 1px solid #eeeeee;">
+                <tbody>
+                    @foreach (var node in module.Children)
+                    {
+
+                        @if (node.Children.Count > 0)
+                        {
+                            var show = node.Children.Where(s => s.Module.ShowMobile == true).Count() > 0;
+                            if (show)
+                            {
+                                <tr>
+                                    <td width="50">├─</td>
+                                    <td>
+                                        <label class="checkbox-inline">
+                                            <b>@(node.Module.Name)(模块)</b>
+                                        </label>
+                                    </td>
+                                </tr>
+                            }
+
+                            @foreach (var child in node.Children)
+                            {
+
+                                if (child.Module.ShowMobile)
+                                {
+                                    <tr>
+                                        <td width="50">└──</td>
+                                        <td>
+                                            <label class="checkbox-inline">
+
+                                                <input type="checkbox" @(child.Module.Selected ? "checked" : "") id="ad_module_@(child.Module.Id)" name="ad_module_@(child.Module.Id)" value="@child.Module.Id">
+                                                @if ("销售单,退货单,拜访门店,库存表,收款单,终端档案,客户应收款,我的单据,单据汇总".Contains(child.Module.Name))
+                                                {
+                                                    @(child.Module.Name+"*")
+                                                }
+                                                else
+                                                {
+                                                    @child.Module.Name;
+                                                }
+
+                                            </label>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+            aj++;
+        }
+    }
+</div>
+

@@ -1,0 +1,213 @@
+﻿@using DCMS.ViewModel.Models.Configuration;
+@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+
+@model PrintTemplateListModel
+
+<section id="content_wrapper">
+
+	<!-- Start: Topbar-Dropdown -->
+	<div id="topbar-dropmenu">
+		<div id="topbar-dropmenu">
+			@await Html.PartialAsync("_ToolBox")
+		</div>
+	</div>
+	<!-- End: Topbar-Dropdown -->
+	<!-- Start: Topbar -->
+	<header id="topbar">
+		<div class="topbar-left">
+			<ol class="breadcrumb">
+				<li class="crumb-active">
+					<a href="@Url.RouteUrl("HomePage")">首页</a>
+				</li>
+				<li class="crumb-icon">
+					<a href="dashboard.html">
+						<span class="glyphicon glyphicon-home"></span>
+					</a>
+				</li>
+				<li class="crumb-link">
+					<a href="#">设置</a>
+				</li>
+				<li class="crumb-trail">打印模板</li>
+			</ol>
+		</div>
+		<div class="topbar-right">
+			<div class="ml15 ib va-m" id="toggle_sidemenu_r">
+				<a href="#" class="pl5">
+					<i class="fa fa-sign-in fs22 text-primary"></i>
+					<span class="badge badge-hero badge-danger">3</span>
+				</a>
+			</div>
+		</div>
+	</header>
+	<!-- End: Topbar -->
+	<!-- Begin: Content -->
+	<section id="content" class="formSection">
+
+		<div class="special-alerts">
+			<div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+				<i class="fa fa-info pr10"></i>
+				<strong>您没有被授权此操作!</strong>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-12">
+
+				<div class="panel">
+					<div class="panel-heading">
+						<div class="panel-title">
+							<span class="glyphicon glyphicon-tasks"></span> 模板列表
+						</div>
+					</div>
+					<div class="panel-body p10">
+
+
+                        <div class="bootstrap-table">
+                            <div class="fixed-table-toolbar">
+                                <div class="bs-bars pull-left">
+                                    <div class="btn-group">
+                                        <a id="btn_add" href="@Url.Action("PrintTemplateCreate")" class="btn btn-primary mr5">
+                                            <span class="glyphicon glyphicon-plus mr5" aria-hidden="true"></span>添加
+                                        </a>
+
+                                        @if (Model.Lists == null || Model.Lists.Count <= 0)
+                                        {
+                                            <a id="btn_init" href="@Url.Action("PrintTemplateInit")" class="btn btn-default">
+                                                <span class="glyphicon glyphicon-refresh mr5" aria-hidden="true"></span>安装示例
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="columns columns-right btn-group pull-right">
+                                    <a class="btn btn-default" href="@Url.Action("PrintTemplateList")" id="btn_refresh" name="refresh" aria-label="refresh" title="刷新"><i class="glyphicon glyphicon-refresh icon-refresh"></i></a>
+                                </div>
+                            </div>
+                            <div class="fixed-table-container">
+                                <table class="table table-striped table-bordered table-hover" id="datatable">
+                                    <thead>
+                                        <tr>
+                                            <th class="bs-checkbox"><div class="th-inner "><input name="btSelectAll" type="checkbox"></div></th>
+                                            <th class="text-left"><div class="th-inner">模板类型</div></th>
+                                            <th class="text-left"><div class="th-inner">单据类型</div></th>
+                                            <th class="text-left"><div class="th-inner">当前选用模板</div></th>
+                                            <th data-align="center" class="text-center w200"><div class="th-inner">操作</div></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            int index = 0;
+                                            foreach (var item in Model.Lists)
+                                            {
+                                                <tr>
+                                                    <td class="bs-checkbox ">
+                                                        <input data-index="@index" name="btSelectItem" class="btSelectItem" type="checkbox" value="@item.Id">
+                                                    </td>
+                                                    <td class="text-left">@item.TemplateTypeName</td>
+                                                    <td class="text-left">@item.BillTypeName</td>
+                                                    <td class="text-left">@item.Title</td>
+                                                    <td class="text-center">
+                                                        <a class="btn btn-sm btn-primary btn_addgroup" data-id="@item.Id" href="@Url.Action("PrintTemplateEdit",new { id=item.Id })" title="编辑"><i class="glyphicon glyphicon-pencil mr5"></i> 编辑</a>
+                                                        <a class="btn btn-sm btn-danger btn_adduserrole" data-id="@item.Id" href="@Url.Action("PrintTemplateDelete",new { ids=item.Id })" title="删除"><i class="glyphicon glyphicon-remove mr5"></i> 删除</a>
+                                                    </td>
+
+                                                </tr>
+                                                index++;
+                                            }
+
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+
+                            @{
+                                var pager = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+                            }
+
+                            @if (!pager.IsEmpty())
+                            {
+                                <div class="fixed-table-pagination" style="display: block;">
+                                    @Html.Raw(pager.ToString())
+                                </div>
+                            }
+
+                        </div>
+
+						<div class="clearfix"></div>
+					</div>
+				</div>
+
+
+			</div>
+		</div>
+
+
+	</section>
+	<!-- End: Content -->
+</section>
+
+
+@await Html.PartialAsync("_Windows", Model)
+
+
+@{
+//Html.AddCssFileParts(ResourceLocation.Head, "~/assets/skin/default_skin/css/theme.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Toastr/toastr.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Tables/bootstrap-table.css");
+
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/datepicker/css/bootstrap-datetimepicker.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/daterange/daterangepicker.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/tagmanager/tagmanager.css");
+
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/fancytree/skin-win8/ui.fancytree.min.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Content/zTree.theme.metro.min.css");
+}
+
+@section NewDefinFrameWorkScripts
+{
+	@{
+		Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery-1.11.1.min.js", order: 999);
+		Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery_ui/jquery-ui.min.js", order: 999);
+		Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/bootstrap.min.js", order: 999);
+	}
+}
+
+@section CurPageScripts
+{
+	@{
+//Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.unobtrusive.js");
+////Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/jquery.treegrid.min.js");
+
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/locale/bootstrap-table-zh-CN.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table-treeview.js");
+
+
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/globalize.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/moment.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/moment-with-locales.js");
+
+////Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/daterange/daterangepicker.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/datepicker/js/bootstrap-datetimepicker.js");
+
+//Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/jquerymask/jquery.maskedinput.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/tagmanager/tagmanager.js");
+
+//Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/fancytree/jquery.fancytree-all.min.js");
+
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.ztree.all-3.5.min.js");
+
+//Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+	}
+
+	@await Html.PartialAsync("_Scripts", Model)
+}

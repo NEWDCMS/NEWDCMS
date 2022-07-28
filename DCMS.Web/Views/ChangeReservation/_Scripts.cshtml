@@ -1,0 +1,89 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Sales;
+@using DCMS.Services.Sales;
+@using DCMS.Core.Infrastructure;
+
+@model ChangeReservationModel
+
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        "use strict";
+        // Init Theme Core
+        Core.init({
+            sbm: "sb-l-c",
+        });
+        // Init Demo JS
+        Demo.init();
+
+        /*
+         * ======================================================
+         * mschen 2018-12-5 11:24:43 begin
+         * ======================================================
+         */
+
+        //表单检查
+        var formValidator = function () {
+            var isVaild = true;
+
+            if ($("select[name=WareHouseId]").val()=="") {
+                $("#WareHouseId").focus();
+                $(this).showToastr("请先选择仓库！");
+                return false;
+            }
+
+            if ($("select[name=DeliveryUserId]").val()=="") {
+                $("#DeliveryUserId").focus();
+                $(this).showToastr("请先选择送货员！");
+                return false;
+            }
+
+            if ($("input[name='TransactionDate']").val() == "") {
+                $("input[name='TransactionDate']").focus();
+                $(this).showToastr("请先选择交易日期！");
+                return false;
+            }
+
+            return isVaild;
+        }
+
+	    //保存服务器
+		var submitRemoteServer = function (items,callback)
+        {
+			 if (!formValidator()) {
+                    return false;
+            };
+
+            //保存的数据
+            var postData = {
+                //仓库
+                WareHouseId: $("select[name=WareHouseId]").val(),
+                //送货员
+                DeliveryUserId: $("select[name=DeliveryUserId]").val(),
+                //交易日期
+                TransactionDate: $("input[name='TransactionDate']").val(),
+                
+	            //单据类型
+	            BillType: $("#BillType").val(),
+                //单据Id
+				Ids: $("#Ids").val()
+                
+            };
+
+            //保存服务器
+			$(this).remoteSubmit("post", "/ChangeReservation/CreateOrUpdate?billId=@(Model.Id)", postData, items, callback);
+        }
+
+       //保存单据项目
+        $("#FormSubmit").click(function () {
+            submitRemoteServer(null, function (data) {
+                if (data.Success) {
+                    window.location.href = "/ChangeReservation/List";
+                }  
+            });
+        });
+
+    });
+
+</script>

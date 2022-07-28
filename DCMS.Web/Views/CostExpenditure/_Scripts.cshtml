@@ -1,0 +1,687 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+@model CostExpenditureBillModel
+
+
+<script type="text/javascript">
+
+	jQuery(document).ready(function () {
+
+		"use strict";
+
+		// Init Theme Core
+		Core.init();
+
+		// Init Demo JS
+		Demo.init();
+
+		if (("@Model.ReversedStatus").toLowerCase() == "true") {
+                $("#inkpadBox").hide();
+                $("#inkpadBox1").css('display', 'block');
+            }
+
+		//切换Tab以方便保存商品项目
+		$('#CostExpenditureFormTab a').click(function (e) {
+			e.preventDefault()
+			var type = $(this).attr("data-id");
+			if (type != 0) {
+				$("#FormSubmit").removeAttr("disabled");
+				$("#FormSubmit").attr("type", "button");
+			} else {
+				$("#FormSubmit").attr("type", "submit");
+			}
+		});
+
+		//会计科目选择
+		$(document).on('click', "#Accounting_AsyncSearchSelectPopup", function () {
+			//var actionUrl = "/Accounting/AsyncSearchSelectPopup?type=1&accountCodeTypeIds="+"1,2,75";
+            var billTypeId = $("#BillTypeEnumId").val();
+            var actionUrl = "/Accounting/AsyncSearchSelectPopup?billTypeId=" + billTypeId;
+			var accounts = $("#CostExpenditureItems_Partial_Form").find("input[name='CollectionAmount']");
+			if (accounts.length == 0) {
+				$(this).showToastr("默认科目未指定！");
+				return false;
+			}
+			$(this).accountingSearchSelectPopup($("#AccountingModalWindow"), actionUrl, null, "选择科目", $("#AccountingForm"), $("#CollectionAccount"), $("#CollectionAccountBox"));
+		});
+
+
+        //客户搜索
+        $(document).on('click', "#btn_search_customer", function () {
+            var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+            $(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { ids: "" }, "选择终端", $("#TerminalSelectForm"), function (rows) { });
+        });
+
+
+
+		//收款项目
+		$("#CostExpenditureItems").bootstrapTable({
+                @Html.Raw(Model.Items.Count > 0 ? "url: '/CostExpenditure/AsyncCostExpenditureItems?billId=" + Model.Id + "'," : "length: 9,")
+			striped: true,
+			cache: false,
+			pagination: true,
+			showPagination: false,
+			sidePagination: "server",
+			sortable: false,
+			sortOrder: "asc",
+			search: false,
+			queryParams: function (params) {
+				var temp =
+					{
+						cumtomerName: "",
+						productName: "",
+						pagenumber: (params.offset / params.limit)  //页码
+					};
+				return temp;
+			},
+			strictSearch: false,
+			showColumns: false,
+			showRefresh: false,
+			clickToSelect: false,
+			uniqueId: "id",
+			showToggle: false,
+			editable: true,
+			cardView: false,
+			detailView: false,
+			showFooter: true,
+			onLoadSuccess: function (data) {
+				$(".fixed-table-pagination").hide();
+			},
+			columns: [
+				{
+					title: '<i class="fa fa-gear fs18"></i>',
+					align: 'center',
+					width: '50',
+					formatter: function (value, row, index) {
+						return m_pagerow + index + 1;
+					},
+					footerFormatter: function (value) {
+						return '总计';
+					}
+				}, {
+					field: 'AccountingOptionId',
+					visible: false
+				},
+				{
+					field: 'CustomerId',
+					visible: false
+				},
+				{
+					field: 'CostContractId',
+					visible: false
+				},
+				{
+					field: 'AccountingOptionName',
+					title: '费用类别',
+                    width: '200',
+                    formatter: $(this).formatIsNull
+				},
+				//{
+				//	field: 'CustomerName',
+				//	title: '客户',
+    //                width: '200',
+    //                formatter: $(this).formatIsNull
+				//},
+				{
+					field: 'CostContractName',
+					title: '费用合同',
+                    width: '200',
+                    formatter: $(this).formatIsNull
+				},
+                {
+                    field: 'Month',
+                    title: '月份',
+                    width: '200',
+                    formatter: $(this).formatIsNull
+				},
+				{
+					field: 'Amount',
+					title: '金额',
+					align: 'right',
+					width: '100',
+					formatter: $(this).formatFixed,
+					footerFormatter: function (value) {
+						var count = 0;
+						var datas = $('#CostExpenditureItems').bootstrapTable('getData');
+						var len = datas.length,
+							i, row;
+						//console.log(len);
+						if (len > 1) {
+							for (i = len - 1; i >= 0; i--) {
+								row = datas[i];
+								count += parseFloat((typeof (row.Amount) == 'undefined' || row.Amount == "") ? '0' : row.Amount);
+							}
+						}
+						else {
+							for (var i in value) {
+								count += parseFloat((typeof (value[i].Amount) == 'undefined' || value[i].Amount == "") ? '0' : value[i].Amount);
+							}
+						}
+						var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+
+                        if ('@Model.AuditedStatus' == 'False' && @Model.Id == 0) {
+                            $("#hidTotal").val(total);
+							$("#OweCash").val("0.00");
+
+                            var accounts = $("#CostExpenditureItems_Partial_Form").find("input[name='CollectionAmount']");
+                            $.each(accounts, function (i, input) {
+                                $(input).val(total);
+                            });
+						}
+
+						return total;
+					}
+				},
+				{
+					field: 'Remark',
+                    title: '备注',
+                    formatter: $(this).formatIsNull
+				},
+				{
+					field: 'Operate',
+					title: '操作',
+					align: 'center',
+					width: '100',
+					events: {
+						'click .rowAppend': function (e, value, row, index) {// 添加
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+								return false;
+							}
+							$('#CostExpenditureItems').bootstrapTable('insert', row);
+						},
+						'click .rowDel': function (e, value, row, index) {// 删除
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+								return false;
+							}
+							var datas = $('#CostExpenditureItems').bootstrapTable('getData');
+							var len = datas.length;
+							if (len == 1) {
+								$(this).showToastr('数据不能删除');
+								return;
+							}
+
+							if (row.uniqueid == undefined) {
+								$("#CostExpenditureItems").bootstrapTable('remove', { field: "id", values: [parseInt(row.Id)] });
+							}
+							else {
+								$("#CostExpenditureItems").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+							}
+						}
+					},
+					formatter: function (value, row, index) {
+						return [
+							'<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+							'<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+						].join('');
+					}
+				}
+			],
+			onClickCell: function (field, value, row, $element) {
+
+				if (field == "Operate") {
+					return false;
+				}
+
+				var input = $($element).find("input");
+				var select = $($element).find("select");
+				if (input.length > 0 || select.length > 0)
+					return false;
+				//当前列所在行的索引
+				var index = $element.parent().attr("data-index");
+
+				//审核、红冲后不能修改
+				if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+					return false;
+				}
+
+				if (field == "AccountingOptionName") {
+					var html = '<div class="input-group">' +
+						'<input type="text" class="form-control input-sm"  name="AccountingOptionName" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">' +
+						'<span class="input-group-btn"><button type="button" class="btn btn-default btn-sm searchproduct" id="search_' + field + "_" + row.Id + '" data-index="' + index + '"><span class="glyphicon glyphicon-search"></span></button></span>' +
+						'</div>';
+					$($element).html(html);
+					var inputObj = $("#search_" + field + "_" + row.Id);
+					inputObj.focus();
+					inputObj.select();
+					inputObj.bind("focusout", function () {
+						//$("#SaleItems").bootstrapTable('updateRow', { index: index, row: { ProductName: $(this).val() } });
+						$("#CostExpenditureItems").bootstrapTable('updateRow', { index: index, row: { AccountingOptionName: value } });
+						$($element).html("" + value + "");
+					});
+					//选择科目
+					inputObj.bind("click", function () {
+						var selectIndex = $(this).attr("data-index");
+                        var PageTable = "CostExpenditureItems";
+                        var actionUrl = "/Accounting/AsyncSearchSelectPopup?Multi=0&self=1&ifcheck=1&selectIndex=" + selectIndex + "&PageTable=" + PageTable+"&billTypeId=" + $("#BillTypeEnumId").val();
+						$(this).accountingSingleSelectPopup($("#AccountingModalWindow"), actionUrl, 1, "选择科目", $("#AccountingForm"), selectIndex, function (options) {
+							//$("#CostExpenditureItems").bootstrapTable('updateRow', {
+							//	index: selectIndex, row: { AccountingOptionId: options[0].id, AccountingOptionName: options[0].name }
+							//});
+							//$("#CostExpenditureItems").bootstrapTable('updateRow', {
+							//	index: selectIndex, row: { AccountingOptionId: options[0].Id, AccountingOptionName: options[0].name }
+							//});
+						});
+						return false;
+					});
+				}
+				else if (field == "CustomerName") {
+					var html = '<div class="input-group">' +
+						'<input type="text" class="form-control input-sm"  name="CustomerName" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">' +
+						'<span class="input-group-btn"><button class="btn btn-default btn-sm searchproduct" id="search_' + field + "_" + row.Id + '" data-index="' + index + '"><span class="glyphicon glyphicon-search"></span></button></span>' +
+						'</div>';
+
+					$($element).html(html);
+					var inputObj = $("#search_" + field + "_" + row.Id);
+					inputObj.focus();
+					inputObj.select();
+					inputObj.bind("focusout", function () {
+						$("#CostExpenditureItems").bootstrapTable('updateRow', { index: index, row: { CustomerName: value } });
+						$($element).html("" + value + "");
+					});
+					//选择终端
+					inputObj.bind("click", function () {
+						var selectIndex = $(this).attr("data-index");
+						var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+                        $(this).terminalSearchSelectPopup($("#TerminalSelectModalWindow"), actionUrl, { Index: selectIndex }, "选择终端", $("#TerminalSelectForm"), "popterminal_datatable", function (rows) {
+						});
+						return false;
+					});
+				}
+				else if (field == "CostContractName")
+				{
+					var customerId = $("#CustomerId").val();
+                    if (customerId == 0 || customerId == "" || customerId == null) {
+                        $(this).showToastr("请先选择客户！");
+                        return false;
+                    }
+
+					var html = '<div class="input-group">' +
+						'<input type="text" class="form-control input-sm"  name="CostContractName" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">' +
+						'<span class="input-group-btn"><button class="btn btn-default btn-sm searchproduct" id="search_' + field + "_" + row.Id + '" data-index="' + index + '"><span class="glyphicon glyphicon-search"></span></button></span>' +
+						'</div>';
+
+					$($element).html(html);
+					var inputObj = $("#search_" + field + "_" + row.Id);
+					inputObj.focus();
+					inputObj.select();
+					inputObj.bind("focusout", function () {
+						$("#CostExpenditureItems").bootstrapTable('updateRow', { index: index, row: { CostContractName: value } });
+						$($element).html("" + value + "");
+					});
+					//选择合同
+					inputObj.bind("click", function () {
+						var selectIndex = $(this).attr("data-index");
+						var actionUrl = "/CostContract/AsyncSearchSelectPopup";
+                        $(this).costContractSearchSelectPopup($("#CostContractModalWindow"), actionUrl, { index: selectIndex, customerId: customerId, accountOptionId: row.AccountingOptionId }, "选择合同", $("#CostContractForm"), function (rows) {
+                        });
+						return false;
+					});
+				}
+				else if (field == "Amount") {
+					var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+					$($element).html(html);
+					var inputObj = $("#" + $(html).attr("id"));
+					inputObj.focus();
+					inputObj.select();
+					inputObj.bind("focusout", function () {
+						if (!isNaN($(this).val())) {
+
+							if ($(this).val() == "") {
+								$(this).val("0.00");
+							}
+
+                            row[field] = $(this).val();
+
+							$("#CostExpenditureItems").bootstrapTable('updateRow', { index: index, row: row });
+
+							$($element).html("" + value + "");
+						}
+						else {
+							$(this).val("0.00");
+							$(this).showToastr("只能输入数字!");
+							return false;
+						}
+					});
+				}
+				else if (field == "Remark") {
+					var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+					$($element).html(html);
+					var inputObj = $("#" + $(html).attr("id"));
+					inputObj.focus();
+					inputObj.select();
+					inputObj.bind("focusout", function () {
+						$("#CostExpenditureItems").bootstrapTable('updateRow', { index: index, row: { Remark: $(this).val() } });
+						$($element).html("" + value + "");
+					});
+				}
+				//debug
+				$.each($('#CostExpenditureItems').bootstrapTable('getData'), function (i, row) {
+					//console.log(row);
+				});
+			}
+		});
+
+		//表单检查
+		var formValidator = function () {
+			var isVaild = true;
+
+			var allTableData = $('#CostExpenditureItems').bootstrapTable('getData');
+			var accounts = $("#CostExpenditureItems_Partial_Form").find("input[name='CollectionAmount']");
+
+			var flag = 0;
+			var accountFlag = 0;
+			var numFlag = 0;
+			$.each(allTableData, function (i, row) {
+                if (row.AccountingOptionId == "" || row.Amount == "" )
+					flag++;
+				else if (isNaN(row.Amount))
+					numFlag++;
+			});
+			$.each(accounts, function (i, input) {
+				if (isNaN($(input).val())) {
+					accountFlag++;
+				}
+			});
+
+            if ($("#CustomerId").val() == "" || $("#CustomerId").val() == "0") {
+                $("#CustomerId").focus();
+                $(this).showToastr("请先选择客户！");
+                return false;
+            }
+			else if ($("#EmployeeId").val() == "" || $("#EmployeeId").val() == "0") {
+				$("#EmployeeId").focus();
+				$(this).showToastr("请先选择员工！");
+				return false;
+			}
+			else if (flag == allTableData.length) {
+				//$(this).showToastr("费用类别、客户、费用合同、金额不能为空！");
+				$(this).showToastr("请检查单据明细！");
+				return false;
+			}
+			else if (numFlag > 0) {
+				$(this).showToastr("单据项目中数据格式不正确！");
+				return false;
+			}
+			else if (accountFlag > 0) {
+				$(this).showToastr("账户信息中数据格式不正确！");
+				return false;
+			}
+
+			return isVaild;
+		}
+
+		//保存服务器
+        var submitRemoteServer = function (showMessage, doAudit, callback,loadingButton) {
+			if (!formValidator()) {
+	            if(loadingButton != undefined){
+				   loadingButton.stop();
+			    }
+				return false;
+			};
+
+			//获取表格的所有内容行
+			var allTableData = $('#CostExpenditureItems').bootstrapTable('getData');
+			var serializeData = [];
+			var accountings = [];
+			$.each(allTableData, function (i, row) {
+				var tmpObj = {
+					Id: typeof (row.Id) == 'undefined' ? "0" : row.Id,
+					AccountingOptionId: typeof (row.AccountingOptionId) == 'undefined' || row.AccountingOptionId == "" ? "0" : row.AccountingOptionId,//费用类别
+					CostContractId: typeof (row.CostContractId) == 'undefined' || row.CostContractId == "" ? "0" : row.CostContractId,//费用合同
+                    CustomerId: ($("#CustomerId").val() == null || $("#CustomerId").val() == '') ? 0 : $("#CustomerId").val(),
+                    Month: typeof (row.Month) == 'undefined' || row.Month == "" ? "0" : row.Month,//月份
+					Amount: typeof (row.Amount) == 'undefined' || row.Amount == "" ? "0" : row.Amount,//金额
+					Remark: typeof (row.Remark) == 'undefined' ? "" : row.Remark,//备注
+				};
+				serializeData.push(tmpObj);
+			});
+
+
+			//获取收款账户
+			var accounts = $("#CostExpenditureItems_Partial_Form").find("input[name='CollectionAmount']");
+			$.each(accounts, function (i, input) {
+				var option = $(input).attr("data-account");
+				var amount = $(input).val();
+				accountings.push({ AccountingOptionId: option, CollectionAmount: $(input).val() });
+			});
+
+			//保存的数据
+			var postData = {
+				//员工
+				EmployeeId: $("#EmployeeId").val(),
+                //客户
+                CustomerId: ($("#CustomerId").val() == null || $("#CustomerId").val() == '') ? 0 : $("#CustomerId").val(),
+				//备注
+				Remark: $("#Remark").val(),
+                OweCash: $("#OweCash").val(),
+				//单据项目
+				Items: serializeData,
+				//收款账户
+				Accounting: accountings,
+			};
+
+			//debug
+			//console.log(postData);
+			//return false;
+
+            //保存服务器
+            $(this).remoteSubmit("post", "/CostExpenditure/CreateOrUpdate?billId=@(Model.Id)&doAudit=" + doAudit, postData, $("#CostExpenditureItems"), callback, showMessage,loadingButton);
+
+		};
+
+		//保存单据项目
+		$("#FormSubmit").click(function () {
+			var doAudit = true;
+	        //防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+            submitRemoteServer(null, doAudit,function (data) {
+                if (data.Success) {
+                    window.location.href = "/CostExpenditure/List";
+                }
+            }, loadingButton);
+		});
+
+		//保存并继续
+		$("#FormSubmitContinue").click(function () {
+			var doAudit = false;
+	        //防止重复保存
+		    var loadingButton = Ladda.create(this);
+			loadingButton.start();
+            submitRemoteServer(null, doAudit,function () { window.location.href = "/CostExpenditure/Create"; },loadingButton);
+		});
+
+
+		//审核
+		$(document).on('click', "#btn_auditing", function () {
+	        //防止重复保存
+	        var loadingButton = Ladda.create(this);
+			loadingButton.start();
+			var returnUrl = "@Context.Request.Query["returnURL"]";
+            if (returnUrl.indexOf("AuditedStatus=") == -1) {
+                if (returnUrl.indexOf("?") == -1) {
+                    returnUrl += "?";
+                } else {
+                    returnUrl += "&";
+                }
+                returnUrl += "AuditedStatus=False";
+            } else {
+                if (returnUrl.indexOf("AuditedStatus=False") == -1) {
+                    returnUrl = returnUrl.replace("AuditedStatus=", "AuditedStatus=False");
+                }
+            }
+            returnUrl = returnUrl.replace(/amp;/g, "");
+			$(this).remoteSubmit("post", "/CostExpenditure/Auditing?id=@(Model.Id)", null, $("#CostExpenditureItems"), function () {
+                window.location.href = returnUrl;
+				}, null,loadingButton);
+		});
+
+		//红冲
+		$(document).on('click', "#btn_red", function () {
+	        //防止重复保存
+			var loadingButton = Ladda.create(this);
+            WinMsg.confirm({ message: "确认要红冲吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+	            loadingButton.start();
+				$(this).remoteSubmit("get", "/CostExpenditure/Reverse", { id: "@Model.Id" }, null, function () { location.href = "/CostExpenditure/List"; }, null,loadingButton);
+			});
+		});
+
+		//打印
+		$("#btn_print").click(function () {
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+            WinMsg.confirm({ message: "确认要打印吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+				loadingButton.start();
+                var setting = {}
+                var LODOP = null;
+                var rs = $(this).getSyncData("/PaymentReceipt/PrintSetting", null, "get");
+				if (rs.Success) {
+					setting = rs.Data;
+					loadCLodop(document, setting.PrintPort, () => {
+						//判断页面是否已加载LODOP
+						if (LODOP == null || LODOP == undefined) {
+							LODOP = getLodopFirst(document);
+							LODOP = getLodopSecond(document);
+						}
+						if (LODOP == null || LODOP == undefined) {
+							loadingButton.stop();
+							return;
+						} else {
+							$("#printData").html("");
+						}
+						$(this).remoteSubmit("get", "/CostExpenditure/Print", { selectData: "@Model.Id" }, null, function (result) {
+							if (result.Success) {
+                                var html = result.Data;
+                                LODOP.PRINT_INIT("费用支出单");
+                                if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+                                    LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+                                }
+                                if (setting.IsPrintPageNumber) {
+                                    LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+                                }
+                                if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+                                    LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+								}
+                                LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+                                LODOP.PREVIEW(true);
+							}
+							else {
+								$(this).showToastr(result.Message);
+							}
+						}, null, loadingButton);
+					});
+				}
+			});
+		});
+
+        //计算已收金额
+        function SumAlreadyAmount() {
+            var sumAlreadyAmount = 0;
+            var colls = $("input[name='CollectionAmount']");
+            for (var i = 0; i < colls.length; i++) {
+
+                if (isNaN($(colls[i]).val()) || $(colls[i]).val() == "") {
+                    $(colls[i]).val("0.00")
+                }
+
+                sumAlreadyAmount = parseFloat(sumAlreadyAmount) + parseFloat(colls[i].value);
+            }
+            return sumAlreadyAmount;
+        }
+
+		//科目
+        $(document).on('change', "#CostExpenditureItems_Partial_Form input[name='CollectionAmount']", function ()
+        {
+            $(this).focus();
+
+            if (isNaN($(this).val())) {
+                $(this).showToastr("只能输入数字!");
+                $(this).val('0.0');
+                return false;
+			}
+
+            if (parseFloat($(this).val()) < 0) {
+                $(this).showToastr("只能输入正数!");
+                $(this).val('0.0');
+                return false;
+			}
+
+            var total = $("#hidTotal").val();
+
+            var thisOwnCash = (parseFloat(total) - SumAlreadyAmount()).toFixed(2);
+            //剩余欠款金额
+            if (thisOwnCash < 0) {
+                $(this).val("0.00");
+                $("#OweCash").val(parseFloat(parseFloat(total) - SumAlreadyAmount()).toFixed(2));
+            } else {
+                $("#OweCash").val(thisOwnCash);
+            }
+		});
+
+
+        window.operateEventsPopTerminal = {
+            'click .rowSelect': function (e, value, row, index) {
+                try {
+                    //$(this).showToastr(row.Id);
+
+                    $("#CustomerId").val(row.Id);
+                    $("#CustomerName").val(row.Name);
+                    $('#TerminalSelectModalWindow').modal('hide');
+                }
+                catch (err) {
+                    console.log(err);
+                    $(this).showToastr(err);
+                    return;
+                }
+            }
+		};
+
+
+		//window.operateEventsPopTerminal = {
+		//	'click .rowSelect': function (e, value, row, index) {
+		//		try {
+		//			var selectIndex = $(this).attr("data-id");
+		//			$("#CostExpenditureItems").bootstrapTable('updateRow', {
+		//				index: selectIndex, row: { CustomerId: row.Id, CustomerName: row.Name }
+		//			});
+
+		//			$('#TerminalSelectModalWindow').modal('hide');
+		//		}
+		//		catch (err) {
+		//			console.log(err);
+		//			$(this).showToastr(err);
+		//			return;
+		//		}
+		//	}
+		//};
+
+        window.operateEventsPopAccountOption = {
+            'click .btn_addselect_contract': function (e, value, row, index) {
+                try {
+                    var selectIndex = $(this).attr("data-id");
+                    $("#CostExpenditureItems").bootstrapTable('updateRow', {
+                        index: selectIndex, row: { CostContractId: row.Id, CostContractName: row.BillNumber, Amount: row.Balance, Month: row.Month }
+                    });
+
+                    $('#CostContractModalWindow').modal('hide');
+                }
+                catch (err) {
+                    console.log(err);
+                    $(this).showToastr(err);
+                    return;
+                }
+            }
+        };
+
+	});
+</script>

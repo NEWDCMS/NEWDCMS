@@ -1,0 +1,148 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Terminals;
+@using DCMS.Services.Sales;
+@using DCMS.Core.Infrastructure;
+
+@model ReceivableModel
+
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        "use strict";
+        // Init Theme Core
+        Core.init({
+            sbm: "sb-l-c",
+        });
+        // Init Demo JS
+        Demo.init();
+
+        //审核
+        $("#btn_auditing").click(function () {
+            @*$(this).remoteSubmit("get", "/SaleBill/Auditing", { id: "@Model.Id" }, null, function () { location.href = "/SaleBill/List"; });*@
+        });
+
+        //红冲
+		$("#btn_red").click(function () {
+			@*WinMsg.confirm({ message: "确认要红冲吗？"/>.on(function (e) {
+				if (!e) {
+					return;
+				}
+				$(this).remoteSubmit("get", "/SaleBill/Reverse", { id: "@Model.Id" }, null, function () { location.href = "/SaleBill/List"; });
+			});*@
+        });
+
+		//客户搜索
+		$(document).on('click', "#btn_search_customer", function () {
+			var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+			$(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { ids: "" }, "选择终端", $("#TerminalSelectForm"), function (rows) { });
+		});
+
+		window.operateEventsPopTerminal = {
+			'click .rowSelect': function (e, value, row, index) {
+                try {
+                    $("input[name='TerminalId']").val(row.Id);
+                    $("input[name='TerminalName']").val(row.Name);
+					$('#TerminalSelectModalWindow').modal('hide');
+				}
+				catch (err) {
+					console.log(err);
+					$(this).showToastr(err);
+					return;
+				}
+			}
+		};
+
+		//保存服务器
+		var submitRemoteServer = function (items,callback)
+		{
+
+			if ($("input[name='TerminalId']").val() == "" || $("input[name='TerminalId']").val() == "0") {
+				$("input[name='TerminalId']").focus();
+				$(this).showToastr("请先选择客户！");
+				return false;
+			}
+			else if ($("input[name='OperationUserId']").val() == "") {
+				$("input[name='OperationUserId']").focus();
+				$(this).showToastr("请先选择业务员！");
+				return false;
+			}
+			else if ($("input[name='OweCash']").val() == "") {
+				$("input[name='OweCash']").focus();
+				$(this).showToastr("输入初始欠款！");
+				return false;
+			}
+			else if ($("input[name='BalanceDate']").val() == "") {
+				$("input[name='BalanceDate']").focus();
+				$(this).showToastr("请先选择欠款时间！");
+				return false;
+			}
+
+            //保存的数据
+            var postData = {
+                //客户
+				TerminalId: $("#TerminalId").val(),
+                //业务员
+				OperationUserId: $("#OperationUserId").val(),
+                //初始欠款
+				OweCash: $("input[name='OweCash']").val(),
+                //欠款时间
+				BalanceDate: $("input[name='BalanceDate']").val(),
+                //备注
+                Remark: $("input[name='Remark']").val(),
+            };
+
+			//保存服务器
+			$(this).remoteSubmit("post", "/Receivable/CreateOrUpdate?billId=@(Model.Id)", postData, null, callback);
+        }
+
+
+		 //保存单据项目
+        $("#FormSubmit").click(function () {
+            submitRemoteServer(null, function (data) {
+                if (data.Success) {
+                    window.location.href = "/Receivable/List";
+                }
+            });
+        });
+
+        //保存并继续
+        $("#FormSubmitContinue").click(function () {
+            if ("@Model.Id" == "0") {
+				submitRemoteServer(null, function () { window.location.href = "/Receivable/Create"; });
+			} else {
+				submitRemoteServer($("#SaleItems"), function () { window.location.href = "/Receivable/Edit/"+"@Model.Id"; });
+			}
+		});
+
+		//初始化
+        $("#btn_init").click(function () {
+			var selectData = "@Model.Id";
+            $.ajax({
+                type: "get",
+                url: "/Receivable/Init",
+                data: {
+                    selectData: selectData
+                },
+                contentType: "application/json",
+                dataType: "json",
+                success: function (result) {
+                    if (result.Success) {
+
+                        toastr.success(result.Message);
+                        window.location.href = "/Receivable/Edit/"+"@Model.Id";
+                    }
+                    else {
+                        $(this).showToastr(result.Message);
+                    }
+                },
+                error: function () {
+                    $(this).showToastr('网络错误，请重新保存！');
+                }
+            });
+        });
+
+
+    });
+
+</script>

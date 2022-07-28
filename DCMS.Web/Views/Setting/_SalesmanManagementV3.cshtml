@@ -1,0 +1,166 @@
+﻿
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model SalesmanManagement
+
+
+
+<table class="ctable">
+    <tr>
+        <td class="clabel">
+            <label asp-for="OnStoreStopSeconds" asp-postfix=":" />
+        </td>
+        <td>
+            <div class="input-group">
+                <input id="OnStoreStopSeconds_@Model.UserId" name="OnStoreStopSeconds_@Model.UserId" value="@Model.OnStoreStopSeconds" class="form-control" />
+                <span class="input-group-addon">分钟</span>
+            </div>
+        </td>
+        <td></td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+            <label asp-for="SalesmanDeliveryDistance" asp-postfix=":" class=" " />
+        </td>
+        <td>
+            <div class="input-group">
+                <input id="SalesmanDeliveryDistance_@Model.UserId" name="SalesmanDeliveryDistance_@Model.UserId" value="@Model.SalesmanDeliveryDistance" class="form-control" />
+                <span class="input-group-addon">米</span>
+            </div>
+        </td>
+        <td></td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+            <label asp-for="EnableSalesmanTrack" asp-postfix=":" class=" " />
+        </td>
+        <td>
+            <input  type="checkbox" class="mt15" id="EnableSalesmanTrack_@Model.UserId" name="EnableSalesmanTrack_@Model.UserId"   @(Model.EnableSalesmanTrack?"checked":"")/>
+        </td>
+        <td></td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+        </td>
+        <td>
+            <input type="text" placeholder="开始" class="form-control" id="Start_@Model.UserId" value="@Model.Start" />
+        </td>
+        <td>
+            <input type="text" placeholder="结束" class="form-control" id="End_@Model.UserId" value="@(Model.End)" />
+        </td>
+        <td>
+            App打开后，会自动根据所设定的频率上报位置。
+        </td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+            <label asp-for="FrequencyTimer" asp-postfix=":" class=" " />
+        </td>
+        <td>
+            <div class="input-group">
+                <input class="form-control" id="FrequencyTimer_@Model.UserId" name="FrequencyTimer_@Model.UserId" value="@Model.FrequencyTimer" type="text" />
+                <span class="input-group-addon">秒</span>
+            </div>
+        </td>
+        <td></td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+            <label asp-for="SalesmanVisitStoreBefore" asp-postfix=":" class=" " />
+        </td>
+        <td>
+            <input  type="checkbox" class="mt15" id="SalesmanVisitStoreBefore_@Model.UserId" name="SalesmanVisitStoreBefore_@Model.UserId"     @(Model.SalesmanVisitStoreBefore?"checked":"")/>
+        </td>
+        <td>
+            该功能可以帮业务员养成拜访门店的习惯
+        </td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+            <label asp-for="SalesmanVisitMustPhotographed" asp-postfix=":" class=" " />
+        </td>
+        <td>
+            <input  type="checkbox" class="mt15" id="SalesmanVisitMustPhotographed_@Model.UserId" name="SalesmanVisitMustPhotographed_@Model.UserId"      @(Model.SalesmanVisitMustPhotographed?"checked":"")/>
+        </td>
+        <td></td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+            <label asp-for="DoorheadPhotoNum" asp-postfix=":" class="" />
+        </td>
+        <td>
+            <input class="mt15 form-control" id="DoorheadPhotoNum_@Model.UserId" name="DoorheadPhotoNum_@Model.UserId" type="text" value="@Model.DoorheadPhotoNum" />
+        </td>
+        <td>
+            默认门头照片拍照数量
+        </td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+            <label asp-for="DisplayPhotoNum" asp-postfix=":" class="" />
+        </td>
+        <td>
+            <input class="mt15 form-control" id="DisplayPhotoNum_@Model.UserId" name="DisplayPhotoNum_@Model.UserId" value="@Model.DisplayPhotoNum" type="text" />
+        </td>
+        <td>
+            默认陈列照片拍照数量
+        </td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+            <label asp-for="EnableBusinessTime" asp-postfix=":" class=" " />
+        </td>
+        <td>
+            <input  type="checkbox" class="mt15" id="EnableBusinessTime_@Model.UserId" name="EnableBusinessTime_@Model.UserId"   @(Model.EnableBusinessTime?"checked":"") />
+        </td>
+        <td></td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+        </td>
+        <td>
+            <input type="text" placeholder="开始" class="form-control" id="BusinessStart_@Model.UserId" name="BusinessStart_@Model.UserId" value="@(Model.BusinessStart)" />
+        </td>
+        <td>
+            <input type="text" placeholder="结束" class="form-control" id="BusinessEnd_@Model.UserId" name="BusinessEnd_@Model.UserId" value="@(Model.BusinessEnd)" />
+        </td>
+        <td>
+            打开后,移动端只能在时间范围内开展业务
+        </td>
+    </tr>
+
+    <tr>
+        <td class="clabel">
+            <label asp-for="EnableBusinessVisitLine" asp-postfix=":" class=" " />
+        </td>
+        <td>
+            <input  type="checkbox" class="mt15 " id="EnableBusinessVisitLine_@Model.UserId" name="EnableBusinessVisitLine_@Model.UserId"   @(Model.EnableBusinessVisitLine?"checked":"")/>
+        </td>
+        <td></td>
+        <td></td>
+    </tr>
+
+</table>

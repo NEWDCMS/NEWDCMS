@@ -1,0 +1,376 @@
+﻿@{
+    Layout = "_Root";
+}
+
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Install;
+
+@model InstallModel
+
+
+<section id="content_wrapper">
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    @*<header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">系统管理</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">系统安装</a>
+                </li>
+                <li class="crumb-trail">安装向导</li>
+            </ol>
+        </div>
+    </header>*@
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection" style="padding-top:100px;">
+
+        <!-- Horizontal Steppers -->
+        <div class="row">
+            <div class="col-md-10 col-lg-offset-1">
+                <div class="flow">
+                    <div class="flowListBox"> </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- /.Horizontal Steppers -->
+        <form asp-action="Index" asp-controller="Install" id="installation-form" method="post" class="form-horizontal" role="form">
+            <div asp-validation-summary="All" class="message-error"></div>
+
+            <div>
+                <div id="contA">
+                </div>
+                <div id="contB">
+                    <div class="form-group">
+                        <div class="col-lg-8 col-lg-offset-2">
+                            <ul class="fs14 list-unstyled list-spacing-10 mb10" id="WriteConfig_Box">
+                                <li>
+                                    <i class="fa fa-exclamation-circle text-warning fa-lg pr10"></i>
+                                    开始......
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div id="contC">
+                    <div class="form-group">
+                        <div class="col-lg-8 col-lg-offset-2">
+                            <p class="text-center">
+                                <i class="fa fa-check-circle" style="font-size: 40px; color: #ff0000"></i>
+                            </p>
+                        </div>
+                        <div class="col-lg-8 col-lg-offset-2">
+                            <p class="text-center">恭喜！安装完成！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <div class="col-xs-12 text-center">
+                    <button type="button" class="btn btn-rounded btn-primary" id="btnBack">上一步</button>
+                    <button type="button" class="btn btn-rounded btn-success" id="btnNext">下一步</button>
+                    <button type="submit" class="btn btn-rounded btn-danger btn-install" style="display:none" id="btnok">安装</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="throbber">
+            <div class="curtain">
+            </div>
+            <div class="curtain-content">
+                <div>
+                    <h1 class="throbber-header">请稍等...</h1>
+                    <p><img src="http://resources.jsdcms.com/content/img/install-synchronizing.gif" alt="" /></p>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- End: Content -->
+</section>
+
+@*这里为每个页面追加定义的控制脚本引用*@
+@{
+    Html.AddCssFileParts(ResourceLocation.Head, "~/assets/skin/default_skin/css/theme.css");
+    Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Toastr/toastr.css");
+    Html.AddCssFileParts(ResourceLocation.Head, "~/Content/Site.css");
+
+}
+<!-- Sparklines CDN -->
+@{ Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");}
+<!-- DataTable Plugins -->
+@{
+    Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+    Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+    Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+}
+<!-- Holder js  -->
+@{ Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");}
+
+@*这里为每个页面自己定义的控制脚本代码*@
+@section CurPageScripts
+{
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+            // Init Theme Core
+            //Core.init();
+
+            // Init Demo JS
+            //Demo.init();
+
+            //toastr.options = { positionClass: "toast-top-center", showDuration: "150", hideDuration: "2000", showMethod: "fadeIn" };
+
+            var colorList;
+            var count;
+            var titles = ["开始", "安装中", "完成"];
+            $(function ()
+            {
+                count = 3;
+                loadFlow(count); checkColor(colorList);
+            })
+
+            function methodBtn(index, method, end)
+            {
+                var fFor; if (end != true)
+                {
+                    if (method == "back")
+                    {
+                        if (index == 1) {
+                            fFor = ".for" + String.fromCharCode(index + 65);
+                        } else {
+                            fFor = ".for" + String.fromCharCode(index + 64);
+                        }
+                        $(fFor).removeClass("for-cur");
+                        loadFlowDiv(index - 1);
+                        checkColor("default");
+                    }
+                    else if (method == "forward")
+                    {
+                        fFor = ".for" + String.fromCharCode(index + 65); $(fFor).addClass("for-cur");
+                        loadFlowDiv(index + 1);
+                        checkColor(colorList);
+                    }
+                } else if (end == true) { }
+            }
+
+            function checkColor(color)
+            {
+                //console.log(color);
+
+                if (color != "default")
+                {
+                    $(".flowList.for-cur").css({ "border": "2px solid #1ABB9C" });
+                    $(".flowList.for-cur,.flowListBox .for-cur em").css({ "background-color": "#1ABB9C" });
+                    $(".flowListBox .for-cur em").css({ "border": "0px none #000" });
+                }
+                else
+                {
+                    var $this = $('.flow .flowList:not(.for-cur)');
+                    $this.css({ "border": "2px solid #ccc", "background-color": "#ccc" });
+                    $this.children("em").css({ "background-color": "#ccc" });
+                }
+                var obj = $('.for-cur:last');
+                obj.css({ "border": "2px solid #34495e", "background-color": "#34495e" });
+                obj.children("em").css({ "background-color": "#34495e" });
+            }
+
+            function fixWidth(count)
+            {
+                var part = parseInt(100 / count) + "%"; $(".flowListBox .flowList").css("width", part);
+            }
+
+            function loadFlow(count)
+            {
+                var flowFor; var flowVar = "";
+                for (var i = 1; i <= count; i++)
+                {
+                    flowFor = "for" + String.fromCharCode(i + 64);
+                    if (i == 1)
+                    {
+                        flowVar += "<div class='flowList for-cur " + flowFor + "' style='position:relative'>\n";
+                        flowVar += "	<em style='position:absolute;left:35%'>" + i + "</em><br/><strong style='position:absolute;left:33%'>" + titles[i-1] + "</strong>\n";
+                        flowVar += "</div>\n";
+                    }
+                    else
+                    {
+                        flowVar += "<div class='flowList " + flowFor + "' style='position:relative'>\n";
+                        flowVar += "	<em style='position:absolute;left:35%'>" + i + "</em><br/><strong style='position:absolute;left:37%'>" + titles[i-1] + "</strong>\n";
+                        flowVar += "</div>\n";
+                    }
+                }
+                $(".flowListBox").html(flowVar);
+                fixWidth(count);
+                loadFlowDiv(1);
+                checkBtn(1, count);
+            }
+
+            function loadFlowDiv(index)
+            {
+                if (index == 1) { $("#contA").removeClass("contentList"); $("#contA").siblings().addClass("contentList") }
+                if (index == 2) { $("#contB").removeClass("contentList"); $("#contB").siblings().addClass("contentList") }
+                if (index == 3) { $("#contC").removeClass("contentList"); $("#contC").siblings().addClass("contentList") }
+            }
+
+            var maxstep = 3;
+            function checkBtn(index, count)
+            {
+                $("#btnBack").addClass("disabled");
+                $("#btnBack").hide();
+
+                //下一步
+                $("#btnNext").click(function ()
+                {
+                    var inter = index;
+                    methodBtn(inter, 'forward', false);
+                    if (index > maxstep) { maxstep = index; }
+
+                    if (index != 1)
+                    {
+                        $("#btnBack").removeClass("disabled");
+                        $("#btnBack").show();
+                    }
+
+                    if (index >= count-1)
+                    {
+                        $("#btnNext").hide();
+                        $("#btnBack").hide();
+                        $("#btnok").hide();
+                        //$("html, body").animate({ scrollTop: 0 }, 400);
+                    }
+
+                    refreshBack(index);
+
+                    var $cbox = $("#WriteConfig_Box");
+                    var storeId = 0;
+
+                    switch (index) {
+                        case 1:
+                            {
+                                $("#btnNext").addClass("disabled");
+                                $cbox.html('');
+                                $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>开始安装，请稍等......</li>');
+
+                               
+                                async function run() {
+                                    for (var i = 1; i <= 8; i++) {
+                                        await $.ajax({
+                                            type: "post",
+                                            url: "/Install/Install?order=" + i,
+                                            //data: postData,
+                                            dataType: "json",
+                                            success: function (result) {
+                                                var $cbox = $("#WriteConfig_Box");
+                                                storeId = result.Data;
+                                                if (result.Success) {
+                                                    $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>' + result.Message + '</li>');
+                                                }
+                                                else
+                                                {
+                                                    storeId = 0; //失败则回滚
+                                                    $cbox.append(' <li><i class=\"fa fa fa-remove text-danger fa-lg pr10\"></i>' + result.Message + '</li>');
+                                                }
+                                            },
+                                            error: function () {
+                                                toastr.error('网络错误，请重新保存！');
+                                            }
+                                        });
+                                    }
+                                }
+
+                                run().then(() =>
+                                {
+                                    console.log(storeId);
+                                    if (storeId > 0)
+                                    {
+                                        // 完成后自动跳转下一步
+                                        $("#btnNext").click();
+                                        $("#timedown").html(5);
+                                        $.ajax({
+                                            type: "post",
+                                            url: "/Install/ConfirmCompletion",
+                                            dataType: "json",
+                                            success: function (result) {
+                                                window.location.href = "/";
+                                            },
+                                            error: function () {
+                                                toastr.error('网络错误，请重新保存！');
+                                            }
+                                        });
+                                        //setTimeout(function () { window.location.href = "/"; }, 5000);
+                                    }
+                                    else
+                                    {
+                                        //$(".throbber").hide();
+                                        $("#btnBack").show();
+                                        $("#btnNext").removeClass("disabled");
+                                    }
+                                });
+                            }
+                            break;
+                        case 2: 
+                            break;
+                        case 3:
+                            break;
+                    }
+
+                    index++;
+                });
+
+                 //上一步
+                $("#btnBack").click(function ()
+                {
+                    $("#btnok").hide();
+                    if (refreshBack(index) > 1)
+                    {
+                        methodBtn(index--, 'back', false);
+                        $("#btnNext").show();
+                        if (index == 1) { $("#btnBack").hide(); }
+                    }
+                });
+            }
+
+            function refreshBack(index) { return index; }
+
+
+            ///===============
+
+            function showThrobber(message) {
+                $('.throbber-header').html(message);
+                window.setTimeout(function () {
+                    $(".throbber").show();
+                }, 100);
+            }
+
+            @*$('#installation-form').submit(function () {
+                if ($('#installation-form').valid())
+                {
+                    $("html, body").animate({ scrollTop: 0 }, 400);
+                    showThrobber('@Html.Raw(JavaScriptEncoder.Default.Encode("安装中...."))');
+                    $('input[type=submit]', this).attr('disabled', 'disabled');
+                }
+            });*@
+
+
+        });
+    </script>
+}
+
+
+
+

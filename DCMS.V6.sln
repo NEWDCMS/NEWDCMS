@@ -1,0 +1,431 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DCMS.Core", "DCMS.Core\DCMS.Core.csproj", "{6BDA8332-939F-45B7-A25E-7A797260AE59}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DCMS.Data", "DCMS.Data\DCMS.Data.csproj", "{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DCMS.Services", "DCMS.Services\DCMS.Services.csproj", "{210541AD-F659-47DA-8763-16F36C5CD2F4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DCMS.Web.Framework", "DCMS.Web.Framework\DCMS.Web.Framework.csproj", "{75FD4163-333C-4DD5-854D-2EF294E45D94}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DCMS.ViewModel", "DCMS.ViewModel\DCMS.ViewModel.csproj", "{F05C398E-E155-45C0-A7AE-41E8D75518F5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DCMS.Web", "DCMS.Web\DCMS.Web.csproj", "{1FF00817-BA9B-4C04-B7E6-99411BF20528}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DCMS.Api", "DCMS.Api\DCMS.Api.csproj", "{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{534A704B-4A9F-4CDA-A593-3E3046E7DFF6}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{E41267B3-8F4F-4659-97DF-92A8B2B198AA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "产品文档", "产品文档", "{32FB1C0A-DEBC-47B5-9A29-C5C309720E47}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "技术文档", "技术文档", "{ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "项目计划", "项目计划", "{D7A2159D-AA4F-4D82-AE68-8D57E40CB649}"
+	ProjectSection(SolutionItems) = preProject
+		DCMS.Documents\项目计划\APP进度顺序.xlsx = DCMS.Documents\项目计划\APP进度顺序.xlsx
+		DCMS.Documents\项目计划\DCMS程序开发时间安排.xlsx = DCMS.Documents\项目计划\DCMS程序开发时间安排.xlsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "APP功能明细", "APP功能明细", "{F7C8FB1E-B243-45C6-924A-78A6A43AEA9A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "APP说明", "APP说明", "{082AF608-C3A7-4ACF-A1C4-C0D60D7903EA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DCMS操作记录节点", "DCMS操作记录节点", "{5B5B7557-57CF-4055-820E-A33EDF85277A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DCMS功能明细", "DCMS功能明细", "{4FC7E95B-2DC5-4BB1-BA11-DF6687392F80}"
+	ProjectSection(SolutionItems) = preProject
+		DCMS.Documents\产品文档\DCMS功能明细\dcms-pc 客户端功能清单（不包含管理平台）.docx = DCMS.Documents\产品文档\DCMS功能明细\dcms-pc 客户端功能清单（不包含管理平台）.docx
+		DCMS.Documents\产品文档\DCMS功能明细\库存模块.docx = DCMS.Documents\产品文档\DCMS功能明细\库存模块.docx
+		DCMS.Documents\产品文档\DCMS功能明细\数据配置.docx = DCMS.Documents\产品文档\DCMS功能明细\数据配置.docx
+		DCMS.Documents\产品文档\DCMS功能明细\档案模块.docx = DCMS.Documents\产品文档\DCMS功能明细\档案模块.docx
+		DCMS.Documents\产品文档\DCMS功能明细\系统配置.docx = DCMS.Documents\产品文档\DCMS功能明细\系统配置.docx
+		DCMS.Documents\产品文档\DCMS功能明细\财务模块.docx = DCMS.Documents\产品文档\DCMS功能明细\财务模块.docx
+		DCMS.Documents\产品文档\DCMS功能明细\采购模块.docx = DCMS.Documents\产品文档\DCMS功能明细\采购模块.docx
+		DCMS.Documents\产品文档\DCMS功能明细\销售模块.docx = DCMS.Documents\产品文档\DCMS功能明细\销售模块.docx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DCMS说明", "DCMS说明", "{B0D47176-29DF-4D90-BF6E-D5FE35FCE8DD}"
+	ProjectSection(SolutionItems) = preProject
+		DCMS.Documents\产品文档\DCMS说明\功能架构.docx = DCMS.Documents\产品文档\DCMS说明\功能架构.docx
+		DCMS.Documents\产品文档\DCMS说明\整体架构.docx = DCMS.Documents\产品文档\DCMS说明\整体架构.docx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DCMS相关模板", "DCMS相关模板", "{1164902E-A930-4BC1-BD70-1BFB9C2F01C8}"
+	ProjectSection(SolutionItems) = preProject
+		DCMS.Documents\产品文档\DCMS相关模板\导入入库单商品模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\导入入库单商品模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\导入出库单商品模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\导入出库单商品模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\导入商品模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\导入商品模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\导入库位模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\导入库位模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\导入移位单商品模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\导入移位单商品模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\导入采购价模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\导入采购价模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\导入采购单商品模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\导入采购单商品模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\导出商品销售明细模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\导出商品销售明细模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\导出库存情况模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\导出库存情况模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\导出废品仓商品模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\导出废品仓商品模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\拣货单.xlsx = DCMS.Documents\产品文档\DCMS相关模板\拣货单.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\盘点表格.xlsx = DCMS.Documents\产品文档\DCMS相关模板\盘点表格.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\（仓库端）导入采购计划单商品模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\（仓库端）导入采购计划单商品模板.xlsx
+		DCMS.Documents\产品文档\DCMS相关模板\（管理端）导入采购计划单商品模板.xlsx = DCMS.Documents\产品文档\DCMS相关模板\（管理端）导入采购计划单商品模板.xlsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "工作周报", "工作周报", "{64CFCE12-99FE-4A9E-A778-8CCDF12BF6A5}"
+	ProjectSection(SolutionItems) = preProject
+		DCMS.Documents\产品文档\工作周报\DCMS_2018_年_12_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2018_年_12_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_01_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_01_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_02_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_02_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_03_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_03_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_04_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_04_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_05_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_05_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_06_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_06_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_07_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_07_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_08_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_08_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_09_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_09_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_10_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_10_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_11_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_11_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2019_年_12_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2019_年_12_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2020_年_01_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2020_年_01_月_项目计划.docx
+		DCMS.Documents\产品文档\工作周报\DCMS_2020_年_02_月_项目计划.docx = DCMS.Documents\产品文档\工作周报\DCMS_2020_年_02_月_项目计划.docx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "界面设计", "界面设计", "{D5B73A47-C51F-4D82-8A89-06BB414A7EA7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "平台对接", "平台对接", "{5257287C-E955-40C2-8382-E67BC8A1D7DF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "原型文档", "原型文档", "{DFA06CD2-0133-4D65-91C9-BAFE2AA59E5C}"
+	ProjectSection(SolutionItems) = preProject
+		DCMS.Documents\产品文档\舟普原型文档\个人资料.doc = DCMS.Documents\产品文档\舟普原型文档\个人资料.doc
+		DCMS.Documents\产品文档\舟普原型文档\中转仓.doc = DCMS.Documents\产品文档\舟普原型文档\中转仓.doc
+		DCMS.Documents\产品文档\舟普原型文档\仓库列表.doc = DCMS.Documents\产品文档\舟普原型文档\仓库列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\仓库盘点.doc = DCMS.Documents\产品文档\舟普原型文档\仓库盘点.doc
+		DCMS.Documents\产品文档\舟普原型文档\仓库配送区域.doc = DCMS.Documents\产品文档\舟普原型文档\仓库配送区域.doc
+		DCMS.Documents\产品文档\舟普原型文档\代销出库单.doc = DCMS.Documents\产品文档\舟普原型文档\代销出库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\供应商商品.doc = DCMS.Documents\产品文档\舟普原型文档\供应商商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\供应商商品报价.doc = DCMS.Documents\产品文档\舟普原型文档\供应商商品报价.doc
+		DCMS.Documents\产品文档\舟普原型文档\供应商结算.doc = DCMS.Documents\产品文档\舟普原型文档\供应商结算.doc
+		DCMS.Documents\产品文档\舟普原型文档\供应商资料.doc = DCMS.Documents\产品文档\舟普原型文档\供应商资料.doc
+		DCMS.Documents\产品文档\舟普原型文档\修改商品.doc = DCMS.Documents\产品文档\舟普原型文档\修改商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\入库单.doc = DCMS.Documents\产品文档\舟普原型文档\入库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\入库单商品.doc = DCMS.Documents\产品文档\舟普原型文档\入库单商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\入库单商品（已提交）.doc = DCMS.Documents\产品文档\舟普原型文档\入库单商品（已提交）.doc
+		DCMS.Documents\产品文档\舟普原型文档\入库单商品（采购入库）.doc = DCMS.Documents\产品文档\舟普原型文档\入库单商品（采购入库）.doc
+		DCMS.Documents\产品文档\舟普原型文档\入库审核.doc = DCMS.Documents\产品文档\舟普原型文档\入库审核.doc
+		DCMS.Documents\产品文档\舟普原型文档\入库核对.doc = DCMS.Documents\产品文档\舟普原型文档\入库核对.doc
+		DCMS.Documents\产品文档\舟普原型文档\入库记录.doc = DCMS.Documents\产品文档\舟普原型文档\入库记录.doc
+		DCMS.Documents\产品文档\舟普原型文档\关联物料.doc = DCMS.Documents\产品文档\舟普原型文档\关联物料.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单.doc = DCMS.Documents\产品文档\舟普原型文档\出库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单_1.doc = DCMS.Documents\产品文档\舟普原型文档\出库单_1.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单_2.doc = DCMS.Documents\产品文档\舟普原型文档\出库单_2.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单列表.doc = DCMS.Documents\产品文档\舟普原型文档\出库单列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单商品.doc = DCMS.Documents\产品文档\舟普原型文档\出库单商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单商品（已提交）.doc = DCMS.Documents\产品文档\舟普原型文档\出库单商品（已提交）.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单商品（采购退回）.doc = DCMS.Documents\产品文档\舟普原型文档\出库单商品（采购退回）.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单校验.doc = DCMS.Documents\产品文档\舟普原型文档\出库单校验.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单校验称重.doc = DCMS.Documents\产品文档\舟普原型文档\出库单校验称重.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单称重.doc = DCMS.Documents\产品文档\舟普原型文档\出库单称重.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单详情.doc = DCMS.Documents\产品文档\舟普原型文档\出库单详情.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库单速查.doc = DCMS.Documents\产品文档\舟普原型文档\出库单速查.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库审核.doc = DCMS.Documents\产品文档\舟普原型文档\出库审核.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库核对.doc = DCMS.Documents\产品文档\舟普原型文档\出库核对.doc
+		DCMS.Documents\产品文档\舟普原型文档\出库记录.doc = DCMS.Documents\产品文档\舟普原型文档\出库记录.doc
+		DCMS.Documents\产品文档\舟普原型文档\分类列表.doc = DCMS.Documents\产品文档\舟普原型文档\分类列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\分配仓库.doc = DCMS.Documents\产品文档\舟普原型文档\分配仓库.doc
+		DCMS.Documents\产品文档\舟普原型文档\列表页.doc = DCMS.Documents\产品文档\舟普原型文档\列表页.doc
+		DCMS.Documents\产品文档\舟普原型文档\列表页面.doc = DCMS.Documents\产品文档\舟普原型文档\列表页面.doc
+		DCMS.Documents\产品文档\舟普原型文档\区域管理.doc = DCMS.Documents\产品文档\舟普原型文档\区域管理.doc
+		DCMS.Documents\产品文档\舟普原型文档\单品分配.doc = DCMS.Documents\产品文档\舟普原型文档\单品分配.doc
+		DCMS.Documents\产品文档\舟普原型文档\原型说明.doc = DCMS.Documents\产品文档\舟普原型文档\原型说明.doc
+		DCMS.Documents\产品文档\舟普原型文档\发货单模板.doc = DCMS.Documents\产品文档\舟普原型文档\发货单模板.doc
+		DCMS.Documents\产品文档\舟普原型文档\品牌列表.doc = DCMS.Documents\产品文档\舟普原型文档\品牌列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\售后列表.doc = DCMS.Documents\产品文档\舟普原型文档\售后列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\售后原因.doc = DCMS.Documents\产品文档\舟普原型文档\售后原因.doc
+		DCMS.Documents\产品文档\舟普原型文档\售后详情（仅退款）.doc = DCMS.Documents\产品文档\舟普原型文档\售后详情（仅退款）.doc
+		DCMS.Documents\产品文档\舟普原型文档\售后详情（退货退款）.doc = DCMS.Documents\产品文档\舟普原型文档\售后详情（退货退款）.doc
+		DCMS.Documents\产品文档\舟普原型文档\商品分类.doc = DCMS.Documents\产品文档\舟普原型文档\商品分类.doc
+		DCMS.Documents\产品文档\舟普原型文档\商品列表.doc = DCMS.Documents\产品文档\舟普原型文档\商品列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\商品品牌.doc = DCMS.Documents\产品文档\舟普原型文档\商品品牌.doc
+		DCMS.Documents\产品文档\舟普原型文档\商品库.doc = DCMS.Documents\产品文档\舟普原型文档\商品库.doc
+		DCMS.Documents\产品文档\舟普原型文档\商品库存.doc = DCMS.Documents\产品文档\舟普原型文档\商品库存.doc
+		DCMS.Documents\产品文档\舟普原型文档\商品明细库存.doc = DCMS.Documents\产品文档\舟普原型文档\商品明细库存.doc
+		DCMS.Documents\产品文档\舟普原型文档\商品移位.doc = DCMS.Documents\产品文档\舟普原型文档\商品移位.doc
+		DCMS.Documents\产品文档\舟普原型文档\商品详情.doc = DCMS.Documents\产品文档\舟普原型文档\商品详情.doc
+		DCMS.Documents\产品文档\舟普原型文档\商品预警.doc = DCMS.Documents\产品文档\舟普原型文档\商品预警.doc
+		DCMS.Documents\产品文档\舟普原型文档\地址管理.doc = DCMS.Documents\产品文档\舟普原型文档\地址管理.doc
+		DCMS.Documents\产品文档\舟普原型文档\字典管理.doc = DCMS.Documents\产品文档\舟普原型文档\字典管理.doc
+		DCMS.Documents\产品文档\舟普原型文档\导入商品.doc = DCMS.Documents\产品文档\舟普原型文档\导入商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\导入订单.doc = DCMS.Documents\产品文档\舟普原型文档\导入订单.doc
+		DCMS.Documents\产品文档\舟普原型文档\已下载订单.doc = DCMS.Documents\产品文档\舟普原型文档\已下载订单.doc
+		DCMS.Documents\产品文档\舟普原型文档\已发货出库单.doc = DCMS.Documents\产品文档\舟普原型文档\已发货出库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\已发货订单.doc = DCMS.Documents\产品文档\舟普原型文档\已发货订单.doc
+		DCMS.Documents\产品文档\舟普原型文档\已审核收款.doc = DCMS.Documents\产品文档\舟普原型文档\已审核收款.doc
+		DCMS.Documents\产品文档\舟普原型文档\已审核退款.doc = DCMS.Documents\产品文档\舟普原型文档\已审核退款.doc
+		DCMS.Documents\产品文档\舟普原型文档\已结算列表.doc = DCMS.Documents\产品文档\舟普原型文档\已结算列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\库位商品.doc = DCMS.Documents\产品文档\舟普原型文档\库位商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\库区列表.doc = DCMS.Documents\产品文档\舟普原型文档\库区列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\库区结构.doc = DCMS.Documents\产品文档\舟普原型文档\库区结构.doc
+		DCMS.Documents\产品文档\舟普原型文档\库存分配.doc = DCMS.Documents\产品文档\舟普原型文档\库存分配.doc
+		DCMS.Documents\产品文档\舟普原型文档\库存情况.doc = DCMS.Documents\产品文档\舟普原型文档\库存情况.doc
+		DCMS.Documents\产品文档\舟普原型文档\库存更新.doc = DCMS.Documents\产品文档\舟普原型文档\库存更新.doc
+		DCMS.Documents\产品文档\舟普原型文档\库存详情.doc = DCMS.Documents\产品文档\舟普原型文档\库存详情.doc
+		DCMS.Documents\产品文档\舟普原型文档\废品仓.doc = DCMS.Documents\产品文档\舟普原型文档\废品仓.doc
+		DCMS.Documents\产品文档\舟普原型文档\弹出窗口.doc = DCMS.Documents\产品文档\舟普原型文档\弹出窗口.doc
+		DCMS.Documents\产品文档\舟普原型文档\待发货出库单.doc = DCMS.Documents\产品文档\舟普原型文档\待发货出库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\待审核订单.doc = DCMS.Documents\产品文档\舟普原型文档\待审核订单.doc
+		DCMS.Documents\产品文档\舟普原型文档\待打印出库单.doc = DCMS.Documents\产品文档\舟普原型文档\待打印出库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\待拣货出库单.doc = DCMS.Documents\产品文档\舟普原型文档\待拣货出库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\待拣货订单.doc = DCMS.Documents\产品文档\舟普原型文档\待拣货订单.doc
+		DCMS.Documents\产品文档\舟普原型文档\待结算列表.doc = DCMS.Documents\产品文档\舟普原型文档\待结算列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\快递列表.doc = DCMS.Documents\产品文档\舟普原型文档\快递列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\快递单模板.doc = DCMS.Documents\产品文档\舟普原型文档\快递单模板.doc
+		DCMS.Documents\产品文档\舟普原型文档\快递单模板_普通_.doc = DCMS.Documents\产品文档\舟普原型文档\快递单模板_普通_.doc
+		DCMS.Documents\产品文档\舟普原型文档\快递单模板_热敏_.doc = DCMS.Documents\产品文档\舟普原型文档\快递单模板_热敏_.doc
+		DCMS.Documents\产品文档\舟普原型文档\快递管理.doc = DCMS.Documents\产品文档\舟普原型文档\快递管理.doc
+		DCMS.Documents\产品文档\舟普原型文档\快递费用.doc = DCMS.Documents\产品文档\舟普原型文档\快递费用.doc
+		DCMS.Documents\产品文档\舟普原型文档\手动添加.doc = DCMS.Documents\产品文档\舟普原型文档\手动添加.doc
+		DCMS.Documents\产品文档\舟普原型文档\手动添加订单.doc = DCMS.Documents\产品文档\舟普原型文档\手动添加订单.doc
+		DCMS.Documents\产品文档\舟普原型文档\打印模板.doc = DCMS.Documents\产品文档\舟普原型文档\打印模板.doc
+		DCMS.Documents\产品文档\舟普原型文档\批次列表.doc = DCMS.Documents\产品文档\舟普原型文档\批次列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\批次商品详情.doc = DCMS.Documents\产品文档\舟普原型文档\批次商品详情.doc
+		DCMS.Documents\产品文档\舟普原型文档\批次情况.doc = DCMS.Documents\产品文档\舟普原型文档\批次情况.doc
+		DCMS.Documents\产品文档\舟普原型文档\批次详情.doc = DCMS.Documents\产品文档\舟普原型文档\批次详情.doc
+		DCMS.Documents\产品文档\舟普原型文档\拣货中订单.doc = DCMS.Documents\产品文档\舟普原型文档\拣货中订单.doc
+		DCMS.Documents\产品文档\舟普原型文档\拣货单模板.doc = DCMS.Documents\产品文档\舟普原型文档\拣货单模板.doc
+		DCMS.Documents\产品文档\舟普原型文档\挂起订单.doc = DCMS.Documents\产品文档\舟普原型文档\挂起订单.doc
+		DCMS.Documents\产品文档\舟普原型文档\提示窗口.doc = DCMS.Documents\产品文档\舟普原型文档\提示窗口.doc
+		DCMS.Documents\产品文档\舟普原型文档\操作记录.doc = DCMS.Documents\产品文档\舟普原型文档\操作记录.doc
+		DCMS.Documents\产品文档\舟普原型文档\新建入库单.doc = DCMS.Documents\产品文档\舟普原型文档\新建入库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\新建出库单.doc = DCMS.Documents\产品文档\舟普原型文档\新建出库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\新建调拨.doc = DCMS.Documents\产品文档\舟普原型文档\新建调拨.doc
+		DCMS.Documents\产品文档\舟普原型文档\新建采购单.doc = DCMS.Documents\产品文档\舟普原型文档\新建采购单.doc
+		DCMS.Documents\产品文档\舟普原型文档\更新失败列表.doc = DCMS.Documents\产品文档\舟普原型文档\更新失败列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\更新记录.doc = DCMS.Documents\产品文档\舟普原型文档\更新记录.doc
+		DCMS.Documents\产品文档\舟普原型文档\未审核收款.doc = DCMS.Documents\产品文档\舟普原型文档\未审核收款.doc
+		DCMS.Documents\产品文档\舟普原型文档\未审核退款.doc = DCMS.Documents\产品文档\舟普原型文档\未审核退款.doc
+		DCMS.Documents\产品文档\舟普原型文档\权限设置.doc = DCMS.Documents\产品文档\舟普原型文档\权限设置.doc
+		DCMS.Documents\产品文档\舟普原型文档\标准列表页面.doc = DCMS.Documents\产品文档\舟普原型文档\标准列表页面.doc
+		DCMS.Documents\产品文档\舟普原型文档\标准弹出窗口.doc = DCMS.Documents\产品文档\舟普原型文档\标准弹出窗口.doc
+		DCMS.Documents\产品文档\舟普原型文档\标准次级页面.doc = DCMS.Documents\产品文档\舟普原型文档\标准次级页面.doc
+		DCMS.Documents\产品文档\舟普原型文档\校验称重设置.doc = DCMS.Documents\产品文档\舟普原型文档\校验称重设置.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加仓库.doc = DCMS.Documents\产品文档\舟普原型文档\添加仓库.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加供应商.doc = DCMS.Documents\产品文档\舟普原型文档\添加供应商.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加售后.doc = DCMS.Documents\产品文档\舟普原型文档\添加售后.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加商品.doc = DCMS.Documents\产品文档\舟普原型文档\添加商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加商品转换规则.doc = DCMS.Documents\产品文档\舟普原型文档\添加商品转换规则.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加库位.doc = DCMS.Documents\产品文档\舟普原型文档\添加库位.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加库区.doc = DCMS.Documents\产品文档\舟普原型文档\添加库区.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加店铺.doc = DCMS.Documents\产品文档\舟普原型文档\添加店铺.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加用户.doc = DCMS.Documents\产品文档\舟普原型文档\添加用户.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加结构.doc = DCMS.Documents\产品文档\舟普原型文档\添加结构.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加自提点.doc = DCMS.Documents\产品文档\舟普原型文档\添加自提点.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加订单.doc = DCMS.Documents\产品文档\舟普原型文档\添加订单.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加采购价.doc = DCMS.Documents\产品文档\舟普原型文档\添加采购价.doc
+		DCMS.Documents\产品文档\舟普原型文档\添加预售.doc = DCMS.Documents\产品文档\舟普原型文档\添加预售.doc
+		DCMS.Documents\产品文档\舟普原型文档\物流公司.doc = DCMS.Documents\产品文档\舟普原型文档\物流公司.doc
+		DCMS.Documents\产品文档\舟普原型文档\状态流转图.doc = DCMS.Documents\产品文档\舟普原型文档\状态流转图.doc
+		DCMS.Documents\产品文档\舟普原型文档\用户列表.doc = DCMS.Documents\产品文档\舟普原型文档\用户列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\登录日志.doc = DCMS.Documents\产品文档\舟普原型文档\登录日志.doc
+		DCMS.Documents\产品文档\舟普原型文档\盘点商品列表.doc = DCMS.Documents\产品文档\舟普原型文档\盘点商品列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\盘点商品列表（已确认）.doc = DCMS.Documents\产品文档\舟普原型文档\盘点商品列表（已确认）.doc
+		DCMS.Documents\产品文档\舟普原型文档\盘点商品列表（异常）.doc = DCMS.Documents\产品文档\舟普原型文档\盘点商品列表（异常）.doc
+		DCMS.Documents\产品文档\舟普原型文档\盘点审核.doc = DCMS.Documents\产品文档\舟普原型文档\盘点审核.doc
+		DCMS.Documents\产品文档\舟普原型文档\盘点核对.doc = DCMS.Documents\产品文档\舟普原型文档\盘点核对.doc
+		DCMS.Documents\产品文档\舟普原型文档\盘点管理.doc = DCMS.Documents\产品文档\舟普原型文档\盘点管理.doc
+		DCMS.Documents\产品文档\舟普原型文档\盘点记录.doc = DCMS.Documents\产品文档\舟普原型文档\盘点记录.doc
+		DCMS.Documents\产品文档\舟普原型文档\移位商品列表.doc = DCMS.Documents\产品文档\舟普原型文档\移位商品列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\移位商品列表（已确认）.doc = DCMS.Documents\产品文档\舟普原型文档\移位商品列表（已确认）.doc
+		DCMS.Documents\产品文档\舟普原型文档\等待打印出库单.doc = DCMS.Documents\产品文档\舟普原型文档\等待打印出库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\等待拣货订单.doc = DCMS.Documents\产品文档\舟普原型文档\等待拣货订单.doc
+		DCMS.Documents\产品文档\舟普原型文档\管理库区.doc = DCMS.Documents\产品文档\舟普原型文档\管理库区.doc
+		DCMS.Documents\产品文档\舟普原型文档\管理权限.doc = DCMS.Documents\产品文档\舟普原型文档\管理权限.doc
+		DCMS.Documents\产品文档\舟普原型文档\系统日志.doc = DCMS.Documents\产品文档\舟普原型文档\系统日志.doc
+		DCMS.Documents\产品文档\舟普原型文档\结构列表.doc = DCMS.Documents\产品文档\舟普原型文档\结构列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\编辑库区.doc = DCMS.Documents\产品文档\舟普原型文档\编辑库区.doc
+		DCMS.Documents\产品文档\舟普原型文档\编辑模板.doc = DCMS.Documents\产品文档\舟普原型文档\编辑模板.doc
+		DCMS.Documents\产品文档\舟普原型文档\编辑模板_发货单_.doc = DCMS.Documents\产品文档\舟普原型文档\编辑模板_发货单_.doc
+		DCMS.Documents\产品文档\舟普原型文档\自提点.doc = DCMS.Documents\产品文档\舟普原型文档\自提点.doc
+		DCMS.Documents\产品文档\舟普原型文档\表格导入.doc = DCMS.Documents\产品文档\舟普原型文档\表格导入.doc
+		DCMS.Documents\产品文档\舟普原型文档\角色列表.doc = DCMS.Documents\产品文档\舟普原型文档\角色列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\角色权限.doc = DCMS.Documents\产品文档\舟普原型文档\角色权限.doc
+		DCMS.Documents\产品文档\舟普原型文档\计划单商品.doc = DCMS.Documents\产品文档\舟普原型文档\计划单商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\计划单商品_已结束_.doc = DCMS.Documents\产品文档\舟普原型文档\计划单商品_已结束_.doc
+		DCMS.Documents\产品文档\舟普原型文档\计划单商品_已采购_.doc = DCMS.Documents\产品文档\舟普原型文档\计划单商品_已采购_.doc
+		DCMS.Documents\产品文档\舟普原型文档\计划单商品_未采购_.doc = DCMS.Documents\产品文档\舟普原型文档\计划单商品_未采购_.doc
+		DCMS.Documents\产品文档\舟普原型文档\计划单商品_结束_.doc = DCMS.Documents\产品文档\舟普原型文档\计划单商品_结束_.doc
+		DCMS.Documents\产品文档\舟普原型文档\订单列表.doc = DCMS.Documents\产品文档\舟普原型文档\订单列表.doc
+		DCMS.Documents\产品文档\舟普原型文档\订单收退款.doc = DCMS.Documents\产品文档\舟普原型文档\订单收退款.doc
+		DCMS.Documents\产品文档\舟普原型文档\订单状态流转图.doc = DCMS.Documents\产品文档\舟普原型文档\订单状态流转图.doc
+		DCMS.Documents\产品文档\舟普原型文档\订单详情.doc = DCMS.Documents\产品文档\舟普原型文档\订单详情.doc
+		DCMS.Documents\产品文档\舟普原型文档\订单详情页.doc = DCMS.Documents\产品文档\舟普原型文档\订单详情页.doc
+		DCMS.Documents\产品文档\舟普原型文档\设置库存分配.doc = DCMS.Documents\产品文档\舟普原型文档\设置库存分配.doc
+		DCMS.Documents\产品文档\舟普原型文档\设置库存分配_单个_.doc = DCMS.Documents\产品文档\舟普原型文档\设置库存分配_单个_.doc
+		DCMS.Documents\产品文档\舟普原型文档\详细页面.doc = DCMS.Documents\产品文档\舟普原型文档\详细页面.doc
+		DCMS.Documents\产品文档\舟普原型文档\调拨记录.doc = DCMS.Documents\产品文档\舟普原型文档\调拨记录.doc
+		DCMS.Documents\产品文档\舟普原型文档\财务审核.doc = DCMS.Documents\产品文档\舟普原型文档\财务审核.doc
+		DCMS.Documents\产品文档\舟普原型文档\货到付款出库单.doc = DCMS.Documents\产品文档\舟普原型文档\货到付款出库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\货到付款收货操作.doc = DCMS.Documents\产品文档\舟普原型文档\货到付款收货操作.doc
+		DCMS.Documents\产品文档\舟普原型文档\运费设置.doc = DCMS.Documents\产品文档\舟普原型文档\运费设置.doc
+		DCMS.Documents\产品文档\舟普原型文档\退发货地址.doc = DCMS.Documents\产品文档\舟普原型文档\退发货地址.doc
+		DCMS.Documents\产品文档\舟普原型文档\采购单.doc = DCMS.Documents\产品文档\舟普原型文档\采购单.doc
+		DCMS.Documents\产品文档\舟普原型文档\采购单商品.doc = DCMS.Documents\产品文档\舟普原型文档\采购单商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\采购单商品_未确认_.doc = DCMS.Documents\产品文档\舟普原型文档\采购单商品_未确认_.doc
+		DCMS.Documents\产品文档\舟普原型文档\采购流程.doc = DCMS.Documents\产品文档\舟普原型文档\采购流程.doc
+		DCMS.Documents\产品文档\舟普原型文档\采购计划单.doc = DCMS.Documents\产品文档\舟普原型文档\采购计划单.doc
+		DCMS.Documents\产品文档\舟普原型文档\采购计划单商品.doc = DCMS.Documents\产品文档\舟普原型文档\采购计划单商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\采购计划单商品_未提交_.doc = DCMS.Documents\产品文档\舟普原型文档\采购计划单商品_未提交_.doc
+		DCMS.Documents\产品文档\舟普原型文档\采购记录.doc = DCMS.Documents\产品文档\舟普原型文档\采购记录.doc
+		DCMS.Documents\产品文档\舟普原型文档\销售明细.doc = DCMS.Documents\产品文档\舟普原型文档\销售明细.doc
+		DCMS.Documents\产品文档\舟普原型文档\预售出库单.doc = DCMS.Documents\产品文档\舟普原型文档\预售出库单.doc
+		DCMS.Documents\产品文档\舟普原型文档\预售商品.doc = DCMS.Documents\产品文档\舟普原型文档\预售商品.doc
+		DCMS.Documents\产品文档\舟普原型文档\预售详情.doc = DCMS.Documents\产品文档\舟普原型文档\预售详情.doc
+		DCMS.Documents\产品文档\舟普原型文档\预警设置.doc = DCMS.Documents\产品文档\舟普原型文档\预警设置.doc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "表结构设计", "表结构设计", "{82745DEE-CA31-4AA8-B8FB-3EC07F76B93A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "财务理论", "财务理论", "{479A41D7-443A-4673-816A-1E7D58B6DC77}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "第三方接口文档", "第三方接口文档", "{6684A504-CC8C-43A0-9B07-F53F22B6D6E1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "规范文档", "规范文档", "{CCEDAFE4-0D11-4AFF-BE43-FCB28E63E041}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "技术详细开发计划", "技术详细开发计划", "{C68BF1B0-667E-454B-83EA-A84D8085E287}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "模板文件", "模板文件", "{95ED23D7-858E-49B2-B431-410D226A4A24}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "其他文档", "其他文档", "{F1B447A9-6E3D-4B72-9525-0FB0A40B6F97}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "软件工具", "软件工具", "{203F1859-5022-4A42-814A-3DC0E3B0C7A5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "设计文档", "设计文档", "{1D654CB3-B608-476B-8088-194AE5CCE44F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "需求文档", "需求文档", "{A183BF0E-45F4-4D73-A4DB-A69C4667BFDA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6BDA8332-939F-45B7-A25E-7A797260AE59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BDA8332-939F-45B7-A25E-7A797260AE59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BDA8332-939F-45B7-A25E-7A797260AE59}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6BDA8332-939F-45B7-A25E-7A797260AE59}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6BDA8332-939F-45B7-A25E-7A797260AE59}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6BDA8332-939F-45B7-A25E-7A797260AE59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BDA8332-939F-45B7-A25E-7A797260AE59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BDA8332-939F-45B7-A25E-7A797260AE59}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6BDA8332-939F-45B7-A25E-7A797260AE59}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6BDA8332-939F-45B7-A25E-7A797260AE59}.Release|x86.ActiveCfg = Release|Any CPU
+		{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CCD7F2C9-6A2C-4CF0-8E89-076B8FC0F144}.Release|x86.ActiveCfg = Release|Any CPU
+		{210541AD-F659-47DA-8763-16F36C5CD2F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{210541AD-F659-47DA-8763-16F36C5CD2F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{210541AD-F659-47DA-8763-16F36C5CD2F4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{210541AD-F659-47DA-8763-16F36C5CD2F4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{210541AD-F659-47DA-8763-16F36C5CD2F4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{210541AD-F659-47DA-8763-16F36C5CD2F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{210541AD-F659-47DA-8763-16F36C5CD2F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{210541AD-F659-47DA-8763-16F36C5CD2F4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{210541AD-F659-47DA-8763-16F36C5CD2F4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{210541AD-F659-47DA-8763-16F36C5CD2F4}.Release|x86.ActiveCfg = Release|Any CPU
+		{75FD4163-333C-4DD5-854D-2EF294E45D94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75FD4163-333C-4DD5-854D-2EF294E45D94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75FD4163-333C-4DD5-854D-2EF294E45D94}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{75FD4163-333C-4DD5-854D-2EF294E45D94}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{75FD4163-333C-4DD5-854D-2EF294E45D94}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{75FD4163-333C-4DD5-854D-2EF294E45D94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75FD4163-333C-4DD5-854D-2EF294E45D94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75FD4163-333C-4DD5-854D-2EF294E45D94}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{75FD4163-333C-4DD5-854D-2EF294E45D94}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{75FD4163-333C-4DD5-854D-2EF294E45D94}.Release|x86.ActiveCfg = Release|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Debug|x86.Build.0 = Debug|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Release|x86.ActiveCfg = Release|Any CPU
+		{F05C398E-E155-45C0-A7AE-41E8D75518F5}.Release|x86.Build.0 = Release|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Debug|x86.Build.0 = Debug|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Release|x86.ActiveCfg = Release|Any CPU
+		{1FF00817-BA9B-4C04-B7E6-99411BF20528}.Release|x86.Build.0 = Release|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Debug|x86.Build.0 = Debug|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Release|x86.ActiveCfg = Release|Any CPU
+		{69D52DAC-50C9-4334-8A5B-ED82381ED8DB}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{32FB1C0A-DEBC-47B5-9A29-C5C309720E47} = {E41267B3-8F4F-4659-97DF-92A8B2B198AA}
+		{ED11C2D4-3FC1-4E55-B151-26FEE46F30AB} = {E41267B3-8F4F-4659-97DF-92A8B2B198AA}
+		{D7A2159D-AA4F-4D82-AE68-8D57E40CB649} = {E41267B3-8F4F-4659-97DF-92A8B2B198AA}
+		{F7C8FB1E-B243-45C6-924A-78A6A43AEA9A} = {32FB1C0A-DEBC-47B5-9A29-C5C309720E47}
+		{082AF608-C3A7-4ACF-A1C4-C0D60D7903EA} = {32FB1C0A-DEBC-47B5-9A29-C5C309720E47}
+		{5B5B7557-57CF-4055-820E-A33EDF85277A} = {32FB1C0A-DEBC-47B5-9A29-C5C309720E47}
+		{4FC7E95B-2DC5-4BB1-BA11-DF6687392F80} = {32FB1C0A-DEBC-47B5-9A29-C5C309720E47}
+		{B0D47176-29DF-4D90-BF6E-D5FE35FCE8DD} = {32FB1C0A-DEBC-47B5-9A29-C5C309720E47}
+		{1164902E-A930-4BC1-BD70-1BFB9C2F01C8} = {32FB1C0A-DEBC-47B5-9A29-C5C309720E47}
+		{64CFCE12-99FE-4A9E-A778-8CCDF12BF6A5} = {32FB1C0A-DEBC-47B5-9A29-C5C309720E47}
+		{D5B73A47-C51F-4D82-8A89-06BB414A7EA7} = {32FB1C0A-DEBC-47B5-9A29-C5C309720E47}
+		{5257287C-E955-40C2-8382-E67BC8A1D7DF} = {32FB1C0A-DEBC-47B5-9A29-C5C309720E47}
+		{DFA06CD2-0133-4D65-91C9-BAFE2AA59E5C} = {32FB1C0A-DEBC-47B5-9A29-C5C309720E47}
+		{82745DEE-CA31-4AA8-B8FB-3EC07F76B93A} = {ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}
+		{479A41D7-443A-4673-816A-1E7D58B6DC77} = {ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}
+		{6684A504-CC8C-43A0-9B07-F53F22B6D6E1} = {ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}
+		{CCEDAFE4-0D11-4AFF-BE43-FCB28E63E041} = {ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}
+		{C68BF1B0-667E-454B-83EA-A84D8085E287} = {ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}
+		{95ED23D7-858E-49B2-B431-410D226A4A24} = {ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}
+		{F1B447A9-6E3D-4B72-9525-0FB0A40B6F97} = {ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}
+		{203F1859-5022-4A42-814A-3DC0E3B0C7A5} = {ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}
+		{1D654CB3-B608-476B-8088-194AE5CCE44F} = {ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}
+		{A183BF0E-45F4-4D73-A4DB-A69C4667BFDA} = {ED11C2D4-3FC1-4E55-B151-26FEE46F30AB}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EE72A8B2-332A-4175-9319-6726D36E9D25}
+	EndGlobalSection
+	GlobalSection(NDepend) = preSolution
+		Project = ".\DCMS.ndproj"
+	EndGlobalSection
+EndGlobal

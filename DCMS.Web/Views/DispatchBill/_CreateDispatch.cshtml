@@ -1,0 +1,88 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Sales;
+
+@model DispatchBillModel
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="SelectDatas" type="hidden" />
+
+
+@if (!ViewData.ModelState.IsValid)
+{
+	<div class="alert alert-warning alert-dismissable mt10 mb10">
+		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+		<div asp-validation-summary="All"></div>
+	</div>
+}
+
+<div class="form-group">
+	<label asp-for="DeliveryUserName" asp-postfix=":" class="col-lg-4 control-label" />
+	<div class="col-lg-4">
+		<dcms-select asp-for="DeliveryUserId" asp-items="@Model.DeliveryUsers" class="form-control" />
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.DeliveryUserId)
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="CarNO" asp-postfix=":" class="col-lg-4 control-label" />
+	<div class="col-lg-4">
+		<dcms-select asp-for="CarId" asp-items="@Model.Cars" class="form-control" />
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.CarId)
+	</div>
+
+</div>
+
+<div class="form-group">
+	<label asp-for="DispatchBillAutoAllocationBill" asp-postfix=":" class="col-lg-4 control-label" />
+	<div class="col-lg-4">
+		@*@Html.RadioButtonFor(model => model.DispatchBillAutoAllocationBill, Model.DispatchBillAutoAllocationBills)*@
+		@Html.RadioButtonFor(m => m.DispatchBillAutoAllocationBill, 1, new { @id = "DispatchBillAutoAllocationBill1", @name = "DispatchBillAutoAllocationBill",@class = "mt15" })不自动生成调拨单
+		@Html.RadioButtonFor(m => m.DispatchBillAutoAllocationBill, 2, new { @id = "DispatchBillAutoAllocationBill2", @name = "DispatchBillAutoAllocationBill",@class = "mt15" })自动生成调拨单
+
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.DispatchBillAutoAllocationBill)
+	</div>
+</div>
+
+<div class="form-group">
+	<lable class="col-lg-4 control-label"></lable>
+	<div class="col-lg-4">
+		<button class="btn btn-success btn-block" type="button" id="DispatchCreate"><i class="fa fa-floppy-o mr5"></i>调度</button>
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="DispatchBillCreatePrint" asp-postfix=":" class="col-lg-4 control-label" />
+	<div class="col-lg-4">
+		
+		@Html.CheckBox("DispatchBillCreatePrint", new { @id = "DispatchBillCreatePrint_1", @value = "1", @name = "DispatchBillCreatePrint" })打印整箱拆零合并单
+		@Html.CheckBox("DispatchBillCreatePrint", new { @id = "DispatchBillCreatePrint_2", @value = "2", @name = "DispatchBillCreatePrint" })打印整箱装车单
+		@Html.CheckBox("DispatchBillCreatePrint", new { @id = "DispatchBillCreatePrint_3", @value = "3", @name = "DispatchBillCreatePrint" })为每个客户打印拆零装车单
+		@Html.CheckBox("DispatchBillCreatePrint", new { @id = "DispatchBillCreatePrint_4", @value = "4", @name = "DispatchBillCreatePrint" })打印订单
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.DispatchBillCreatePrint)
+	</div>
+</div>
+
+<div class="form-group">
+	<lable class="col-lg-4 control-label"></lable>
+	<div class="col-lg-4">
+		<button class="btn btn-primary btn-block" type="button" id="DispatchBillPrint"><i class="fa fa-floppy-o mr5"></i>打印</button>
+	</div>
+</div>
+
+<div class="form-group">
+	<lable class="col-lg-4 control-label"></lable>
+	<div class="col-lg-4">
+		<a class="btn btn-warning btn-block" href="@Url.Action("List")"><i class="fa fa-undo mr5"></i> 返回</a>
+	</div>
+</div>

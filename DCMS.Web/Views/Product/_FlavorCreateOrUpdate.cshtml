@@ -1,0 +1,27 @@
+﻿@using System.Reflection;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Products;
+
+@model ProductModel
+
+@if (!ViewData.ModelState.IsValid)
+{
+	<div class="alert alert-warning alert-dismissable mt10">
+		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+		<div asp-validation-summary="All"></div>
+	</div>
+}
+
+<div class="form-group mbn ">
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.IsFlavor, new { @class = "col-lg-1" })
+        <label asp-for="IsFlavor" asp-postfix="" class="text-left col-lg-10" />
+    </div>
+</div>
+
+
+<table class="table table-striped table-bordered table-hover" id="datatable"></table>
+<button class="btn btn-primary btn-sm mt10" type="button" id="subFormSubmit" value="@Model.Id" @(Model.Id != 0 ? "" : "disabled")><i class="fa fa-plus mr5"></i>添加口味</button>

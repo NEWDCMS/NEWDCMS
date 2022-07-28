@@ -1,0 +1,1737 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Purchases;
+@using DCMS.Services.Purchases;
+@using DCMS.Core.Infrastructure;
+
+@model PurchaseBillModel
+
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        "use strict";
+        // Init Theme Core
+        Core.init({
+            sbm: "sb-l-c",
+        });
+        // Init Demo JS
+        Demo.init();
+
+        /*
+         * ======================================================
+         * mschen 2018-12-5 11:24:43 begin
+         * ======================================================
+         */
+
+        //获取备注
+        var remarkConfigs = new Array();
+        $(this).remoteRequest('GET', '/Setting/GetRemarkConfigDic', { storeId: 0 }, function (data) {
+            if (data.Success) {
+                var ks = Object.keys(data.Data);
+                var vs = Object.values(data.Data);
+                ks.forEach(function (a, b) {
+                    var remarkConfit = {};
+                    remarkConfit.Id = a;
+                    remarkConfit.Name = vs[b];
+                    remarkConfigs.push(remarkConfit);
+                });
+            }
+        });
+
+        //审核
+        $("#btn_auditing").click(function () {
+            //防止重复保存
+            var loadingButton = Ladda.create(this);
+            loadingButton.start();
+            var returnUrl = "@Context.Request.Query["returnURL"]";
+            if (returnUrl.indexOf("AuditedStatus=") == -1) {
+                if (returnUrl.indexOf("?") == -1) {
+                    returnUrl += "?";
+                } else {
+                    returnUrl += "&";
+                }
+                returnUrl += "AuditedStatus=False";
+            } else {
+                if (returnUrl.indexOf("AuditedStatus=False") == -1) {
+                    returnUrl = returnUrl.replace("AuditedStatus=", "AuditedStatus=False");
+                }
+            }
+            returnUrl = returnUrl.replace(/amp;/g, "");
+            $(this).remoteSubmit("get", "/PurchaseBill/Auditing", { id: "@Model.Id" }, null, function () { location.href = returnUrl; },null,loadingButton);
+        });
+
+        //红冲
+		$("#btn_red").click(function () {
+	        //防止重复保存
+	        var loadingButton = Ladda.create(this);
+
+            WinMsg.confirm({ message: "确认要红冲吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+	            loadingButton.start();
+				$(this).remoteSubmit("get", "/PurchaseBill/Reverse", { id: "@Model.Id" }, null, function () { location.href = "/PurchaseBill/List"; },null,loadingButton);
+			});
+        });
+
+        //作废
+        $("#btn_cancel").click(function () {
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+
+			WinMsg.confirm({ message: "确认要作废吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+				loadingButton.start();
+                $(this).remoteSubmit("get", "/PurchaseBill/Delete", { id: "@Model.Id" }, null, function () { location.href = "/PurchaseBill/List"; }, null, loadingButton);
+			});
+		});
+
+		//打印
+		$("#btn_print").click(function () {
+	        //防止重复保存
+	        var loadingButton = Ladda.create(this);
+            WinMsg.confirm({ message: "确认要打印吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+                loadingButton.start();
+                var setting = {}
+                var LODOP = null;
+                var rs = $(this).getSyncData("/PurchaseBill/PrintSetting", null, "get");
+                if (rs.Success) {
+                    setting = rs.Data;
+                    loadCLodop(document, setting.PrintPort, () => {
+                        //判断页面是否已加载LODOP
+                        if (LODOP == null || LODOP == undefined) {
+                            LODOP = getLodopFirst(document);
+                            LODOP = getLodopSecond(document);
+                        }
+                        if (LODOP == null || LODOP == undefined) {
+                            loadingButton.stop();
+                            return;
+                        } else {
+                            $("#printData").html("");
+                        }
+                        $(this).remoteSubmit("get", "/PurchaseBill/Print", { selectData: "@Model.Id" }, null, function (result) {
+                            if (result.Success) {
+                                var html = result.Data;
+                                LODOP.PRINT_INIT("采购单");
+                                if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+                                    LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+                                }
+                                if (setting.IsPrintPageNumber) {
+                                    LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+                                }
+                                if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+                                    LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+                                }
+                                LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+                                LODOP.PREVIEW(true);
+                            }
+                            else {
+                                $(this).showToastr(result.Message);
+                            }
+                        }, null, loadingButton);
+                    });
+                }
+
+			});
+        });
+
+		//客户搜索
+		$(document).on('click', "#btn_search_customer", function () {
+			var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+			$(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { ids: "" }, "选择终端", $("#TerminalSelectForm"), function (rows) { });
+		});
+
+        //
+		window.operateEventsPopTerminal = {
+            'click .rowSelect': function (e, value, row, index) {
+				try {
+					$("#TerminalId").val(row.Id);
+					$("#TerminalName").val(row.Name);
+					$('#TerminalSelectModalWindow').modal('hide');
+				}
+				catch (err) {
+					console.log(err);
+					$(this).showToastr(err);
+					return;
+				}
+			}
+		};
+
+        //刷新供应商账户
+        $("body").click(function () {
+            refreshManufacturer();
+        });
+
+        //
+        function refreshManufacturer()
+        {
+            var manufacturerId = $("#ManufacturerId").val();
+            if (manufacturerId != null && manufacturerId != "" && manufacturerId != 0) {
+                $(this).remoteRequest('GET', '/Manufacturer/GetManufacturerBalance', { manufacturerId: manufacturerId }, function (data) {
+                    $("#MBalance_AdvanceAmountBalance").val(parseFloat(data.AdvanceAmountBalance).toFixed(2));
+                    $("#MBalance_TotalOweCash").val(parseFloat(data.TotalOweCash).toFixed(2));
+                    $("#TBalance_Box").show();
+                });
+            }
+        }
+
+        //选择供应商
+        $(document).on('click', "#btn_search_ManufacturerId", function () {
+            var actionUrl = "/Manufacturer/AsyncSearchSelectPopup";
+            $(this).manufacturerSearchSelectPopup($("#ManufacturerSelectModalWindow"), actionUrl, { Index: 0 }, "选择供应商", $("#ManufacturerSelectForm"), null, function (data) {
+            });
+        });
+        //供应商
+        window.operateEventsPopManufacturer = {
+            'click .rowSelect': function (e, value, row, index) {
+                try
+                {
+                    $("#ManufacturerId").val(row.Id);
+                    $("#ManufacturerName").val(row.Name);
+                    $('#ManufacturerSelectModalWindow').modal('hide');
+
+                    refreshManufacturer();
+                }
+                catch (err)
+                {
+                    console.log(err);
+                    $(this).showToastr(err);
+                    return;
+                }
+            }
+        };
+
+
+        var model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+        if (model.ReversedStatus) {
+            $("#inkpadBox").hide();
+            $("#inkpadBox1").css('display', 'block');
+        }
+        //商品列表选择赋值
+        window.operateEventsPop = {
+            'click .rowSelect': function (e, value, row, index)
+            {
+                productOperateEvents(row, $(this).attr("data-id"), this);
+            },
+        };
+
+        //更新行
+        var productOperateEvents = function (row, index, _this)
+        {
+            try
+            {
+                //判断是否允许自主采购
+                $.ajax({
+                    type: "GET",
+                    url: "/PurchaseBill/CheckSslEnable",
+                    data: { 'productId': row.Id },
+                    beforeSend: function () {
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        if (res.Success) {
+                            $(this).showToastr("该商品不允许手动采购");
+                            return false;
+                        }  
+                    },
+                    error: function () {
+                        //错误时
+                    },
+                    complete: function () {
+                        //完成时
+                    }
+                });
+                var wareHouseId = $("#WareHouseId").val();
+                var keys = Object.keys(row.Units);
+                var isMinUnitPurchase = $("#IsMinUnitPurchase").val();
+
+                //1.单位
+                //初始最小单位单位
+                var unitId = row.SmallUnitId;
+                var unitName = keys[0];
+                //如果不是最小单位
+                if (isMinUnitPurchase != "1" && isMinUnitPurchase != "True") {
+                    //有大单位赋值大单位
+                    if (row.BigUnitId != null && row.BigUnitId != 0) {
+                        unitId = row.BigUnitId;
+                        unitName = keys[2];
+                    } else {
+                        //有中单位赋值中单位
+                        if (row.StrokeUnitId != null && row.StrokeUnitId != 0) {
+                            unitId = row.StrokeUnitId;
+                            unitName = keys[1];
+                        }
+                    }
+                }
+
+                //2.价格
+                //默认价格（小单位进价）
+                var price;
+                //上次采购
+                var lastPrises = {};
+
+                    //DefaultPurchasePrice == 0 上次进价
+                if (model.DefaultPurchasePrice == 0) {
+                    //上次进价
+                    $.ajax({
+                        async: false,
+                        type: "GET",
+                        url: "/PurchaseBill/AsyncPurchaseItemByProductId",
+                        data: { 'productId': row.Id, 'beforeTax': true },
+                        beforeSend: function () {
+                        },
+                        success: function (res) {
+                            if (res.Data != null) {
+                                //price = res.data;
+                                lastPrises = res.Data.Value;
+                                price = res.Data.Value.SmallPrise;
+                                if (unitId == row.BigUnitId) {
+                                    price = res.Data.Value.BigPrise;
+                                } else if (unitId == row.StrokeUnitId) {
+                                    price = res.Data.Value.StrokePrise;
+                                } else if (unitId == row.SmallUnitId) {
+                                    price = res.Data.Value.SmallPrise;
+                                }
+                            }
+                        },
+                        error: function () {
+                            //错误时
+                        },
+                        complete: function () {
+                            //完成时
+                        }
+                    });
+                }
+                else
+                {
+                    //预设进价
+                    price = row.Prices[0].ProductPrice.PurchasePrice;
+                    if (unitId == row.BigUnitId) {
+                        price = row.Prices[2].ProductPrice.PurchasePrice;
+                    } else if (unitId == row.StrokeUnitId) {
+                        price = row.Prices[1].ProductPrice.PurchasePrice;
+                    } else if (unitId == row.SmallUnitId) {
+                        price = row.Prices[0].ProductPrice.PurchasePrice;
+                    }
+                }
+
+                //3.库存
+                //库存数量
+                var stockQty = 0;
+                var actualQty = 0;
+                var unableQty = 0;
+                //仓库Id
+                var wareHouseId = $("#WareHouseId").val();
+                row.StockQuantities.forEach(function (a, b) {
+                    if (a.WareHouseId == wareHouseId) {
+                        stockQty = model.APPShowOrderStock == true ? a.CurrentQuantity : a.UsableQuantity;
+                        actualQty = a.UsableQuantity;
+                        unableQty = a.CurrentQuantity - a.UsableQuantity;
+                    }
+                });
+
+                console.log("insertRow-------------------->" + index + '====' + row.Id);
+
+                var oldrow = $('#PurchaseItems').bootstrapTable('getData')[index];
+                if (oldrow.Id == row.Id)
+                {
+                     //添加行
+                    $("#PurchaseItems").bootstrapTable('insertRow', {
+                        index: index, row: {
+                            ProductSKU: row.Sku,
+                            ProductId: row.Id,
+                            ProductName: row.Name,
+                            BarCode: row.SmallBarCode,
+                            UnitConversion: row.UnitConversion,
+                            ManufactureDete: row.ManufactureDete,
+                            IsManufactureDete: row.IsManufactureDete,
+                            Units: row.Units,
+                            UnitId: unitId,
+                            UnitName: unitName,
+                            Price: price,
+                            Quantity: 0,
+                            Amount: 0,
+                            Prices: row.Prices,
+                            ProductTierPrices: row.ProductTierPrices,  //价格体系
+                            StockQty: stockQty,
+                            UnabledStockQty: unableQty,
+                            StockQuantity: actualQty,
+                            StockQuantities: row.StockQuantities, //库存数量
+                            BigQuantity: row.BigQuantity,//大转小
+                            StrokeQuantity: row.StrokeQuantity,//中转小
+                            SmallUnitId: row.SmallUnitId,  //小单位
+                            StrokeUnitId: row.StrokeUnitId,  //中单位
+                            BigUnitId: row.BigUnitId,  //大单位
+                            LastPrises: lastPrises,   //上次采购价
+                            IsFlavorProduct: row.IsFlavor, //商品口味
+                            TaxRate: "@Model.TaxRate", //税率%
+                            ContainTaxPrice: 0, //含税价格
+                            TaxPrice: 0, //税额
+                            TaxPriceAmount: 0 //税价总计
+                        }
+                    });
+                }
+                else {
+
+                    //更新行
+                    $("#PurchaseItems").bootstrapTable('updateRow', {
+                        index: index, row: {
+                            ProductSKU: row.Sku,
+                            ProductId: row.Id,
+                            ProductName: row.Name,
+                            BarCode: row.SmallBarCode,
+                            UnitConversion: row.UnitConversion,
+                            ManufactureDete: row.ManufactureDete,
+                            IsManufactureDete: row.IsManufactureDete,
+                            Units: row.Units,
+                            UnitId: unitId,
+                            UnitName: unitName,
+                            Price: price,
+                            Quantity: 0,
+                            Amount: 0,
+                            Prices: row.Prices,
+                            ProductTierPrices: row.ProductTierPrices,  //价格体系
+                            StockQty: stockQty,
+                            UnabledStockQty: unableQty,
+                            StockQuantity: actualQty,
+                            StockQuantities: row.StockQuantities, //库存数量
+                            BigQuantity: row.BigQuantity,//大转小
+                            StrokeQuantity: row.StrokeQuantity,//中转小
+                            SmallUnitId: row.SmallUnitId,  //小单位
+                            StrokeUnitId: row.StrokeUnitId,  //中单位
+                            BigUnitId: row.BigUnitId,  //大单位
+                            LastPrises: lastPrises,   //上次采购价
+                            IsFlavorProduct: row.IsFlavor, //商品口味
+                            TaxRate: "@Model.TaxRate", //税率%
+                            ContainTaxPrice: 0, //含税价格
+                            TaxPrice: 0, //税额
+                            TaxPriceAmount: 0 //税价总计
+                        }
+                    });
+                }
+
+			  //$("#PurchaseItems").bootstrapTable('refresh');
+                $('#ModalProductWindows').modal('hide');
+            }
+            catch (err) {
+                console.log(err);
+                $(_this).showToastr(err);
+                return;
+            }
+        }
+
+        //口味列表选择赋值
+        window.operateEventsPopFlavor = {
+            'click .rowSelect': function (e, value, row, index)
+            {
+                try {
+					var selectIndex = $(this).attr("data-id");
+					var oldrow = $('#PurchaseItems').bootstrapTable('getData')[selectIndex];
+					var quantity = row.Quantity;
+					var prices = oldrow.Price;
+					var newAmount = parseFloat(quantity) * parseFloat(prices);
+					var amount = parseFloat(newAmount).toFixed(2);
+					//成本金额
+					var costAmount = quantity * oldrow.CostPrice;
+					$("#PurchaseItems").bootstrapTable('updateRow', {
+						index: selectIndex, row: { IsFlavorProduct: true, FlavorId: row.Id, Quantity: row.Quantity,Amount:amount,CostAmount:costAmount }
+					});
+
+					$('#FlavorModalWindows').modal('hide');
+
+                }
+                catch (err) {
+                    console.log(err);
+                    $(this).showToastr(err);
+                    return;
+                }
+            }
+        };
+
+        //计算已收金额
+        function SumAlreadyAmount() {
+            var sumAlreadyAmount = 0;
+            var colls = $("input[name='CollectionAmount']");
+			for (var i = 0; i < colls.length; i++) {
+
+				if (isNaN($(colls[i]).val()) || $(colls[i]).val() == "") {
+					$(colls[i]).val("0.00")
+				}
+				sumAlreadyAmount = parseFloat(sumAlreadyAmount) + parseFloat(colls[i].value);
+			}
+			return sumAlreadyAmount;
+        }
+
+        //获取预付金额
+        function SumAdvancePaymentAmount() {
+            var sumAdvancePaymentAmount = 0;
+            var colls = $("input[name='CollectionAmount']");
+            for (var i = 0; i < colls.length; i++) {
+                if ($(colls[i]).attr("data-codetype") == 14) {
+                    if (isNaN($(colls[i]).val()) || $(colls[i]).val() == "") {
+                        $(colls[i]).val("0.00")
+                    }
+                    sumAdvancePaymentAmount = parseFloat(sumAdvancePaymentAmount) + parseFloat(colls[i].value);
+                }
+            }
+            return sumAdvancePaymentAmount;
+        }
+
+        //表单检查
+        var formValidator = function ()
+        {
+            var isVaild = true;
+
+			if ($("#ManufacturerId").val() == "" || $("#ManufacturerId").val() == "0") {
+				$("#ManufacturerId").focus();
+				$(this).showToastr("请先选择供应商！");
+				isVaild = false;
+			}
+			else if ($("#BusinessUserId").val() == "") {
+				$("#BusinessUserId").focus();
+				$(this).showToastr("请先选择业务员！");
+				isVaild = false;
+
+			}
+			else if ($("#WareHouseId").val() == "") {
+				$("#WareHouseId").focus();
+				$(this).showToastr("请先选择仓库！");
+				isVaild = false;
+
+			}
+			else if ($("input[name='TransactionDate']").val() == "") {
+				$("input[name='TransactionDate']").focus();
+				$(this).showToastr("请先选择交易日期！");
+				isVaild = false;
+
+			}
+			else if ($("#IsMinUnitPurchase").val() == "") {
+				$("#IsMinUnitPurchase").focus();
+				$(this).showToastr("请先选择按最小单位采购！");
+				isVaild = false;
+			}
+
+            return isVaild;
+        }
+
+        //验证预付款
+        var validAdvancePayment = function () {
+            var advanceAmountBalance = $("#MBalance_AdvanceAmountBalance").val();
+
+            if (parseFloat(SumAdvancePaymentAmount()) > 0 && parseFloat(advanceAmountBalance) < SumAdvancePaymentAmount())
+            {
+                $("input[name='CollectionAmount']")[0].focus();
+                $(this).showToastr("预付款余额不足！");
+                return false;
+            }
+
+            return true;
+        }
+
+        //采购单项目
+        $("#PurchaseItems").bootstrapTable({
+               @Html.Raw(Model.Items.Count > 0 ? "url: '/PurchaseBill/AsyncPurchaseItems?purchaseBillId=" + Model.Id+"'," : "length: 14,")
+            striped: true,
+            cache: false,
+            pagination: true,
+            showPagination: false,
+            sidePagination: "server",
+            sortable: false,
+            sortOrder: "asc",
+            search: false,
+            strictSearch: false,
+            showColumns: false,
+            showRefresh: false,
+            clickToSelect: false,
+            uniqueId: "id",
+            showToggle: false,
+            editable: true,
+            cardView: false,
+            detailView: false,
+            showFooter: true,
+            onLoadSuccess: function (data) {
+                $(".fixed-table-pagination").hide();
+                if (data.hidden == true) {
+                    $('#PurchaseItems').bootstrapTable('showColumn', 'TaxRate');
+                    $('#PurchaseItems').bootstrapTable('showColumn', 'ContainTaxPrice');
+                    $('#PurchaseItems').bootstrapTable('showColumn', 'TaxPrice');
+                    $('#PurchaseItems').bootstrapTable('showColumn', 'TaxPriceAmount');
+                }
+            },
+            onPostBody: function (data) {
+                $("[data-toggle='popover']").popover();
+            },
+            columns: [
+                {
+                    title: '<i class="fa fa-gear fs18"></i>',
+                    align: 'center',
+                    formatter: function (value, row, index) {
+                        return m_pagerow + index + 1;
+                    },
+                    footerFormatter: function (value) {
+                        return '总计';
+                    }
+                },
+                {
+                    field: 'ProductSKU',
+                    title: '商品编号',
+                    formatter: $(this).formatIsNull
+                },
+                { field: 'UnitId', visible: false },
+                { field: 'Units', visible: false },
+                { field: 'Prices', visible: false },
+                { field: 'ProductTierPrices', visible: false },  //价格体系
+                { field: 'SmallUnitId', visible: false }, //小单位
+                { field: 'StrokeUnitId', visible: false }, //中单位
+                { field: 'BigUnitId', visible: false }, //大单位
+
+                { field: 'ProductId', visible: false },
+                {
+                    field: 'ProductName',
+                    title: '商品名称',
+                    width:300,
+                    formatter: function (value) {
+                        return (value == 0 || value == "" || value == undefined) ? "" : @Model.Id== 0 ? $(this).cutString(value, 50) : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='' data-container='body' data-toggle='popover' data-placement='top' data-content='" + value + "'>" + $(this).cutString(value, 50) + "</a>";
+                    }
+                },
+                {
+                    field: 'SmallBarCode',
+                    title: '条形码',
+                    formatter: $(this).formatIsNull
+                },
+                {
+                    field: 'UnitName',
+                    title: '单位', align: 'center',
+                    formatter: $(this).formatIsNull
+                },
+                {
+                    field: 'UnitConversion',
+                    title: '单位换算',
+                    formatter: $(this).formatIsNull
+                },
+                {
+                    field: 'ManufactureDete',
+                    title: '生产日期',
+                    visible: model.IsShowCreateDate,
+                    align: 'center',
+                    type: 'date',
+                    width:150,
+                    formatter: function (value, row, index) {
+                        if (value != null && value != undefined && value.toString().trim() != "") {
+                            return $(this).dateFtt('yyyy-MM-dd', new Date(value));
+                        }
+                    }
+                },
+				{ field: 'IsManufactureDete', visible: false },
+				{ field: 'IsFlavorProduct', visible: false },
+                { field: 'FlavorId', visible: false },
+                {
+                    field: 'Quantity',
+                    align: 'center',
+                    width: '100',
+                    title: '数量',
+                    formatter: function (value, row, index) {
+                        if (Object.keys(row).length > 1) {
+                            return (value == 0 || value == "") ? "" : value + "" + row.UnitName;
+                        }
+                        else {
+                            return "";
+                        }
+
+                    }
+                },
+                {
+                    field: 'Price',
+                    title: '采购单价', width: '100',
+                    align: 'right',
+                    formatter: $(this).formatFixed
+                },
+
+                {
+                    field: 'TaxRate', title: '税率%', align: 'right', visible: '@Model.EnableTaxRate' == 'True',
+                    formatter: $(this).formatFixed
+                },
+                {
+                    field: 'ContainTaxPrice', title: '含税价格', align: 'right', visible: '@Model.EnableTaxRate' == 'True',
+                    formatter: $(this).formatFixed
+                },
+				{ field: 'TaxPrice', title: '税额',align: 'right', visible: '@Model.EnableTaxRate' == 'True',formatter: $(this).formatFixed },
+                {
+                    field: 'TaxPriceAmount', title: '税价总计', align: 'right', visible: '@Model.EnableTaxRate' == 'True',
+                    formatter: $(this).formatFixed
+                },
+                   {
+                    field: 'Amount',
+                    title: '金额',
+                    width: '100',
+                    align: 'right',
+                    formatter: function (value, row, index) {
+                        return (value == 0 || value == "" || value == undefined) ? "" : model.AuditedStatus == true ? value : parseFloat(value).toFixed(2);
+                    },
+                    footerFormatter: function (value) {
+                        var count = $(this).alculateTaxAmountSub('@Model.Id', '@Model.AuditedStatus', '#PurchaseItems', '@Model.EnableTaxRate', value);
+
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count);
+
+                        var otherAmount = 0;
+                        var accounts = $("#PurchaseItems_Partial_Form").find("input[name='CollectionAmount']");
+                        $.each(accounts, function (i, input) {
+                            var option = $(input).attr("data-account");
+                            var amount = $(input).val();
+                            if ($("#CollectionAccount").val() !== option) {
+                                otherAmount += amount;
+                            }
+                        });
+
+                        $("#SumAmount").val(total);
+
+                        //单据审核后 欠款金额=当前实际欠款金额
+                        if ($("#Id").val() != "0" && $("#AuditedStatus").val() == "True")
+                        {
+                            $("#PreferentialAmount").val(parseFloat("@Model.PreferentialAmount")); //优惠金额
+                            $("#PreferentialEndAmount").val(parseFloat("@Model.PreferentialEndAmount")); //优惠后金额
+                            $("#OweCash").val(parseFloat("@Model.OweCash")); //欠款金额
+						}
+                        else {
+
+                            $("#CollectionAmount").val(parseFloat(total - otherAmount).toFixed(2));
+
+                            //优惠金额
+                            $("#PreferentialAmount").val(parseFloat($("#PreferentialAmount").val()).toFixed(2));
+                            //优惠后金额=总金额 - 优惠金额
+                            $("#PreferentialEndAmount").val(parseFloat(total - parseFloat($("#PreferentialAmount").val())).toFixed(2));
+
+                            //欠款金额=优惠后金额 - 已收金额
+                            $("#OweCash").val(parseFloat(parseFloat($("#PreferentialEndAmount").val()) - SumAlreadyAmount()).toFixed(2));
+						}
+
+                        return total.toFixed(2);
+                    }
+				},
+                {
+                    field: 'UnabledStockQty',
+                   //field: 'UsableQuantity',
+                    title: '订单占用库存',
+                    align: 'center',
+                    width: '100',
+                    formatter: function (value, row, index) {
+
+                        if (value != "" && value!=undefined && row.ProductId != "" && row.ProductId > 0) {
+
+                            var bigUnitId = row.BigUnitId;
+                            var bigUnitName = "";
+
+                            var strokeUnitId = row.StrokeUnitId;
+                            var strokeUnitName = "";
+
+                            var smallUnitId = row.SmallUnitId;
+                            var smallUnitName = "";
+
+                            $.each(row.Units, function (key, unit) {
+                                if (unit == bigUnitId) {
+                                    bigUnitName = key;
+                                }
+                                else if (unit == strokeUnitId) {
+                                    strokeUnitName = key;
+                                }
+                                else if (unit == smallUnitId) {
+                                    smallUnitName = key;
+                                }
+                            });
+
+                            //计算结果数量
+                            var resultQuantity = value;
+                            //大单位计算结果
+                            var big = parseInt(resultQuantity / row.BigQuantity);
+                            resultQuantity = resultQuantity - big * row.BigQuantity;
+                            //中单位计算结果
+                            var stroke = 0;
+                            if (strokeUnitId > 0 && row.StrokeQuantity > 0) {
+                                stroke = parseInt(resultQuantity / row.StrokeQuantity);
+                                resultQuantity = resultQuantity - stroke * row.StrokeQuantity;
+                            }
+                            //小单位计算结果
+							var small = resultQuantity;
+
+                            var content = big + "" + bigUnitName;
+
+                            if (stroke > 0)
+                                content += ((strokeUnitId > 0) ? (stroke + "" + strokeUnitName) : "");
+
+							 if (small > 0)
+                                content += small + "" + smallUnitName
+
+							return "<span alt=" + value + ">" + content + "</span>";
+
+                        }
+                        else {
+                            return "";
+                        }
+                    },
+                    visible: model.APPShowOrderStock
+                },
+                {
+                    field: 'StockQuantity',
+                    //field: 'StockQty',
+                    title: '可用库存',
+                    align: 'center',
+                    width: '100',
+                    formatter: function (value, row, index) {
+
+                        if (value != "" && value != undefined && row.ProductId != "" && row.ProductId > 0) {
+
+                            var bigUnitId = row.BigUnitId;
+                            var bigUnitName = "";
+
+                            var strokeUnitId = row.StrokeUnitId;
+                            var strokeUnitName = "";
+
+                            var smallUnitId = row.SmallUnitId;
+                            var smallUnitName = "";
+
+                            $.each(row.Units, function (key, unit) {
+                                if (unit == bigUnitId) {
+                                    bigUnitName = key;
+                                }
+                                else if (unit == strokeUnitId) {
+                                    strokeUnitName = key;
+                                }
+                                else if (unit == smallUnitId) {
+                                    smallUnitName = key;
+                                }
+                            });
+
+                            //计算结果数量
+                            var resultQuantity = value;
+                            //大单位计算结果
+                            var big = parseInt(resultQuantity / row.BigQuantity);
+                            resultQuantity = resultQuantity - big * row.BigQuantity;
+                            //中单位计算结果
+                            var stroke = 0;
+                            if (strokeUnitId > 0 && row.StrokeQuantity > 0) {
+                                stroke = parseInt(resultQuantity / row.StrokeQuantity);
+                                resultQuantity = resultQuantity - stroke * row.StrokeQuantity;
+                            }
+                            //小单位计算结果
+							var small = resultQuantity;
+
+                            var content = big + "" + bigUnitName;
+
+                            if (stroke > 0)
+                                content += ((strokeUnitId > 0) ? (stroke + "" + strokeUnitName) : "");
+
+							 if (small > 0)
+                                content += small + "" + smallUnitName
+
+							return "<span alt=" + value + ">" + content + "</span>";
+
+                        }
+                        else {
+                            return "";
+                        }
+                    },
+                    visible: model.APPShowOrderStock
+                },
+                {
+                    field: 'StockQty',
+                    title: model.APPShowOrderStock == false? '库存数量':'实际库存',
+                    align: 'center',
+					width: '100',
+					formatter: function (value, row, index) {
+
+                        if (value != "" && value != undefined && row.ProductId != "" && row.ProductId > 0) {
+
+							var bigUnitId = row.BigUnitId;
+							var bigUnitName = "";
+
+							var strokeUnitId = row.StrokeUnitId;
+							var strokeUnitName = "";
+
+							var smallUnitId = row.SmallUnitId;
+							var smallUnitName = "";
+
+							$.each(row.Units, function (key, unit) {
+								if (unit == bigUnitId) {
+									bigUnitName = key;
+								}
+								else if (unit == strokeUnitId) {
+									strokeUnitName = key;
+								}
+								else if (unit == smallUnitId) {
+									smallUnitName = key;
+								}
+							});
+
+							//计算结果数量
+							var resultQuantity = value;
+							//大单位计算结果
+							var big = parseInt(resultQuantity / row.BigQuantity);
+							resultQuantity = resultQuantity - big * row.BigQuantity;
+							//中单位计算结果
+							var stroke = 0;
+							if (strokeUnitId > 0 && row.StrokeQuantity > 0) {
+								stroke = parseInt(resultQuantity / row.StrokeQuantity);
+								resultQuantity = resultQuantity - stroke * row.StrokeQuantity;
+							}
+							//小单位计算结果
+							var small = resultQuantity;
+
+                            var content = big + "" + bigUnitName;
+
+                            if (stroke > 0)
+                                content += ((strokeUnitId > 0) ? (stroke + "" + strokeUnitName) : "");
+
+							 if (small > 0)
+                                content += small + "" + smallUnitName
+
+							return "<span alt=" + value + ">" + content + "</span>";
+
+						}
+						else {
+							return "";
+						}
+					}
+                },
+                {
+                    field: 'Remark',
+                    title: '备注',
+                    formatter: $(this).formatIsNull
+                },
+                {
+                    field: 'Operate',
+                    title: '操作',
+                    align: 'center',
+                    width: '130',
+                    events: {
+						'click .rowAppend': function (e, value, row, index) {// 添加
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+								return false;
+							}
+                            $('#PurchaseItems').bootstrapTable('insert', row);
+                            //修改最后一条数据uniqueid,防止复制时uniqueid相同，删除时都删除
+                            var allTableData = $('#SaleItems').bootstrapTable('getData');
+                            var maxuniqueid = 0;
+                            $.each(allTableData, function (i, row) {
+                                if (row.uniqueid > maxuniqueid) {
+                                    maxuniqueid = row.uniqueid;
+                                }
+                            });
+                            allTableData[allTableData.length - 1].uniqueid = maxuniqueid + 1;
+                            allTableData[allTableData.length - 1].Id = 0;
+                        },
+						'click .rowCopy': function (e, value, row, index) {// 复制
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+								return false;
+							}
+							$('#PurchaseItems').bootstrapTable('copying', row);
+                            //修改最后一条数据uniqueid,防止复制时uniqueid相同，删除时都删除
+							var allTableData = $('#PurchaseItems').bootstrapTable('getData');
+							var maxuniqueid = 0;
+							$.each(allTableData, function (i, row) {
+								if (row.uniqueid > maxuniqueid) {
+									maxuniqueid = row.uniqueid;
+								}
+							});
+                            allTableData[allTableData.length - 1].uniqueid = maxuniqueid + 1;
+                            allTableData[allTableData.length - 1].Id = 0;
+                            allTableData[allTableData.length - 1].IsGifts = false;
+                        },
+						'click .rowDel': function (e, value, row, index) {// 删除
+							//审核、红冲后不能修改
+                            if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+                                $(this).showToastr('审核、红冲后不能修改');
+								return false;
+							}
+							//$("#PurchaseItems").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+
+							var datas = $('#PurchaseItems').bootstrapTable('getData');
+							var len = datas.length;
+							if (len == 1) {
+                                $(this).showToastr('单据项目不能留空');
+								return;
+							}
+
+							if (row.uniqueid == undefined) {
+                                $("#PurchaseItems").bootstrapTable('remove', { field: "Id", values: [parseInt(row.Id)] });
+							}
+							else {
+								$("#PurchaseItems").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+							}
+                        }
+                    },
+                    formatter: function (value, row, index) {
+                        return [
+                            '<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+                            '<button type="button" class="btn btn-sm btn-default rowCopy" title="复制"><i class="fa fa-copy" ></i></button>',
+                            '<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+                        ].join('');
+                    }
+				},
+				{ field: 'LastPrices', visible: false },
+            ],
+            onClickCell: function (field, value, row, $element) {
+
+                if (field == "Operate") {
+					return false;
+				}
+
+                var input = $($element).find("input");
+                var select = $($element).find("select");
+                if (input.length > 0 || select.length > 0)
+                    return false;
+
+                //当前列所在行的索引
+                var index = $element.parent().attr("data-index");
+
+                //行对象，列元素，行索引，列索引
+                enterToSwitchFocus(row, $element, index, $element.context.cellIndex);
+
+				//审核、红冲后不能修改
+				if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+					return false;
+				}
+
+                //验证无效或者单据已经审核则不允许修改编辑
+                if (!formValidator() || $("#AuditedStatus").val() == "True") {
+                    return false;
+                }
+
+                if (field == "ProductName")
+                {
+
+                    var html = '<div class="input-group">' +
+                        '<input type="text" class="form-control input-sm"  name="ProductName" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">' +
+                        '<span class="input-group-btn"><button class="btn btn-default btn-sm searchproduct" id="search_' + field + "_" + row.Id + '" data-index="' + index + '"><span class="glyphicon glyphicon-search"></span></button></span>' +
+                        '</div>';
+
+                    $($element).html(html);
+                    var inputObj = $("#search_" + field + "_" + row.Id);
+                    inputObj.focus();
+                    inputObj.select();
+                    inputObj.bind("focusout", function () {
+						$("#PurchaseItems").bootstrapTable('updateRow', { index: index, row: { ProductName: value } });
+                        $($element).html("" + value + "");
+                    });
+					//选择商品
+					inputObj.bind("click", function () {
+
+						var wareHouseId = $("#WareHouseId").val();
+                        //var wareHouseId = 0;
+                        var _this = this;
+                        $(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup?wareHouseId=" + wareHouseId + "&&stockQtyMoreThan=false&includeProductDetail=0&singleSelect=false", { Index: $(this).attr("data-index") }, "选择商品", $("#ProductModalForm"),
+                            function () {
+                                var modal = $("#ModalProductWindows");
+                                //选择商品
+                                $('#btnSave_ModalProductWindows').bind('click', function () {
+                                    $('#btnSave_ModalProductWindows').unbind();
+                                    var allTableData = $('#products_datatable').bootstrapTable('getSelections');
+                                    $.each(allTableData, function (i, row) {
+                                        productOperateEvents(row, _this.dataset.index, _this);
+                                    });
+                                    modal.modal('hide');
+                                });
+
+                                //多选商品
+                                $('#btnAllSelect_ModalProductWindows').bind('click', function () {
+                                    $('#btnAllSelect_ModalProductWindows').unbind();
+                                    var allTableData = $('#products_datatable').bootstrapTable('getSelections');
+                                    console.log(allTableData);
+                                    $.each(allTableData, function (i, row) {
+                                        productOperateEvents(row, i, _this);
+                                    });
+                                    modal.modal('hide');
+                                });
+                            });
+						return false;
+					});
+                }
+                else if (["Price", "Quantity"].indexOf(field) >= 0)
+                {
+
+                    if (row.ProductId == 0 || row.ProductId == null) {
+                        $(this).showToastr('请选择商品');
+                        return;
+                    }
+
+					if (field == "Price") {
+						if (!formValidator()) {
+							return false;
+						}
+
+						var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+						$($element).html(html);
+						var inputObj = $("#" + $(html).attr("id"));
+						inputObj.focus();
+						inputObj.select();
+						inputObj.bind("focusout", function () {
+							if ($(this).val() == "") {
+								$(this).val(0);
+							}
+							row[field] = parseFloat($(this).val());
+							$("#PurchaseItems").bootstrapTable('updateRow', { index: index, row: row });
+							$($element).html("" + value + "");
+						});
+
+						inputObj.bind("change", function () {
+							if (!isNaN($(this).val())) {
+								if ($(this).val() == "") {
+									$(this).val(0);
+								}
+								var oldQuantity = row.Quantity;
+                                row.Price = $(this).val();
+                                var newAmount = parseFloat($(this).val()) * oldQuantity;
+                                row.Amount = newAmount;
+
+								//成本金额
+                                row.CostAmount = $(this).floatTimes(row.Quantity, typeof (row.CostPrice) == 'undefined' ? 0 : row.CostPrice);
+
+								//含税价格
+                                row.ContainTaxPrice = $(this).floatTimes(parseFloat((1 + row.TaxRate / 100)), row.Price);
+
+                                //税额
+                                row.TaxPrice = $(this).floatTimes($(this).floatTimes(parseFloat(row.TaxRate / 100), row.Price), row.Quantity);
+
+								//价税总计
+                                row.TaxPriceAmount = $(this).floatTimes(row.ContainTaxPrice, row.Quantity);
+
+                                //格式化(先计算，再格式化，不然数据不准)
+                                row.Amount = parseFloat(row.Amount).toFixed(2);
+								row.CostAmount = parseFloat(row.CostAmount).toFixed(2);
+								row.ContainTaxPrice = parseFloat(row.ContainTaxPrice).toFixed(2);
+								row.TaxPrice = parseFloat(row.TaxPrice).toFixed(2);
+								row.TaxPriceAmount = parseFloat(row.TaxPriceAmount).toFixed(2);
+
+							}
+							else {
+								$(this).val(0);
+								$(this).showToastr("只能输入数字!");
+							}
+
+						});
+					}
+
+					if (field == "Quantity") {
+						if (!formValidator()) {
+							return false;
+						}
+                        //商品启用口味
+						if (row.IsFlavorProduct) {
+                            var html = '<input type="button" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '" data-index="' + index + '">';
+							$($element).html(html);
+							var inputObj = $("#" + $(html).attr("id"));
+							inputObj.focus();
+							inputObj.select();
+					        //选择口味
+							inputObj.bind("click", function () {
+								var productId = row.ProductId;
+								//var wareHouseId = 0;
+								$(this).productSelectShowModal($("#FlavorModalWindows"), "/Product/AsyncSearchSelectFlavorPopup?productId=" + productId, { Index: $(this).attr("data-index") }, "选择口味", $("#FlavorModalForm"),
+									function () { });
+								return false;
+							});
+						}
+						else {
+							var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+							$($element).html(html);
+							var inputObj = $("#" + $(html).attr("id"));
+							inputObj.focus();
+							inputObj.select();
+							inputObj.bind("focusout", function () {
+								if ($(this).val() == "") {
+									$(this).val(0);
+								}
+								row[field] = parseInt($(this).val());
+								$("#PurchaseItems").bootstrapTable('updateRow', { index: index, row: row });
+								$($element).html("" + value + "");
+							});
+
+							inputObj.bind("change", function () {
+								if (!isNaN($(this).val())) {
+									if ($(this).val() == "") {
+										$(this).val(0);
+									}
+									var oldPrice = row.Price;
+                                    //数量转整数
+								    row.Quantity = parseInt($(this).val());
+									var newAmount = parseInt($(this).val()) * oldPrice;
+                                    row.Amount = newAmount;
+
+                                    //成本金额
+                                    row.CostAmount = $(this).floatTimes(row.Quantity, typeof (row.CostPrice) == 'undefined' ? 0 : row.CostPrice); //row.Quantity * row.CostPrice;
+
+                                    //含税价格
+                                    row.ContainTaxPrice = $(this).floatTimes(parseFloat((1 + row.TaxRate / 100)), row.Price);   //parseFloat((1 + row.TaxRate / 100)) * row.Price;
+
+                                    //税额
+                                    row.TaxPrice = $(this).floatTimes($(this).floatTimes(parseFloat(row.TaxRate / 100), row.Price), row.Quantity); //parseFloat(row.TaxRate / 100) * parseFloat(row.Price) * parseInt(row.Quantity);
+
+							        //价税总计
+                                    row.TaxPriceAmount = $(this).floatTimes(row.ContainTaxPrice, row.Quantity);
+
+                                    //格式化(先计算，再格式化，不然数据不准)
+                                    row.Amount = parseFloat(row.Amount).toFixed(2);
+								    row.CostAmount = parseFloat(row.CostAmount).toFixed(2);
+								    row.ContainTaxPrice = parseFloat(row.ContainTaxPrice).toFixed(2);
+                                    row.TaxPrice = parseFloat(row.TaxPrice).toFixed(2);
+								    row.TaxPriceAmount = parseFloat(row.TaxPriceAmount).toFixed(2);
+
+								}
+								else {
+									$(this).val(0);
+									$(this).showToastr("只能输入数字!");
+								}
+
+							});
+						}
+					}
+
+                }
+                else if (field == "Remark")
+                {
+                    if (row.ProductId == 0 || row.ProductId == null) {
+                        $(this).showToastr('请选择商品');
+                        return;
+                    }
+
+                    //0元开单，必须选择备注
+                    if (row.Price == 0) {
+                        var html = '<select name="' + field + '" id="' + field + "_" + row.Id + '">';
+                        $.each(remarkConfigs, function (key, re) {
+                            if (re.Id > 0) {
+                                html += '<option value="' + re.Id + '"  ' + (row.Remark == re.Name ? "selected" : "") + '>' + re.Name + '</option>';
+                            }
+                        });
+
+                        html += '</select>';
+
+                        $($element).html(html);
+
+                        var inputObj = $("#" + $(html).attr("id"));
+                        inputObj.focus();
+                        inputObj.select();
+                        inputObj.bind("focusout", function () {
+                            $($element).html("" + inputObj.find("option:selected").text() + "");
+                            $("#PurchaseItems").bootstrapTable('updateRow', { index: index, row: { Remark: inputObj.find("option:selected").text() } });
+                        });
+
+                        inputObj.bind("change", function () {
+                            //当前选择
+                            var remark = $(this).find("option:selected").text();
+                            $("#SaleItems").bootstrapTable('updateRow', { index: index, row: { Remark: remark } });
+                        });
+                    }
+                    else {
+
+                        var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+                        $($element).html(html);
+                        var inputObj = $("#" + $(html).attr("id"));
+                        inputObj.focus();
+                        inputObj.select();
+                        inputObj.bind("focusout", function () {
+                            $("#PurchaseItems").bootstrapTable('updateRow', { index: index, row: { Remark: $(this).val() } });
+                            $($element).html("" + value + "");
+                        });
+                    }
+                }
+                else if (field == "UnitName")
+                {
+
+                    if (row.ProductId == 0 || row.ProductId == null) {
+                        $(this).showToastr('请选择商品');
+                        return;
+                    }
+
+                    var html = '<select name="' + field + '" id="' + field + "_" + row.Id + '">';
+                    //var keys = Object.keys(row.Units);
+					$.each(row.Units, function (key, unit) {
+						if (unit > 0) {
+							html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+						}
+                    });
+                    html += '</select>';
+
+                    $($element).html(html);
+
+                    var inputObj = $("#" + $(html).attr("id"));
+                    inputObj.focus();
+                    inputObj.select();
+                    inputObj.bind("focusout", function () {
+                        //console.log(row.UnitId + "=" + inputObj.val());
+                        //console.log(inputObj.find("option:selected").text());
+                        $($element).html("" + inputObj.find("option:selected").text() + "");
+                        //$("#PurchaseItems").bootstrapTable('updateRow', { index: index, row: { UnitName: inputObj.find("option:selected").text(),Units: row.Units } });
+                        $("#PurchaseItems").bootstrapTable('updateRow', { index: index, row: { UnitName: inputObj.find("option:selected").text() } });
+                    });
+
+                    //单位选择
+                    inputObj.bind("change", function () {
+
+                        //用户当前选择的单位
+                        var unitId = $(this).val();
+                        //价格
+                        var price = 0;
+                        //金额
+                        var amount = 0;
+                        //单位换算
+                        var conversionName = "";
+
+						//根据用户选择单位获取进价
+						row.Prices.forEach(function (a, b) {
+							if (a.UnitId == unitId) {
+								price = a.ProductPrice.PurchasePrice;
+								conversionName = a.UnitConversion;
+							}
+						});
+
+						//上次进价
+						if (model.DefaultPurchasePrice == 0) {
+							if (unitId == row.LastPrises.SmallUnitId) {
+								price = row.LastPrises.SmallPrise;
+							} else if (unitId == row.LastPrises.StrokeUnitId) {
+								price = row.LastPrises.StrokePrise;
+							} else if (unitId == row.LastPrises.BigUnitId) {
+								price = row.LastPrises.BigPrise;
+							}
+						}
+
+						amount = parseFloat(parseFloat((row.Quantity == undefined || row.Quantity=="") ? "0" : row.Quantity) * parseFloat(price)).toFixed(2);
+                        $("#PurchaseItems").bootstrapTable('updateRow', { index: index, row: { UnitId: unitId, UnitName: inputObj.find("option:selected").text(), UnitConversion: conversionName, Units: row.Units, Price: price, Amount: amount } });
+
+                    });
+
+                }
+                else if (field == "ManufactureDete") {
+                    if (row.IsManufactureDete == true) {
+                        var html = '<input class="date form-control input-sm datepicker_Manufacture" id="' + field + "_" + row.id + '"  name="ManufactureDete" placeholder="生产日期" type="text"' +
+                            'value="' + (typeof (value) == 'undefined' ? "" : value) + '" data-date-format="YYYY-MM-DD HH:mm:ss" /> ';
+                        $($element).html(html);
+                        $('.datepicker_Manufacture').datetimepicker();
+
+                        var inputObj = $("#" + $(html).attr("id"));
+                        inputObj.focus();
+                        inputObj.select();
+                        inputObj.bind("focusout", function () {
+                            row[field] = $(this).val();
+                            $($element).html("" + $(this).val() + "");
+                            $("#PurchaseItems").bootstrapTable('updateRow', { index: index, row: row });
+                            $(".bootstrap-datetimepicker-widget").hide();
+                        });
+                    }
+                    else {
+                        $(this).showToastr("该商品未启用生产日期功能!");
+                    }
+                }
+                else if (field == "TaxRate") {
+					html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+					$($element).html(html);
+					var inputObj = $("#" + $(html).attr("id"));
+
+					inputObj.focus();
+					inputObj.select();
+
+					inputObj.bind("focusout", function () {
+						if ($(this).val() == "") {
+							$(this).val(0);
+						}
+						if ($(this).val()>100) {
+							$(this).showToastr("税率不能大于100!");
+							$(this).val(0);
+						}
+						row[field] = parseFloat($(this).val());
+						$("#PurchaseItems").bootstrapTable('updateRow', { index: index, row: row });
+						$($element).html("" + value + "");
+					});
+
+					inputObj.bind("change", function () {
+						if (!isNaN($(this).val())) {
+							if ($(this).val() == "") {
+								$(this).val(0);
+							}
+							if ($(this).val() > 100) {
+								$(this).showToastr("税率不能大于100!");
+								$(this).val(0);
+							}
+
+							//税率
+							row.TaxRate = parseFloat($(this).val()).toFixed(2);
+							//含税价格
+							row.ContainTaxPrice = parseFloat((1 + $(this).val() / 100)) * row.Price;
+							//税额
+							row.TaxPrice = parseFloat($(this).val() / 100) * row.Price * row.Quantity;
+							//价税总计
+							row.TaxPriceAmount = row.ContainTaxPrice * row.Quantity;
+
+                            //格式化(先计算，再格式化，不然数据不准)
+							row.ContainTaxPrice = parseFloat(row.ContainTaxPrice).toFixed(2);
+							row.TaxPrice = parseFloat(row.TaxPrice).toFixed(2);
+							row.TaxPriceAmount = parseFloat(row.TaxPriceAmount).toFixed(2);
+
+						}
+						else {
+							$(this).val(0);
+							$(this).showToastr("只能输入数字!");
+						}
+					});
+				}
+            }
+        });
+
+        //优惠
+		$("#PreferentialAmount").bind("change", function () {
+
+			if (isNaN($(this).val()) || $(this).val() == "" || parseFloat($(this).val()) < 0) {
+				$(this).val("0.00")
+			}
+			$("#PreferentialAmount").focus();
+            var sumAmount = $("#SumAmount").val();
+            var oweCash = (parseFloat(sumAmount) - parseFloat($(this).val())).toFixed(2);
+            $("#PreferentialEndAmount").val(oweCash);
+
+            //剩余欠款金额
+            var thisOwnCash = parseFloat(oweCash - SumAlreadyAmount()).toFixed(2);
+            if (thisOwnCash < 0) {
+                $(this).val("0.00");
+                $("#PreferentialEndAmount").val((parseFloat(sumAmount)).toFixed(2));
+                $("#OweCash").val(parseFloat(parseFloat(sumAmount) - SumAlreadyAmount()).toFixed(2));
+            } else {
+                $("#OweCash").val(thisOwnCash);
+            }
+
+        });
+		//优惠金额选择
+		$("#PreferentialAmount").focus(function () {
+			$("#PreferentialAmount").select();
+		});
+		//科目选择
+		$(document).on('click', "#PurchaseItems_Partial_Form input[name='CollectionAmount']", function () {
+			$(this).select();
+		});
+        //科目
+        $(document).on('change', "#PurchaseItems_Partial_Form input[name='CollectionAmount']", function ()
+        {
+            $(this).focus();
+
+            if (isNaN($(this).val())) {
+                $(this).showToastr("只能输入数字!");
+                $(this).val('0.0');
+                return false;
+            }
+
+            if (parseFloat($(this).val()) < 0) {
+                $(this).showToastr("只能输入正数!");
+                $(this).val('0.0');
+                return false;
+            }
+
+			var preferentialEndAmount = $("#PreferentialEndAmount").val();
+            var thisOwnCash = (parseFloat(preferentialEndAmount) - SumAlreadyAmount()).toFixed(2);
+            //剩余欠款金额
+            if (thisOwnCash < 0) {
+                $(this).val("0.00");
+                $("#OweCash").val(parseFloat(parseFloat(preferentialEndAmount) - SumAlreadyAmount()).toFixed(2));
+            } else {
+                $("#OweCash").val(thisOwnCash);
+            }
+        });
+
+        //保存服务器
+        var submitRemoteServer = function (items, showMessage, doAudit, callback, loadingButton)
+        {
+            if (!formValidator() || !validAdvancePayment()) {
+				if (loadingButton != undefined) {
+					loadingButton.stop();
+				}
+                return false;
+            }
+
+            var reg=/^[0-9]+.?[0-9]*$/; //判断字符串是否为数字 ，判断正整数用/^[1-9]+[0-9]*]*$/
+
+            //获取表格的所有内容行
+            var allTableData = $('#PurchaseItems').bootstrapTable('getData');
+            var accounts = $("#PurchaseItems_Partial_Form").find("input[name='CollectionAmount']");
+            var flag = 0;
+            var numFlag = 0;
+            var accFlag = 0;
+            var errMsg = "";
+            $.each(allTableData, function (i, row) {
+                if (Object.keys(row).length > 1) {
+                    if (row.ProductId == "" || row.Quantity == "")
+                        flag++;
+                    else if (!reg.test(row.Quantity))
+                        numFlag++;
+                    else if (!reg.test(row.Price))
+                        numFlag++;
+                    if (row.ProductId != "" && row.Quantity == "") {
+                        errMsg += "商品：" + row.ProductName + " 数量为0.";
+                    }
+                    if (row.ProductId != "" && row.Price == 0 && row.Remark == "") {
+                        errMsg += "商品：" + row.ProductName + " ,0元开单，必须选择备注.";
+                    }
+                }
+
+            });
+
+            //商品验证
+            if (errMsg != "") {
+                if (loadingButton != undefined) {
+                    loadingButton.stop();
+                }
+                $(this).showToastr(errMsg);
+                return false;
+            }
+
+            if ($("#WareHouseId").val() == 0 || $("#WareHouseId").val() == "") {
+                if (loadingButton != undefined) {
+                    loadingButton.stop();
+                }
+                $(this).showToastr("请选择仓库!");
+                return false;
+            }
+
+            if ($("#BusinessUserId").val() == 0 || $("#BusinessUserId").val() == "") {
+                if (loadingButton != undefined) {
+                    loadingButton.stop();
+                }
+                $(this).showToastr("请选择业务员!");
+                return false;
+            }
+
+            $.each(accounts, function (i, input) {
+                if (isNaN($(input).val()))
+                    accFlag++;
+            });
+
+
+			if (flag == allTableData.length) {
+                if (loadingButton != undefined) {
+					loadingButton.stop();
+				}
+                $(this).showToastr("请先填写单据明细！");
+                return false;
+            }
+			else if (numFlag > 0) {
+                if (loadingButton != undefined) {
+					loadingButton.stop();
+				}
+                $(this).showToastr("数量只允许输入数字!");
+                return false;
+            }
+			else if (accFlag > 0) {
+                if (loadingButton != undefined) {
+					loadingButton.stop();
+				}
+                $(this).showToastr("账户信息中数据格式不正确!");
+                return false;
+            }
+
+            var serializeData = [];
+            var accountings = [];
+            $.each(allTableData, function (i, row) {
+                var tmpObj = {
+                    "Id": typeof (row.Id) == 'undefined' ? "0" : row.Id,
+                    "ProductId": typeof (row.ProductId) == 'undefined' ? "0" : row.ProductId,
+                    "UnitId": typeof (row.UnitId) == 'undefined' ? "0" : row.UnitId,
+                    "Quantity": typeof (row.Quantity) == 'undefined' ? "0" : row.Quantity,
+                    "Price": typeof (row.Price) == 'undefined' ? "0" : row.Price,
+                    "Amount": typeof (row.Amount) == 'undefined' ? "0" : row.Amount,
+                    "StockQty": typeof (row.StockQty) == 'undefined' ? "0" : row.StockQty,
+                    "RemainderQty": typeof (row.RemainderQty) == 'undefined' ? "0" : row.RemainderQty,
+                    "Remark": typeof (row.Remark) == 'undefined' ? "" : row.Remark,
+					"ManufactureDete": typeof (row.ManufactureDete) == 'undefined' ? "" : row.ManufactureDete,
+					"IsFlavorProduct": typeof (row.IsFlavorProduct) == 'undefined' ? false : row.IsFlavorProduct,
+					"FlavorId": typeof (row.FlavorId) == 'undefined' ? "" : row.FlavorId,
+                    "TaxRate": typeof (row.TaxRate) == 'undefined' ? "0" : row.TaxRate,
+				    "ContainTaxPrice":typeof (row.ContainTaxPrice) == 'undefined' ? "0" : row.ContainTaxPrice
+                };
+                serializeData.push(tmpObj);
+            });
+
+            //获取收款账户
+            $.each(accounts, function (i, input) {
+                var option = $(input).attr("data-account");
+                var amount = $(input).val();
+                accountings.push({ AccountingOptionId: option, CollectionAmount: $(input).val() });
+            });
+
+            //保存的数据
+            var postData = {
+                //供应商
+				ManufacturerId: $("#ManufacturerId").val(),
+                //业务员
+                BusinessUserId: $("#BusinessUserId").val(),
+                //仓库
+                WareHouseId: $("#WareHouseId").val(),
+                //交易日期
+                TransactionDate: $("input[name='TransactionDate']").val(),
+                //按最小单位采购
+                IsMinUnitPurchase: $("#IsMinUnitPurchase").val(),
+                //备注
+                Remark: $("#Remark").val(),
+                //价格体系
+                //DefaultAmountId: $("#DefaultAmountId").val(),
+                //优惠金额
+                PreferentialAmount: $("#PreferentialAmount").val(),
+                //优惠后金额
+                PreferentialEndAmount: $("#PreferentialEndAmount").val(),
+                //欠款金额
+                OweCash: $("#OweCash").val(),
+                //商品项目
+                Items: serializeData,
+                //收款账户
+                Accounting: accountings,
+                //预付金额
+                AdvanceAmount: SumAdvancePaymentAmount(),
+                //预付款余额
+                AdvanceAmountBalance: $("#MBalance_AdvanceAmountBalance").val(),
+                //单号
+                BillNumber: $("#BillNumber").val(),
+            };
+
+
+            //保存服务器
+            $(this).remoteSubmit("post", "/PurchaseBill/CreateOrUpdate?billId=@(Model.Id)&doAudit=" + doAudit, postData, items, callback, showMessage,loadingButton);
+        }
+
+
+        //保存单据项目
+        $("#FormSubmit").click(function () {
+            var doAudit = true;
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+            submitRemoteServer($("#PurchaseItems"), null, doAudit, function (data) {
+                if (data.Success) {
+                    window.location.href = "/PurchaseBill/List";
+                }
+            }, loadingButton);
+        });
+
+        //保存并继续
+        $("#FormSubmitContinue").click(function () {
+            var doAudit = false;
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+            if ("@Model.Id" == "0") {
+                submitRemoteServer(null, null, doAudit,function () { window.location.href = "/PurchaseBill/Create"; }, loadingButton);
+			} else {
+                submitRemoteServer($("#PurchaseItems"), null, doAudit,function () { window.location.href = "/PurchaseBill/Edit/" + "@Model.Id"; }, loadingButton);
+			}
+        });
+
+        //会计科目选择
+        $(document).on('click', "#Accounting_AsyncSearchSelectPopup", function () {
+            var billTypeId = $("#BillTypeEnumId").val();
+            var actionUrl = "/Accounting/AsyncSearchSelectPopup?billTypeId=" + billTypeId;
+            $(this).accountingSearchSelectPopup($("#AccountingModalWindow"), actionUrl, null, "选择科目", $("#AccountingForm"), $("#CollectionAccount"), $("#CollectionAccountBox"));
+            $("#PurchaseItems_Partial_Form input[name='CollectionAmount']").val("");
+            $("#OweCash").val("");
+        });
+
+
+
+
+        //==========================================
+        var $column_g;
+        var $rowIndex = 0;
+        var $columnIndex = 2;
+        var indexs = [2, 4, 6, 10];
+
+        //回车切换焦点
+        function enterToSwitchFocus(row, column, rowIndex, columnIndex) {
+            var datas = $('#PurchaseItems').bootstrapTable('getData');
+            var pds = [];
+            datas.forEach((p, i) => {
+                if (p.ProductId > 0) {
+                    pds.push(p);
+                }
+            });
+            if (pds.length) {
+                if (rowIndex < pds.length) {
+                    $rowIndex = pds.length;
+                }
+            }
+            console.log("----------$rowIndex----->>>------" + $rowIndex);
+            console.log("----------$columnIndex----->>>------" + $columnIndex);
+        }
+
+        //引入键盘事件
+        $(document).keydown(function (event) {
+            // 兼容FF和IE和Opera
+            var theEvent = event || window.event;
+            var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+            switch (code) {
+                case 13: //回车
+                    keyEnter();
+                    break;
+            }
+            return true;
+        });
+
+        //回车执行键盘操作事件
+        function keyEnter() {
+            if ($rowIndex == 0) $rowIndex = 1;
+
+            //获取可见列
+            var cols = $('#PurchaseItems').bootstrapTable('getVisibleColumns')
+
+            //判断索引队列
+            if (indexs.length > 0) {
+
+                //遍历队列
+                for (var i = 0; i < cols.length; i++) {
+                    //下标是否存在队列中，单元格索引是否在列集合索引中
+                    var cindex = indexs.indexOf(i);
+                    if (cindex >= 0 && indexs[cindex] <= 10) {
+                        //存在则取出单元格索引
+                        var cur = indexs[cindex];
+
+                        //点击列
+                        $columnIndex = cur;
+
+                        console.log("----------$rowIndex-----------" + $rowIndex);
+                        console.log("----------$columnIndex-----------" + $columnIndex);
+
+                        //获取行列所在单元格元素
+                        $column_g = $("#PurchaseItems").find("tr").eq($rowIndex).find("td").eq($columnIndex);
+
+                        console.log($column_g);
+
+                        if ($column_g != null) {
+                            $column_g.click();
+
+                            //从队列移除单元格索引
+                            indexs.splice(cindex, 1);
+
+                            //如果列索引移除完，空队列时
+                            if (indexs.length == 0) {
+                                indexs = [2, 4, 6, 10];
+                                //列复位
+                                $columnIndex = 2;
+                                //换下一行
+                                $rowIndex++;
+                            }
+                        }
+                        //跳出循环
+                        break;
+                    }
+                }
+            }
+        }
+		//==========================================
+
+        /*
+         * ======================================================
+         * mschen 2018-12-5 11:24:43 end
+         * ======================================================
+         */
+    });
+
+</script>

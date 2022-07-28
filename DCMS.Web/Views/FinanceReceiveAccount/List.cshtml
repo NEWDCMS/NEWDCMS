@@ -1,0 +1,1184 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Sales;
+
+
+@model FinanceReceiveAccountBillListModel
+@{
+    var refURL = Context.Request.GetAbsoluteUri();
+}
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">收款对账单管理</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">销售管理</a>
+                </li>
+                <li class="crumb-trail">收款对账单</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="panel panel-default" id="panel0">
+                    <div class="panel-heading">
+                        <span class="glyphicon glyphicon-search"></span> 高级搜索
+                        <a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedSearch"><i class="fa fa-angle-double-right mr5"></i>展开</a>
+                    </div>
+                    <div class="panel-body p10">
+                        <form id="formSearch" class="form-horizontal" novalidate="novalidate">
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <dcms-editor asp-for="StartTime" placeholder="开始..." />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="EndTime" placeholder="结束..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="EmployeeId" asp-items="@Model.Employees" asp-default="选择员工" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="PayeerId" asp-items="@Model.Payeers" asp-default="选择收款人" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="PaymentId" asp-items="@Model.Payments" asp-default="支付方式" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <button id="btn_query" type="submit" class="btn btn-primary btn-block">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 收款对账单列表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+                        @*<div id="toolbar" class="btn-group">
+                                <button id="btn_handIn" type="button" class="btn btn-success btn-sm mr5">
+                                    <span class="glyphicon glyphicon-ok mr5"></span>上交
+                                </button>
+                                <button id="btn_cancle" type="button" class="btn btn-danger btn-sm mr5">
+                                    <span class="glyphicon glyphicon-remove mr5"></span>撤销
+                                </button>
+                            </div>*@
+
+                        <div class="tab-block">
+                            <ul class="nav nav-tabs tabs-bg">
+                                <li class="active">
+                                    <a href="#tab10_1" data-toggle="tab" aria-expanded="true">
+                                        <i class="fa fa-align-justify text-purple"></i> 未上交<span class="badge badge-hero badge-danger" id="badge1"></span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#tab10_2" data-toggle="tab">
+                                        <i class="fa fa-align-justify text-purple"></i> 已上交<span class="badge badge-hero badge-danger" id="badge2"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div id="tab10_1" class="tab-pane active">
+                                    <div class="bootstrap-table mt10">
+
+                                        <div class="fixed-table-container">
+                                            <div class="fixed-table-body">
+
+                                                <table class="table  table-bordered table-hover" id="gridViewTable" style="width:1600px; overflow-x:auto;">
+                                                    <thead>
+                                                        <tr class="datagrid-header-row">
+                                                            <th rowspan="2" class="bs-checkbox ptn pbn w50">
+                                                                <input name="btSelectAll" type="checkbox" onclick="CheckAll('all')">
+                                                            </th>
+                                                            <th rowspan="2" colspan="2" class="text-center ptn pbn w250">分组</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-center ptn pbn">状态</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-right ptn pbn pr5">待交金额</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-right ptn pbn pr5">电子支付金额</th>
+                                                            <th colspan="5" class="text-center ptn pbn bg-info">收款来源</th>
+                                                            <th colspan="@(Model.DynamicColumns.Count)" class="text-center ptn pbn bg-primary">支付方式</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-right ptn pbn pr5">优惠金额</th>
+
+                                                            <th rowspan="2" nowrap="nowrap" class="text-center ptn pbn">销售商品(含赠)</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-center ptn pbn">赠送商品</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-center ptn pbn">退货商品</th>
+                                                        </tr>
+
+                                                        <tr class="datagrid-header-row">
+
+                                                            <th class="text-center ptn pbn bg-info">销售收款</th>
+                                                            <th class="text-center ptn pbn bg-info">退货款</th>
+                                                            <th class="text-center ptn pbn bg-info">收欠款</th>
+                                                            <th class="text-center ptn pbn bg-info">收预收款</th>
+                                                            <th class="text-center ptn pbn bg-info">费用支出</th>
+
+                                                            @foreach (var account in Model.DynamicColumns)
+                                                            {
+                                                                <th nowrap="nowrap" class="text-right ptn pbn bg-primary pr5">@account</th>
+                                                            }
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @{
+                                                            int i = 0;
+                                                            foreach (IGrouping<string, FinanceReceiveAccountBillModel> uGroups in Model.Lists.GroupBy(s => s.UserName))
+                                                            {
+                                                                var ufirst = uGroups.FirstOrDefault();
+                                                                var ulast = uGroups.LastOrDefault();
+
+                                                                <tr>
+                                                                    <td class="bs-checkbox ">
+                                                                        <input data-index="@i" name="btSelectItem" class="btSelectItem" type="checkbox" value="@ufirst?.BillId">
+                                                                    </td>
+                                                                    <td class="text-center w50">
+                                                                        <a href="javascript:;" class="showGroupsRows" data-i="@i" data-j="-1" data-open="false"><i class="fa fa-plus"></i></a>
+                                                                    </td>
+                                                                    <td class="text-left w200">
+                                                                        @uGroups.Key
+                                                                        @ufirst.UserId
+                                                                    </td>
+                                                                    <td nowrap="nowrap" class="text-center">@(ufirst.HandInStatus == 0 ? "未上交" : "已上交")</td>
+
+                                                                    <td class="text-right">@uGroups.Sum(s => s.PaidAmount).ToString("0.00")</td>
+                                                                    <td class="text-right">@uGroups.Sum(s => s.EPaymentAmount).ToString("0.00")</td>
+
+                                                                    <td class="va-t pn">
+
+                                                                        <table class="table table-condensed table-bordered" style="background-color:transparent;border-bottom:0">
+                                                                            <tr><td class="text-center" colspan="3" style="background-color:transparent"><b>@uGroups.Sum(s => s.SaleAmountSum).ToString("0.00")</b></td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td nowrap="nowrap">销售金额</td><td class="text-right">@uGroups.Sum(s => s.SaleAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">预收款</td><td class="text-right">@uGroups.Sum(s => s.SaleAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">欠款</td><td class="text-right">@uGroups.Sum(s => s.SaleOweCashAmount).ToString("0.00")</td></tr>
+                                                                        </table>
+                                                                    </td>
+
+                                                                    <td class="va-t pn">
+
+                                                                        <table class="table table-condensed" style="background-color:transparent">
+                                                                            <tr><td class="text-center" colspan="3"><b>@uGroups.Sum(s => s.ReturnAmountSum).ToString("0.00")</b></td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td nowrap="nowrap">退款金额</td><td class="text-right">@uGroups.Sum(s => s.ReturnAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">预收款</td><td class="text-right">@uGroups.Sum(s => s.ReturnAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">欠款</td><td class="text-right">@uGroups.Sum(s => s.ReturnOweCashAmount).ToString("0.00")</td></tr>
+                                                                        </table>
+                                                                    </td>
+                                                                    <td class="va-t pn">
+
+                                                                        <table class="table table-condensed" style="background-color:transparent">
+                                                                            <tr><td class="text-center" colspan="3"><b>@uGroups.Sum(s => s.ReceiptCashOweCashAmountSum).ToString("0.00")</b></td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td nowrap="nowrap">应收金额</td><td class="text-right">@uGroups.Sum(s => s.ReceiptCashReceivableAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">预收款</td><td class="text-right">@uGroups.Sum(s => s.ReceiptCashAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                        </table>
+                                                                    </td>
+                                                                    <td class="va-t pn">
+
+                                                                        <table class="table table-condensed" style="background-color:transparent">
+                                                                            <tr><td class="text-center" colspan="3"><b>@uGroups.Sum(s => s.AdvanceReceiptSum).ToString("0.00")</b></td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td nowrap="nowrap">预收金额</td><td class="text-right">@uGroups.Sum(s => s.AdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">欠款</td><td class="text-right">@uGroups.Sum(s => s.AdvanceReceiptOweCashAmount).ToString("0.00")</td></tr>
+                                                                        </table>
+                                                                    </td>
+                                                                    <td class="va-t pn">
+
+                                                                        <table class="table table-condensed" style="background-color:transparent">
+                                                                            <tr><td class="text-center" colspan="3"><b>@uGroups.Sum(s => s.CostExpenditureSum).ToString("0.00")</b></td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td nowrap="nowrap">支出金额</td><td class="text-right">@uGroups.Sum(s => s.CostExpenditureAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">欠款</td><td class="text-right">@uGroups.Sum(s => s.CostExpenditureOweCashAmount).ToString("0.00")</td></tr>
+                                                                        </table>
+                                                                    </td>
+
+                                                                    @foreach (var account in ufirst.Accounts)
+                                                                    {
+                                                                        <td class="text-right">
+                                                                            @uGroups.Sum(s => s.Accounts.Where(a => a.AccountingOptionId == account.AccountingOptionId).Sum(s => s.CollectionAmount)).ToString("0.00")
+                                                                        </td>
+                                                                    }
+
+                                                                    <td class="text-right">@uGroups.Sum(s => s.PreferentialAmount).ToString("0.00")</td>
+                                                                    <td class="text-center">
+                                                                        <a href="javascript:;" data-gift="false" class="showProducts" data-type="12" data-user="@ufirst.UserId" data-start="@ufirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@ulast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                            @(uGroups.Sum(s => s.SaleProductCount)) 种
+                                                                        </a>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <a href="javascript:;" data-gift="true" class="showProducts" data-type="12" data-user="@ufirst.UserId" data-start="@ufirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@ulast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                            @(uGroups.Sum(s => s.GiftProductCount)) 种
+                                                                        </a>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <a href="javascript:;" data-gift="false" class="showProducts" data-type="14" data-user="@ufirst.UserId" data-start="@ufirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@ulast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                            @(uGroups.Sum(s => s.ReturnProductCount))种
+                                                                        </a>
+                                                                    </td>
+
+                                                                </tr>
+
+
+                                                                int j = 0;
+                                                                foreach (IGrouping<string, FinanceReceiveAccountBillModel> dateGroups in uGroups.GroupBy(s => s.CreatedOnUtc.ToShortDateString()))
+                                                                {
+                                                                    var dfirst = uGroups.FirstOrDefault();
+                                                                    var dlast = uGroups.LastOrDefault();
+
+                                                                    <tr class="uGroups" data-i="@i" data-j="@j" style="display:none">
+                                                                        <td class="bs-checkbox ">
+                                                                            <input data-index="@j" name="btSelectItem" class="btSelectItem" type="checkbox" value="@dfirst?.BillId">
+                                                                        </td>
+                                                                        <td class="text-center">
+                                                                            <a href="javascript:;" class="showGroupsRows" data-i="@i" data-j="@j" data-open="false"><i class="fa fa-plus"></i></a>
+                                                                        </td>
+                                                                        <td class="text-left w200">
+                                                                            @dateGroups.Key
+                                                                        </td>
+                                                                        <td class="text-center">@(dfirst.HandInStatus == 0 ? "未上交" : "已上交")</td>
+                                                                        <td class="text-right">@dateGroups.Sum(s => s.PaidAmount).ToString("0.00")</td>
+                                                                        <td class="text-right">@dateGroups.Sum(s => s.EPaymentAmount).ToString("0.00")</td>
+
+                                                                        <td class="va-t pn">
+
+                                                                            <table class="table table-condensed table-bordered" style="background-color:transparent;border-bottom:0">
+                                                                                <tr><td class="text-center" colspan="3" style="background-color:transparent"><b>@dateGroups.Sum(s => s.SaleAmountSum).ToString("0.00")</b></td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>销售金额</td><td class="text-right">@dateGroups.Sum(s => s.SaleAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@dateGroups.Sum(s => s.SaleAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@dateGroups.Sum(s => s.SaleOweCashAmount).ToString("0.00")</td></tr>
+                                                                            </table>
+                                                                        </td>
+
+                                                                        <td class="va-t pn">
+
+                                                                            <table class="table table-condensed" style="background-color:transparent">
+                                                                                <tr><td class="text-center" colspan="3"><b>@dateGroups.Sum(s => s.ReturnAmountSum).ToString("0.00")</b></td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>退款金额</td><td class="text-right">@dateGroups.Sum(s => s.ReturnAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@dateGroups.Sum(s => s.ReturnAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@dateGroups.Sum(s => s.ReturnOweCashAmount).ToString("0.00")</td></tr>
+                                                                            </table>
+                                                                        </td>
+                                                                        <td class="va-t pn">
+
+                                                                            <table class="table table-condensed" style="background-color:transparent">
+                                                                                <tr><td class="text-center" colspan="3"><b>@dateGroups.Sum(s => s.ReceiptCashOweCashAmountSum).ToString("0.00")</b></td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>应收金额</td><td class="text-right">@dateGroups.Sum(s => s.ReceiptCashReceivableAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@dateGroups.Sum(s => s.ReceiptCashAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                            </table>
+                                                                        </td>
+                                                                        <td class="va-t pn">
+
+                                                                            <table class="table table-condensed" style="background-color:transparent">
+                                                                                <tr><td class="text-center" colspan="3"><b>@dateGroups.Sum(s => s.AdvanceReceiptSum).ToString("0.00")</b></td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>预收金额</td><td class="text-right">@dateGroups.Sum(s => s.AdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@dateGroups.Sum(s => s.AdvanceReceiptOweCashAmount).ToString("0.00")</td></tr>
+                                                                            </table>
+                                                                        </td>
+                                                                        <td class="va-t pn">
+
+                                                                            <table class="table table-condensed" style="background-color:transparent">
+                                                                                <tr><td class="text-center" colspan="3"><b>@dateGroups.Sum(s => s.CostExpenditureSum).ToString("0.00")</b></td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>支出金额</td><td class="text-right">@dateGroups.Sum(s => s.CostExpenditureAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@dateGroups.Sum(s => s.CostExpenditureOweCashAmount).ToString("0.00")</td></tr>
+                                                                            </table>
+                                                                        </td>
+
+                                                                        @foreach (var account in dfirst.Accounts)
+                                                                        {
+                                                                            <td class="text-right">
+                                                                                @dateGroups.Sum(s => s.Accounts.Where(a => a.AccountingOptionId == account.AccountingOptionId).Sum(s => s.CollectionAmount)).ToString("0.00")
+                                                                            </td>
+                                                                        }
+
+                                                                        <td class="text-right">@dateGroups.Sum(s => s.PreferentialAmount).ToString("0.00")</td>
+                                                                        <td class="text-center">
+                                                                            <a href="javascript:;" data-type="12" data-gift="false" class="showProducts" data-user="@dfirst.UserId" data-start="@dfirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@dlast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                                @(dateGroups.Sum(s => s.SaleProductCount)) 种
+                                                                            </a>
+                                                                        </td>
+                                                                        <td class="text-center">
+                                                                            <a href="javascript:;" data-type="12" data-gift="true" class="showProducts" data-user="@dfirst.UserId" data-start="@dfirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@dlast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                                @(dateGroups.Sum(s => s.GiftProductCount)) 种
+                                                                            </a>
+                                                                        </td>
+                                                                        <td class="text-center">
+                                                                            <a href="javascript:;" data-type="14" data-gift="false" class="showProducts" data-user="@dfirst.UserId" data-start="@dfirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@dlast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                                @(dateGroups.Sum(s => s.ReturnProductCount))种
+                                                                            </a>
+                                                                        </td>
+                                                                    </tr>
+
+                                                                    int k = 0;
+                                                                    foreach (var item in dateGroups)
+                                                                    {
+
+                                                                        <tr class="dateGroups" data-i="@i" data-j="@j" style="display:none">
+                                                                            <td class="bs-checkbox ">
+                                                                                <input data-index="@($"{i}_{j}_{k}")" name="btSelectItem" class="btSelectItem" type="checkbox" value="@item.BillId">
+                                                                            </td>
+                                                                            <td></td>
+                                                                            <td>
+                                                                                <a href="@item.BillLink" target="_blank">@item.BillNumber</a>
+                                                                            </td>
+                                                                            <td class="text-center">@(item.HandInStatus == 0 ? "未上交" : "已上交")</td>
+                                                                            <td class="text-right">@item.PaidAmount.ToString("0.00")</td>
+                                                                            <td class="text-right">@item.EPaymentAmount.ToString("0.00")</td>
+
+                                                                            <td class="va-t pn">
+
+                                                                                <table class="table table-condensed table-bordered" style="background-color:transparent;border-bottom:0">
+                                                                                    <tr><td class="text-center" colspan="3" style="background-color:transparent"><b>@item.SaleAmountSum.ToString("0.00")</b></td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>销售金额</td><td class="text-right">@item.SaleAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@item.SaleAdvanceReceiptAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@item.SaleOweCashAmount.ToString("0.00")</td></tr>
+                                                                                </table>
+                                                                            </td>
+
+                                                                            <td class="va-t pn">
+
+                                                                                <table class="table table-condensed" style="background-color:transparent">
+                                                                                    <tr><td class="text-center" colspan="3"><b>@item.ReturnAmountSum.ToString("0.00")</b></td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>退款金额</td><td class="text-right">@item.ReturnAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@item.ReturnAdvanceReceiptAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@item.ReturnOweCashAmount.ToString("0.00")</td></tr>
+                                                                                </table>
+                                                                            </td>
+                                                                            <td class="va-t pn">
+
+                                                                                <table class="table table-condensed" style="background-color:transparent">
+                                                                                    <tr><td class="text-center" colspan="3"><b>@item.ReceiptCashOweCashAmountSum.ToString("0.00")</b></td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>应收金额</td><td class="text-right">@item.ReceiptCashReceivableAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@item.ReceiptCashAdvanceReceiptAmount.ToString("0.00")</td></tr>
+                                                                                </table>
+                                                                            </td>
+                                                                            <td class="va-t pn">
+
+                                                                                <table class="table table-condensed" style="background-color:transparent">
+                                                                                    <tr><td class="text-center" colspan="3"><b>@item.AdvanceReceiptSum.ToString("0.00")</b></td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>预收金额</td><td class="text-right">@item.AdvanceReceiptAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@item.AdvanceReceiptOweCashAmount.ToString("0.00")</td></tr>
+                                                                                </table>
+                                                                            </td>
+                                                                            <td class="va-t pn">
+
+                                                                                <table class="table table-condensed" style="background-color:transparent">
+                                                                                    <tr><td class="text-center" colspan="3"><b>@item.CostExpenditureSum.ToString("0.00")</b></td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>支出金额</td><td class="text-right">@item.CostExpenditureAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@item.CostExpenditureOweCashAmount.ToString("0.00")</td></tr>
+                                                                                </table>
+                                                                            </td>
+
+                                                                            @foreach (var account in item.Accounts)
+                                                                            {
+                                                                                <td class="text-right">
+                                                                                    @account.CollectionAmount.ToString("0.00")
+                                                                                </td>
+                                                                            }
+
+                                                                            <td class="text-right">@item.PreferentialAmount.ToString("0.00")</td>
+                                                                            <td class="text-center">
+                                                                                <a href="javascript:;" data-type="12" data-gift="false" class="showProducts" data-user="@item.UserId" data-start="@item.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@item.CreatedOnUtc.ToString("yyyy-MM-dd")">@(item.SaleProductCount) 种</a>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                <a href="javascript:;" data-type="12" data-gift="true" class="showProducts" data-user="@item.UserId" data-start="@item.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@item.CreatedOnUtc.ToString("yyyy-MM-dd")">@(item.GiftProductCount) 种</a>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                <a href="javascript:;" data-type="14" data-gift="false" class="showProducts" data-user="@item.UserId" data-start="@item.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@item.CreatedOnUtc.ToString("yyyy-MM-dd")">@(item.ReturnProductCount)种</a>
+                                                                            </td>
+                                                                        </tr>
+
+                                                                        k++;
+                                                                    }
+
+                                                                    j++;
+
+                                                                }
+
+                                                                i++;
+                                                            }
+
+                                                        }
+                                                    </tbody>
+                                                </table>
+
+                                            </div>
+                                        </div>
+
+                                        @{
+                                            var pager = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+                                        }
+
+                                        @if (!pager.IsEmpty())
+                                        {
+                                            <div class="fixed-table-pagination" style="display: block;">
+                                                @Html.Raw(pager.ToString())
+                                            </div>
+                                        }
+
+                                    </div>
+
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div id="tab10_2" class="tab-pane">
+                                    <div class="bootstrap-table mt10">
+
+                                        <div class="fixed-table-container">
+                                            <div class="fixed-table-body">
+
+                                                <table class="table  table-bordered table-hover" id="gridViewTable2" style="width:1600px; overflow-x:auto;">
+                                                    <thead>
+                                                        <tr class="datagrid-header-row">
+                                                            <th rowspan="2" class="bs-checkbox ptn pbn w50">
+                                                                操作
+                                                            </th>
+                                                            <th rowspan="2" colspan="2" class="text-center ptn pbn w250">分组</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-center ptn pbn">状态</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-right ptn pbn pr5">待交金额</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-right ptn pbn pr5">电子支付金额</th>
+                                                            <th colspan="5" class="text-center ptn pbn bg-info">收款来源</th>
+                                                            <th colspan="@(Model.DynamicColumns.Count)" class="text-center ptn pbn bg-primary">支付方式</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-right ptn pbn pr5">优惠金额</th>
+
+                                                            <th rowspan="2" nowrap="nowrap" class="text-center ptn pbn">销售商品(含赠)</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-center ptn pbn">赠送商品</th>
+                                                            <th rowspan="2" nowrap="nowrap" class="text-center ptn pbn">退货商品</th>
+                                                        </tr>
+
+                                                        <tr class="datagrid-header-row">
+
+                                                            <th class="text-center ptn pbn bg-info">销售收款</th>
+                                                            <th class="text-center ptn pbn bg-info">退货款</th>
+                                                            <th class="text-center ptn pbn bg-info">收欠款</th>
+                                                            <th class="text-center ptn pbn bg-info">收预收款</th>
+                                                            <th class="text-center ptn pbn bg-info">费用支出</th>
+
+                                                            @foreach (var account in Model.DynamicColumns)
+                                                            {
+                                                                <th nowrap="nowrap" class="text-right ptn pbn bg-primary pr5">@account</th>
+                                                            }
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @{
+                                                            int g = 0;
+                                                            foreach (IGrouping<string, FinanceReceiveAccountBillModel> uGroups in Model.SubmitLists.GroupBy(s => s.UserName))
+                                                            {
+                                                                var ufirst = uGroups.FirstOrDefault();
+                                                                var ulast = uGroups.LastOrDefault();
+
+                                                                <tr>
+                                                                    <td>
+                                                                        @*<input data-index="@g" name="btSelectItem" class="btSelectItem" type="checkbox" value="@ufirst?.BillId">*@
+                                                                    </td>
+                                                                    <td class="text-center w50">
+                                                                        <a href="javascript:;" class="showGroupsRows2" data-i="@g" data-j="-1" data-open="false"><i class="fa fa-plus"></i></a>
+                                                                    </td>
+                                                                    <td class="text-left w200">
+                                                                        @uGroups.Key
+                                                                        @ufirst.UserId
+                                                                    </td>
+                                                                    <td nowrap="nowrap" class="text-center">@(ufirst.HandInStatus == 0 ? "未上交" : "已上交")</td>
+
+                                                                    <td class="text-right">@uGroups.Sum(s => s.PaidAmount).ToString("0.00")</td>
+                                                                    <td class="text-right">@uGroups.Sum(s => s.EPaymentAmount).ToString("0.00")</td>
+
+                                                                    <td class="va-t pn">
+
+                                                                        <table class="table table-condensed table-bordered" style="background-color:transparent;border-bottom:0">
+                                                                            <tr><td class="text-center" colspan="3" style="background-color:transparent"><b>@uGroups.Sum(s => s.SaleAmountSum).ToString("0.00")</b></td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td nowrap="nowrap">销售金额</td><td class="text-right">@uGroups.Sum(s => s.SaleAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">预收款</td><td class="text-right">@uGroups.Sum(s => s.SaleAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">欠款</td><td class="text-right">@uGroups.Sum(s => s.SaleOweCashAmount).ToString("0.00")</td></tr>
+                                                                        </table>
+                                                                    </td>
+
+                                                                    <td class="va-t pn">
+
+                                                                        <table class="table table-condensed" style="background-color:transparent">
+                                                                            <tr><td class="text-center" colspan="3"><b>@uGroups.Sum(s => s.ReturnAmountSum).ToString("0.00")</b></td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td nowrap="nowrap">退款金额</td><td class="text-right">@uGroups.Sum(s => s.ReturnAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">预收款</td><td class="text-right">@uGroups.Sum(s => s.ReturnAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">欠款</td><td class="text-right">@uGroups.Sum(s => s.ReturnOweCashAmount).ToString("0.00")</td></tr>
+                                                                        </table>
+                                                                    </td>
+                                                                    <td class="va-t pn">
+
+                                                                        <table class="table table-condensed" style="background-color:transparent">
+                                                                            <tr><td class="text-center" colspan="3"><b>@uGroups.Sum(s => s.ReceiptCashOweCashAmountSum).ToString("0.00")</b></td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td nowrap="nowrap">应收金额</td><td class="text-right">@uGroups.Sum(s => s.ReceiptCashReceivableAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">预收款</td><td class="text-right">@uGroups.Sum(s => s.ReceiptCashAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                        </table>
+                                                                    </td>
+                                                                    <td class="va-t pn">
+
+                                                                        <table class="table table-condensed" style="background-color:transparent">
+                                                                            <tr><td class="text-center" colspan="3"><b>@uGroups.Sum(s => s.AdvanceReceiptSum).ToString("0.00")</b></td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td nowrap="nowrap">预收金额</td><td class="text-right">@uGroups.Sum(s => s.AdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">欠款</td><td class="text-right">@uGroups.Sum(s => s.AdvanceReceiptOweCashAmount).ToString("0.00")</td></tr>
+                                                                        </table>
+                                                                    </td>
+                                                                    <td class="va-t pn">
+
+                                                                        <table class="table table-condensed" style="background-color:transparent">
+                                                                            <tr><td class="text-center" colspan="3"><b>@uGroups.Sum(s => s.CostExpenditureSum).ToString("0.00")</b></td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td nowrap="nowrap">支出金额</td><td class="text-right">@uGroups.Sum(s => s.CostExpenditureAmount).ToString("0.00")</td></tr>
+                                                                            <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td nowrap="nowrap">欠款</td><td class="text-right">@uGroups.Sum(s => s.CostExpenditureOweCashAmount).ToString("0.00")</td></tr>
+                                                                        </table>
+                                                                    </td>
+
+                                                                    @foreach (var account in ufirst.Accounts)
+                                                                    {
+                                                                        <td class="text-right">
+                                                                            @uGroups.Sum(s => s.Accounts.Where(a => a.AccountingOptionId == account.AccountingOptionId).Sum(s => s.CollectionAmount)).ToString("0.00")
+                                                                        </td>
+                                                                    }
+
+                                                                    <td class="text-right">@uGroups.Sum(s => s.PreferentialAmount).ToString("0.00")</td>
+                                                                    <td class="text-center">
+                                                                        <a href="javascript:;" data-gift="false" class="showProducts" data-type="12" data-user="@ufirst.UserId" data-start="@ufirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@ulast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                            @(uGroups.Sum(s => s.SaleProductCount)) 种
+                                                                        </a>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <a href="javascript:;" data-gift="true" class="showProducts" data-type="12" data-user="@ufirst.UserId" data-start="@ufirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@ulast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                            @(uGroups.Sum(s => s.GiftProductCount)) 种
+                                                                        </a>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <a href="javascript:;" data-gift="false" class="showProducts" data-type="14" data-user="@ufirst.UserId" data-start="@ufirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@ulast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                            @(uGroups.Sum(s => s.ReturnProductCount))种
+                                                                        </a>
+                                                                    </td>
+
+                                                                </tr>
+
+
+                                                                int h = 0;
+                                                                foreach (IGrouping<string, FinanceReceiveAccountBillModel> dateGroups in uGroups.GroupBy(s => s.CreatedOnUtc.ToShortDateString()))
+                                                                {
+                                                                    var dfirst = uGroups.FirstOrDefault();
+                                                                    var dlast = uGroups.LastOrDefault();
+
+                                                                    <tr class="uGroups" data-i="@g" data-j="@h" style="display:none">
+                                                                        <td class="bs-checkbox ">
+                                                                            @*<input data-index="@h" name="btSelectItem" class="btSelectItem" type="checkbox" value="@dfirst?.BillId">*@
+                                                                        </td>
+                                                                        <td class="text-center">
+                                                                            <a href="javascript:;" class="showGroupsRows2" data-i="@g" data-j="@h" data-open="false"><i class="fa fa-plus"></i></a>
+                                                                        </td>
+                                                                        <td class="text-left w200">
+                                                                            @dateGroups.Key
+                                                                        </td>
+                                                                        <td class="text-center">@(dfirst.HandInStatus == 0 ? "未上交" : "已上交")</td>
+                                                                        <td class="text-right">@dateGroups.Sum(s => s.PaidAmount).ToString("0.00")</td>
+                                                                        <td class="text-right">@dateGroups.Sum(s => s.EPaymentAmount).ToString("0.00")</td>
+
+                                                                        <td class="va-t pn">
+
+                                                                            <table class="table table-condensed table-bordered" style="background-color:transparent;border-bottom:0">
+                                                                                <tr><td class="text-center" colspan="3" style="background-color:transparent"><b>@dateGroups.Sum(s => s.SaleAmountSum).ToString("0.00")</b></td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>销售金额</td><td class="text-right">@dateGroups.Sum(s => s.SaleAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@dateGroups.Sum(s => s.SaleAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@dateGroups.Sum(s => s.SaleOweCashAmount).ToString("0.00")</td></tr>
+                                                                            </table>
+                                                                        </td>
+
+                                                                        <td class="va-t pn">
+
+                                                                            <table class="table table-condensed" style="background-color:transparent">
+                                                                                <tr><td class="text-center" colspan="3"><b>@dateGroups.Sum(s => s.ReturnAmountSum).ToString("0.00")</b></td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>退款金额</td><td class="text-right">@dateGroups.Sum(s => s.ReturnAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@dateGroups.Sum(s => s.ReturnAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@dateGroups.Sum(s => s.ReturnOweCashAmount).ToString("0.00")</td></tr>
+                                                                            </table>
+                                                                        </td>
+                                                                        <td class="va-t pn">
+
+                                                                            <table class="table table-condensed" style="background-color:transparent">
+                                                                                <tr><td class="text-center" colspan="3"><b>@dateGroups.Sum(s => s.ReceiptCashOweCashAmountSum).ToString("0.00")</b></td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>应收金额</td><td class="text-right">@dateGroups.Sum(s => s.ReceiptCashReceivableAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@dateGroups.Sum(s => s.ReceiptCashAdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                            </table>
+                                                                        </td>
+                                                                        <td class="va-t pn">
+
+                                                                            <table class="table table-condensed" style="background-color:transparent">
+                                                                                <tr><td class="text-center" colspan="3"><b>@dateGroups.Sum(s => s.AdvanceReceiptSum).ToString("0.00")</b></td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>预收金额</td><td class="text-right">@dateGroups.Sum(s => s.AdvanceReceiptAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@dateGroups.Sum(s => s.AdvanceReceiptOweCashAmount).ToString("0.00")</td></tr>
+                                                                            </table>
+                                                                        </td>
+                                                                        <td class="va-t pn">
+
+                                                                            <table class="table table-condensed" style="background-color:transparent">
+                                                                                <tr><td class="text-center" colspan="3"><b>@dateGroups.Sum(s => s.CostExpenditureSum).ToString("0.00")</b></td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>支出金额</td><td class="text-right">@dateGroups.Sum(s => s.CostExpenditureAmount).ToString("0.00")</td></tr>
+                                                                                <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@dateGroups.Sum(s => s.CostExpenditureOweCashAmount).ToString("0.00")</td></tr>
+                                                                            </table>
+                                                                        </td>
+
+                                                                        @foreach (var account in dfirst.Accounts)
+                                                                        {
+                                                                            <td class="text-right">
+                                                                                @dateGroups.Sum(s => s.Accounts.Where(a => a.AccountingOptionId == account.AccountingOptionId).Sum(s => s.CollectionAmount)).ToString("0.00")
+                                                                            </td>
+                                                                        }
+
+                                                                        <td class="text-right">@dateGroups.Sum(s => s.PreferentialAmount).ToString("0.00")</td>
+                                                                        <td class="text-center">
+                                                                            <a href="javascript:;" data-type="12" data-gift="false" class="showProducts" data-user="@dfirst.UserId" data-start="@dfirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@dlast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                                @(dateGroups.Sum(s => s.SaleProductCount)) 种
+                                                                            </a>
+                                                                        </td>
+                                                                        <td class="text-center">
+                                                                            <a href="javascript:;" data-type="12" data-gift="true" class="showProducts" data-user="@dfirst.UserId" data-start="@dfirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@dlast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                                @(dateGroups.Sum(s => s.GiftProductCount)) 种
+                                                                            </a>
+                                                                        </td>
+                                                                        <td class="text-center">
+                                                                            <a href="javascript:;" data-type="14" data-gift="false" class="showProducts" data-user="@dfirst.UserId" data-start="@dfirst.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@dlast.CreatedOnUtc.ToString("yyyy-MM-dd")">
+                                                                                @(dateGroups.Sum(s => s.ReturnProductCount))种
+                                                                            </a>
+                                                                        </td>
+                                                                    </tr>
+
+                                                                    int p = 0;
+                                                                    foreach (var item in dateGroups)
+                                                                    {
+
+                                                                        <tr class="dateGroups" data-i="@g" data-j="@h" style="display:none">
+                                                                            <td class="bs-checkbox ">
+                                                                                @*<input data-index="@($"{g}_{h}_{p}")" name="btSelectItem" class="btSelectItem" type="checkbox" value="@item.BillId">*@
+                                                                                <a class="btn btn-sm btn-error btn_addgroup" data-id="@item?.Id" href="@Url.Action("Delete",new { id=item?.Id })" title="撤销">撤 销</a>
+                                                                            </td>
+                                                                            <td></td>
+                                                                            <td>
+                                                                                <a href="@item.BillLink" target="_blank">@item.BillNumber</a>
+                                                                            </td>
+                                                                            <td class="text-center">@(item.HandInStatus == 0 ? "未上交" : "已上交")</td>
+                                                                            <td class="text-right">@item.PaidAmount.ToString("0.00")</td>
+                                                                            <td class="text-right">@item.EPaymentAmount.ToString("0.00")</td>
+
+                                                                            <td class="va-t pn">
+
+                                                                                <table class="table table-condensed table-bordered" style="background-color:transparent;border-bottom:0">
+                                                                                    <tr><td class="text-center" colspan="3" style="background-color:transparent"><b>@item.SaleAmountSum.ToString("0.00")</b></td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>销售金额</td><td class="text-right">@item.SaleAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@item.SaleAdvanceReceiptAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@item.SaleOweCashAmount.ToString("0.00")</td></tr>
+                                                                                </table>
+                                                                            </td>
+
+                                                                            <td class="va-t pn">
+
+                                                                                <table class="table table-condensed" style="background-color:transparent">
+                                                                                    <tr><td class="text-center" colspan="3"><b>@item.ReturnAmountSum.ToString("0.00")</b></td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>退款金额</td><td class="text-right">@item.ReturnAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@item.ReturnAdvanceReceiptAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@item.ReturnOweCashAmount.ToString("0.00")</td></tr>
+                                                                                </table>
+                                                                            </td>
+                                                                            <td class="va-t pn">
+
+                                                                                <table class="table table-condensed" style="background-color:transparent">
+                                                                                    <tr><td class="text-center" colspan="3"><b>@item.ReceiptCashOweCashAmountSum.ToString("0.00")</b></td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>应收金额</td><td class="text-right">@item.ReceiptCashReceivableAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>预收款</td><td class="text-right">@item.ReceiptCashAdvanceReceiptAmount.ToString("0.00")</td></tr>
+                                                                                </table>
+                                                                            </td>
+                                                                            <td class="va-t pn">
+
+                                                                                <table class="table table-condensed" style="background-color:transparent">
+                                                                                    <tr><td class="text-center" colspan="3"><b>@item.AdvanceReceiptSum.ToString("0.00")</b></td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>预收金额</td><td class="text-right">@item.AdvanceReceiptAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@item.AdvanceReceiptOweCashAmount.ToString("0.00")</td></tr>
+                                                                                </table>
+                                                                            </td>
+                                                                            <td class="va-t pn">
+
+                                                                                <table class="table table-condensed" style="background-color:transparent">
+                                                                                    <tr><td class="text-center" colspan="3"><b>@item.CostExpenditureSum.ToString("0.00")</b></td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">=</td><td>支出金额</td><td class="text-right">@item.CostExpenditureAmount.ToString("0.00")</td></tr>
+                                                                                    <tr style="border-top: 1px solid #eeeeee;"><td class="text-center">-</td><td>欠款</td><td class="text-right">@item.CostExpenditureOweCashAmount.ToString("0.00")</td></tr>
+                                                                                </table>
+                                                                            </td>
+
+                                                                            @foreach (var account in item.Accounts)
+                                                                            {
+                                                                                <td class="text-right">
+                                                                                    @account.CollectionAmount.ToString("0.00")
+                                                                                </td>
+                                                                            }
+
+                                                                            <td class="text-right">@item.PreferentialAmount.ToString("0.00")</td>
+                                                                            <td class="text-center">
+                                                                                <a href="javascript:;" data-type="12" data-gift="false" class="showProducts" data-user="@item.UserId" data-start="@item.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@item.CreatedOnUtc.ToString("yyyy-MM-dd")">@(item.SaleProductCount) 种</a>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                <a href="javascript:;" data-type="12" data-gift="true" class="showProducts" data-user="@item.UserId" data-start="@item.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@item.CreatedOnUtc.ToString("yyyy-MM-dd")">@(item.GiftProductCount) 种</a>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                <a href="javascript:;" data-type="14" data-gift="false" class="showProducts" data-user="@item.UserId" data-start="@item.CreatedOnUtc.ToString("yyyy-MM-dd")" data-end="@item.CreatedOnUtc.ToString("yyyy-MM-dd")">@(item.ReturnProductCount)种</a>
+                                                                            </td>
+                                                                        </tr>
+
+                                                                        p++;
+                                                                    }
+
+                                                                    h++;
+
+                                                                }
+
+                                                                g++;
+                                                            }
+
+                                                        }
+                                                    </tbody>
+                                                </table>
+
+                                            </div>
+                                        </div>
+
+                                        @{
+                                            var pager2 = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+                                        }
+
+                                        @if (!pager2.IsEmpty())
+                                        {
+                                            <div class="fixed-table-pagination" style="display: block;">
+                                                @Html.Raw(pager2.ToString())
+                                            </div>
+                                        }
+
+                                    </div>
+
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</section>
+
+@{
+    //客户选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+    //单据商品汇总
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ProductsForm" }, { "modalWindow", "ProductsModalWindow" }, { "windowWidth", "1000px" }, { "showSave", false } });
+}
+
+@{
+    Html.AddCssFileParts(ResourceLocation.Head, "~/assets/skin/default_skin/css/theme.css");
+    Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Toastr/toastr.css");
+    Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Tables/bootstrap-table.css");
+    Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/datepicker/css/bootstrap-datetimepicker.css");
+    Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/daterange/daterangepicker.css");
+    Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/colorpicker/css/bootstrap-colorpicker.min.css");
+    Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/tagmanager/tagmanager.css");
+    Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/fancytree/skin-win8/ui.fancytree.min.css");
+    Html.AddCssFileParts(ResourceLocation.Head, "~/Content/Site.css");
+}
+
+@section CurPageScripts
+{
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            //toastr
+
+
+            //日期选择控件初始
+            $('.datetimepicker').datetimepicker({ locale: 'zh-cn' });
+
+            //高级搜索
+            $("#panel0 #AdvancedSearch").click(function () {
+                var ico = $(this).find(".fa");
+                if (ico.hasClass('fa-angle-double-right'))
+                    ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+                else
+                    ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+                $("#panel0").find(".panel-body").toggleClass("hidden animated fadeIn");
+            });
+
+            //明细查询需要主页面参数
+            var parms = {};
+            parms.status = $("#Status").val();
+            parms.start = $("#beginDate").val();
+            parms.end = $("#endDate").val();
+
+            //声明表单
+            var $formSection = $(".formSection");
+            var $formobj = $("#ModalForm");
+
+            //打印
+            $("#btn_print", $formSection).click(function () {
+                alert("打印");
+            });
+
+            //上交
+            $("#btn_handIn", $formSection).click(function () {
+                var selectData = "";
+                //获取用户选择的单据
+                var arrselections = $("input[name='btSelectItem']:checked").each(function (i) {//把所有被选中的复选框的值存入数组
+                    var eee = $(this).val();
+                    var tr = ($(this)).parent().parent();
+                    var td2 = $(tr).children('td').eq(1);
+                    var a = $(td2).children('a').text();
+
+                    if (a != "") {
+                        selectData += (selectData != "" ? "," : "") + a;
+                    }
+                });
+
+                if (selectData == "") {
+                    $(this).showToastr("没有选择数据");
+                    return false;
+                }
+
+                var $tb = $("#datatable");
+                WinMsg.confirm({ message: "上交选择的单据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    $.ajax({
+                        type: "get",
+                        url: "/FinanceReceiveAccount/HandIn",
+                        data: {
+                            selectData: selectData
+                        },
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (result) {
+                            if (result.Success) {
+                                toastr.success(result.Message);
+
+                                var startTime = $("#datetimepicker_StartTime").val();
+                                var endTime = $("#datetimepicker_EndTime").val();
+                                var employeeId = $("#EmployeeId").val();
+                                var payeerId = $("#PayeerId").val();
+                                window.location.href = "/FinanceReceiveAccount/List?StartTime=" + startTime + "&EndTime=" + endTime + "&EmployeeId=" + employeeId + "&PayeerId=" + payeerId;
+                            }
+                            else {
+                                $(this).showToastr(result.Message);
+                            }
+                        },
+                        error: function () {
+                            $(this).showToastr('网络错误，请重新保存！');
+                        }
+                    });
+                })
+
+            });
+
+            //撤销
+            $("#btn_cancle", $formSection).click(function () {
+                var selectData = "";
+                //获取用户选择的单据
+                var arrselections = $("input[name='btSelectItem']:checked").each(function (i) {//把所有被选中的复选框的值存入数组
+                    var eee = $(this).val();
+                    var tr = ($(this)).parent().parent();
+                    var td2 = $(tr).children('td').eq(1);
+                    var a = $(td2).children('a').text();
+
+                    if (a != "") {
+                        selectData += (selectData != "" ? "," : "") + a;
+                    }
+                });
+
+                if (selectData == "") {
+                    $(this).showToastr("没有选择数据");
+                    return false;
+                }
+
+                var $tb = $("#datatable");
+                WinMsg.confirm({ message: "撤销选择的单据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    $.ajax({
+                        type: "get",
+                        url: "/FinanceReceiveAccount/Cancle",
+                        data: {
+                            selectData: selectData
+                        },
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (result) {
+                            if (result.Success) {
+                                toastr.success(result.Message);
+                                var startTime = $("#datetimepicker_StartTime").val();
+                                var endTime = $("#datetimepicker_EndTime").val();
+                                var employeeId = $("#EmployeeId").val();
+                                var payeerId = $("#PayeerId").val();
+                                window.location.href = "/FinanceReceiveAccount/List?StartTime=" + startTime + "&EndTime=" + endTime + "&EmployeeId=" + employeeId + "&PayeerId=" + payeerId;
+                            }
+                            else {
+                                $(this).showToastr(result.Message);
+                            }
+                        },
+                        error: function () {
+                            $(this).showToastr('网络错误，请重新保存！');
+                        }
+                    });
+                })
+
+            });
+
+
+            //折叠分组
+            $(".showGroupsRows").click(function () {
+                var u = $(this).attr("data-i");
+                var d = $(this).attr("data-j");
+                var open = $(this).attr("data-open");
+                var uGroups = $("#gridViewTable").find(".uGroups");
+                var dateGroups = $("#gridViewTable").find(".dateGroups");;
+                if (open == "true") {
+
+                    $.each(uGroups, function (i, tr) {
+                        var ui = $(tr).attr("data-i");
+                        var uj = $(tr).attr("data-j");
+                        if (u == ui) {
+                            if (uj != d) {
+                                $(tr).hide();
+                                var sgr = $(tr).find(".showGroupsRows")[0];
+                                $(sgr).attr("data-open", false);
+                                $(sgr).html('<i class="fa fa-plus"></i>');
+
+
+                                $.each(dateGroups, function (j, dtr) {
+                                    var dui = $(dtr).attr("data-i");
+                                    var duj = $(dtr).attr("data-j");
+                                    if (dui == ui && duj != d) {
+                                        $(dtr).hide();
+                                    }
+                                });
+                            }
+                            else {
+                                $.each(dateGroups, function (j, dtr) {
+                                    var dui = $(dtr).attr("data-i");
+                                    var duj = $(dtr).attr("data-j");
+                                    if (dui == ui && duj == d) {
+                                        $(dtr).hide();
+                                    }
+                                });
+                            }
+
+                            //console.log(ui + " - " + uj);
+                            //return false
+                        }
+                    });
+                    $(this).attr("data-open", false);
+                    $(this).html('<i class="fa fa-plus"></i>');
+                }
+                else {
+                    $.each(uGroups, function (i, tr) {
+                        var ui = $(tr).attr("data-i");
+                        var uj = $(tr).attr("data-j");
+                        if (u == ui) {
+                            if (uj != d) {
+                                $(tr).show();
+                            }
+                            $.each(dateGroups, function (j, dtr) {
+                                var dui = $(dtr).attr("data-i");
+                                var duj = $(dtr).attr("data-j");
+                                if (dui == ui && duj == d) {
+                                    $(dtr).show();
+                                }
+                            });
+                            //console.log(ui + " - " + uj);
+                            //return false
+                        }
+                    });
+                    $(this).attr("data-open", true);
+                    $(this).html('<i class="fa fa-minus"></i>');
+                }
+            });
+
+            $(".showGroupsRows2").click(function () {
+                var u = $(this).attr("data-i");
+                var d = $(this).attr("data-j");
+                var open = $(this).attr("data-open");
+                var uGroups = $("#gridViewTable2").find(".uGroups");
+                var dateGroups = $("#gridViewTable2").find(".dateGroups");;
+                if (open == "true") {
+
+                    $.each(uGroups, function (i, tr) {
+                        var ui = $(tr).attr("data-i");
+                        var uj = $(tr).attr("data-j");
+                        if (u == ui) {
+                            if (uj != d) {
+                                $(tr).hide();
+                                var sgr = $(tr).find(".showGroupsRows2")[0];
+                                $(sgr).attr("data-open", false);
+                                $(sgr).html('<i class="fa fa-plus"></i>');
+
+
+                                $.each(dateGroups, function (j, dtr) {
+                                    var dui = $(dtr).attr("data-i");
+                                    var duj = $(dtr).attr("data-j");
+                                    if (dui == ui && duj != d) {
+                                        $(dtr).hide();
+                                    }
+                                });
+                            }
+                            else {
+                                $.each(dateGroups, function (j, dtr) {
+                                    var dui = $(dtr).attr("data-i");
+                                    var duj = $(dtr).attr("data-j");
+                                    if (dui == ui && duj == d) {
+                                        $(dtr).hide();
+                                    }
+                                });
+                            }
+
+                            //console.log(ui + " - " + uj);
+                            //return false
+                        }
+                    });
+                    $(this).attr("data-open", false);
+                    $(this).html('<i class="fa fa-plus"></i>');
+                }
+                else {
+                    $.each(uGroups, function (i, tr) {
+                        var ui = $(tr).attr("data-i");
+                        var uj = $(tr).attr("data-j");
+                        if (u == ui) {
+                            if (uj != d) {
+                                $(tr).show();
+                            }
+                            $.each(dateGroups, function (j, dtr) {
+                                var dui = $(dtr).attr("data-i");
+                                var duj = $(dtr).attr("data-j");
+                                if (dui == ui && duj == d) {
+                                    $(dtr).show();
+                                }
+                            });
+                            //console.log(ui + " - " + uj);
+                            //return false
+                        }
+                    });
+                    $(this).attr("data-open", true);
+                    $(this).html('<i class="fa fa-minus"></i>');
+                }
+            });
+
+            //单据商品汇总
+            $(".showProducts").click(function () {
+                var params =
+                {
+                    userId: $(this).attr("data-user"),
+                    billType: $(this).attr("data-type"),
+                    gift: $(this).attr("data-gift"),
+                    start: $(this).attr("data-start"),
+                    end: $(this).attr("data-end"),
+                };
+                var actionUrl = "/financereceiveaccount/AsyncShowProductsPopup";
+                $(this).showModalV2($("#ProductsModalWindow"), actionUrl, params, "销售商品", $("#ProductsForm"), function (rows) {
+                });
+            });
+
+        });
+
+
+                //function CheckAll(id) {
+                //    var is_check = $("input[name='btSelectAll']:checkbox").is(':checked');
+                //    var coll = $("input[type='checkbox']:checkbox");
+                //    if (is_check == true) {
+                //        for (var i = 0; i < coll.length; i++)
+                //            coll[i].checked = true;
+                //    }
+                //    else {
+                //        for (var i = 0; i < coll.length; i++)
+                //            coll[i].checked = false;
+                //    }
+                //}
+
+                //function Checkufirst(id) {
+                //    var is_check = $('#' + id).is(':checked');
+                //    var coll = $("input[class$='" + id + "']:checkbox");
+                //    if (is_check == true) {
+                //        for (var i = 0; i < coll.length; i++)
+                //            coll[i].checked = true;
+                //    }
+                //    else {
+                //        for (var i = 0; i < coll.length; i++)
+                //            coll[i].checked = false;
+                //    }
+
+                //}
+
+                //function CheckSecond(id) {
+                //    var is_check = $('#' + id).is(':checked');
+                //    var coll = $("input[class='" + id + "']:checkbox");
+                //    if (is_check == true) {
+                //        for (var i = 0; i < coll.length; i++)
+                //            coll[i].checked = true;
+                //    }
+                //    else {
+                //        for (var i = 0; i < coll.length; i++)
+                //            coll[i].checked = false;
+                //    }
+                //}
+
+
+    </script>
+}

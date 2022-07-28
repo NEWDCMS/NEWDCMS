@@ -1,0 +1,2485 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Sales;
+@using DCMS.Services.Sales;
+@using DCMS.Core.Infrastructure;
+
+@model SaleBillModel
+
+<script type="text/javascript">
+	jQuery(document).ready(function () {
+		"use strict";
+		// Init Theme Core
+		Core.init({
+			sbm: "sb-l-c",
+		});
+		// Init Demo JS
+		Demo.init();
+
+		var model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+		if (model.ReversedStatus) {
+			$("#inkpadBox").hide();
+            $("#inkpadBox1").css('display', 'block');
+		}
+
+        if (model.AllowSelectionDateRange > 0)
+        {
+			var maxDate = $(this).dateFtt("yyyy-MM-dd", new Date());
+			var minDate = new Date(maxDate).setDate(new Date(maxDate).getDate() - model.AllowSelectionDateRange);
+			minDate = $(this).dateFtt("yyyy-MM-dd", new Date(minDate));
+
+			$('#datetimepicker_TransactionDate').data("DateTimePicker").maxDate(maxDate);
+			$('#datetimepicker_TransactionDate').data("DateTimePicker").minDate(minDate);
+        }
+
+        //隐藏赠品保存按钮
+        $("#btnSave_GiveQuotaProductWindows").hide();
+
+
+		/*
+		 * ======================================================
+		 * mschen 2018-12-5 11:24:43 begin
+		 * ======================================================
+		 */
+
+		//获取备注
+		var remarkConfigs = new Array();
+		$(this).remoteRequest('GET', '/Setting/GetRemarkConfigDic', { storeId: 0 }, function (data) {
+			if (data.Success) {
+				var ks = Object.keys(data.Data);
+				var vs = Object.values(data.Data);
+				ks.forEach(function (a, b) {
+					var remarkConfit = {};
+					remarkConfit.Id = a;
+					remarkConfit.Name = vs[b];
+					remarkConfigs.push(remarkConfit);
+				});
+			}
+		});
+
+		//审核
+		$("#btn_auditing").click(function () {
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+			var returnUrl = "@Context.Request.Query["returnURL"]";
+            if (returnUrl.indexOf("AuditedStatus=") == -1) {
+                if (returnUrl.indexOf("?") == -1) {
+                    returnUrl += "?";
+                } else {
+                    returnUrl += "&";
+                }
+                returnUrl += "AuditedStatus=False";
+            } else {
+                if (returnUrl.indexOf("AuditedStatus=False") == -1) {
+                    returnUrl = returnUrl.replace("AuditedStatus=", "AuditedStatus=False");
+                }
+            }
+            returnUrl = returnUrl.replace(/amp;/g, "");
+			$(this).remoteSubmit("get", "/SaleBill/Auditing", { id: "@Model.Id" }, null, function (rst) {
+				if (rst.Success) {
+					location.href = returnUrl;
+				}
+			}, null, loadingButton);
+		});
+
+		$("#btn_copy").click(function () {
+            window.location.href = "/SaleBill/Create?orderId=@Model.Id&isCopy=true"
+		});
+
+		//红冲
+		$("#btn_red").click(function () {
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+
+			WinMsg.confirm({ message: "确认要红冲吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+				loadingButton.start();
+				$(this).remoteSubmit("get", "/SaleBill/Reverse", { id: "@Model.Id" }, null, function (rst) {
+                    if (rst.Success) {
+                        location.href = "@Context.Request.Query["returnURL"]";
+                    }
+				}, null, loadingButton);
+			});
+		});
+
+		//作废
+        $("#btn_cancel").click(function () {
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+
+			WinMsg.confirm({ message: "确认要作废吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+				loadingButton.start();
+				$(this).remoteSubmit("get", "/SaleBill/Delete", { id: "@Model.Id" }, null, function () { location.href = "/SaleBill/List"; }, null, loadingButton);
+			});
+		});
+
+		//打印
+		$("#btn_print").click(function () {
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+			WinMsg.confirm({ message: "确认要打印吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+				loadingButton.start();
+				var setting = {}
+				var LODOP = null;
+				var rs = $(this).getSyncData("/SaleBill/PrintSetting", null, "get");
+				if (rs.Success) {
+					setting = rs.Data;
+					loadCLodop(document, setting.PrintPort, () => {
+                        //判断页面是否已加载LODOP
+                        if (LODOP == null || LODOP == undefined) {
+                            LODOP = getLodopFirst(document);
+                            LODOP = getLodopSecond(document);
+                        }
+						if (LODOP == null || LODOP == undefined) {
+							loadingButton.stop();
+							return;
+						} else {
+							$("#printData").html("");
+						}
+						$(this).remoteSubmit("get", "/SaleBill/Print", { selectData: "@Model.Id" }, null, function (result) {
+							if (result.Success) {
+								debugger;
+								var html = result.Data;
+								LODOP.PRINT_INIT("销售单-@Model?.BillNumber");
+								if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+									LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+								}
+								if (setting.IsPrintPageNumber) {
+									LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+								}
+								if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+									LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+								}
+								LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+								LODOP.PREVIEW(true);
+							}
+							else {
+								$(this).showToastr(result.Message);
+							}
+						}, null, loadingButton);
+					});
+				}
+			});
+		});
+
+        //存在客户时显示客户可用欠款
+        if ($("#TerminalId").val() > 0) {
+            $("#RemainingAdvanceAmount_Box").show();
+            $("#TerminalAvailableAmount_Box").show();
+        }
+
+        //选择终端
+        $(document).on('click', "#btn_search_customer", function () {
+            var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+            $(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { ids: "" }, "选择终端", $("#TerminalSelectForm"), function (rows) {
+            });
+        });
+        //选择终端绑定事件
+        window.operateEventsPopTerminal = {
+            'click .rowSelect': function (e, value, row, index) {
+                try {
+                    var businessUserId = $("#BusinessUserId").val();
+
+                    //检查是否需要提供赠品
+                    $(this).remoteRequest('GET', '/Terminal/CheckTerminalHasGives', {
+                        terminalId: row.Id,
+                        businessUserId: businessUserId
+                    },
+                        function (data) {
+                            if (data.HasGives) {
+                                $("#GiveQuotaSelectBox").show();
+                            }
+                            else {
+                                $("#GiveQuotaSelectBox").hide();
+                            }
+                        });
+
+                    $("#ChannelId").val(row.ChannelId);
+                    $("#TerminalId").val(row.Id);
+                    $("#TerminalName").val(row.Name);
+                    $('#TerminalSelectModalWindow').modal('hide');
+
+                    if (row.Id > 0) {
+                        $(".TBalance_Box").show();
+                    }
+                    else {
+                        $(".TBalance_Box").hide();
+                    }
+
+                    //终端最大欠款
+                    $("#TerminalMaxAmount").val(parseFloat(row.MaxAmountOwed).toFixed(2));
+                    refreshTerminal();
+                }
+                catch (err) {
+                    console.log(err);
+                    $(this).showToastr(err);
+                    return;
+                }
+            }
+        };
+
+
+        //刷新客户账户
+        $("body").click(function () {
+            refreshTerminal();
+        });
+
+        function refreshTerminal()
+        {
+            var terminalid = $("#TerminalId").val();
+            if (terminalid != null && terminalid != "" && terminalid != 0) {
+                $(this).remoteRequest('GET', '/Terminal/GetTerminalBalance', { terminalId: terminalid }, function (data) {
+                    $("#TBalance_MaxOweCashBalance").val(parseFloat(data.MaxOweCashBalance).toFixed(2));
+                    $("#TBalance_AdvanceAmountBalance").val(parseFloat(data.AdvanceAmountBalance).toFixed(2));
+                    $("#TBalance_TotalOweCash").val(parseFloat(data.TotalOweCash).toFixed(2));
+
+                });
+            }
+        }
+
+		 //选择业务员，获取业务员额度
+        $("#BusinessUserId").change(function () {
+            var businessUserId = $("#BusinessUserId").val();
+            if (businessUserId != null) {
+                $(".UBalance_Box").show();
+            }
+            else {
+                $(".UBalance_Box").hide();
+            }
+            $(document).remoteRequest('GET', '/RecordingVoucher/GetUserOwnCash', { userId: businessUserId }, function (data) {
+                //业务员已用欠款
+                $("#UserUsedAmount").val(parseFloat(data.UserUsedAmount).toFixed(2));
+                //业务员可用欠款
+                $("#UserAvailableAmount").val(parseFloat(data.UserAvailableOweCash).toFixed(2));
+            });
+
+        });
+
+		//商品列表选择赋值
+		window.operateEventsPop = {
+            'click .rowSelect': function (e, value, row, index)
+            {
+                //console.log(row);
+				//return false;
+                try
+                {
+					var index = $(this).attr("data-id");
+					var wareHouseId = $("#WareHouseId").val();
+					var terminalId = $("#TerminalId").val();
+
+                    console.log(row.ProductCode);
+
+
+							//-------------------
+							var keys = Object.keys(row.Units);
+							var isMinUnitSale = $("#IsMinUnitSale").val();
+							var dateKeys = Object.keys(row.ProductTimes);
+
+							//1.初始商品单位
+							//初始最小单位单位
+							var unitId = row.SmallUnitId;
+							var unitName = keys[0];
+							//如果不是最小单位
+							if (isMinUnitSale != "1" && isMinUnitSale != "True") {
+								//有大单位赋值大单位
+								if (row.BigUnitId != null && row.BigUnitId != 0) {
+									unitId = row.BigUnitId;
+									unitName = keys[2];
+								} else {
+									//有中单位赋值中单位
+									if (row.StrokeUnitId != null && row.StrokeUnitId != 0) {
+										unitId = row.StrokeUnitId;
+										unitName = keys[1];
+									}
+								}
+							}
+
+							//成本价
+							var costPrice = 0;
+							var ck = Object.keys(row.CostPrices);
+							var cv = Object.values(row.CostPrices);
+							ck.forEach(function (a, b) {
+								if (a == unitId) {
+									costPrice = cv[b];
+								}
+							});
+
+							//2.初始商品价格、参考价格
+							var referPrices; //参照价格
+							var defaultAmountId = $("#DefaultAmountId").val();
+							//默认价格
+							var prices;
+							//如果此商品有价格体系
+							row.ProductTierPrices.forEach(function (a, b) {
+								var planIdTypeId = a.PricesPlanId + "_" + a.PriceTypeId;
+								if (defaultAmountId == planIdTypeId) {
+									if (unitId == row.SmallUnitId) {
+										prices = a.SmallUnitPrice;
+										if (model.VariablePriceCommodity == 0) {
+											referPrices = a.SmallUnitPrice;
+										}
+									}
+									else if (unitId == row.StrokeUnitId) {
+										prices = a.StrokeUnitPrice;
+										if (model.VariablePriceCommodity == 0) {
+											referPrices = a.StrokeUnitPrice;
+										}
+									}
+									else if (unitId == row.BigUnitId) {
+										prices = a.BigUnitPrice;
+										if (model.VariablePriceCommodity == 0) {
+											referPrices = a.BigUnitPrice;
+										}
+									}
+								}
+							});
+
+							//3.参考批发价格
+							if (model.VariablePriceCommodity !== 0) {
+								if (unitId == row.SmallUnitId) {
+									referPrices = row.Prices[0].ProductPrice.TradePrice;
+								}
+								else if (unitId == row.StrokeUnitId) {
+									referPrices = row.Prices[1].ProductPrice.TradePrice;
+								}
+								else if (unitId == row.BigUnitId) {
+									referPrices = row.Prices[2].ProductPrice.TradePrice;
+								}
+							}
+
+							//4.库存数量
+							var stockQty = 0;
+							var actualQty = 0;
+							var unableQty = 0;
+
+							//仓库Id
+							var wareHouseId = $("#WareHouseId").val();
+							row.StockQuantities.forEach(function (a, b) {
+								if (a.WareHouseId == wareHouseId) {
+									stockQty = model.APPShowOrderStock == true ? a.CurrentQuantity : a.UsableQuantity;
+									actualQty = a.UsableQuantity;
+									unableQty = a.CurrentQuantity - a.UsableQuantity;
+								}
+							});
+
+							//5.如果不允许改价,则用商品批发价
+							//if (row.IsAdjustPrice == false) {
+							//	if (unitId == row.SmallUnitId) {
+							//		prices = row.Prices[0].ProductPrice.TradePrice;
+							//	}
+							//	else if (unitId == row.StrokeUnitId) {
+							//		prices = row.Prices[1].ProductPrice.TradePrice;
+							//	}
+							//	else if (unitId == row.BigUnitId) {
+							//		prices = row.Prices[2].ProductPrice.TradePrice;
+							//	}
+
+							//}
+
+							$("#SaleItems").bootstrapTable('updateRow',
+								{
+								index: index, row: {
+									ProductCode: row.ProductCode,
+									ProductId: row.Id,
+									ProductName: row.Name,
+									BarCode: row.SmallBarCode,
+									UnitConversion: row.UnitConversion,
+									ProductTimes: row.ProductTimes,
+									IsManufactureDete: row.IsManufactureDete,
+									ManufactureDete: dateKeys[0],
+									Units: row.Units,
+									UnitId: unitId,
+									UnitName: unitName,
+									Price: prices,
+									Quantity: 0,
+									Amount: 0,
+									CostPrices: row.CostPrices,
+									CostPrice: costPrice,
+									CostAmount: 0,
+									Prices: row.Prices,
+									ProductTierPrices: row.ProductTierPrices,  //价格体系
+									StockQty: stockQty,
+									UnabledStockQty: unableQty,
+									StockQuantity: actualQty,
+									StockQuantities: row.StockQuantities, //库存数量
+									BigQuantity: row.BigQuantity,//大转小
+									StrokeQuantity: row.StrokeQuantity,//中转小
+									SmallUnitId: row.SmallUnitId,  //小单位
+									StrokeUnitId: row.StrokeUnitId,  //中单位
+									BigUnitId: row.BigUnitId,  //大单位
+									IsAdjustPrice: row.IsAdjustPrice, //是否允许改价
+									ReferPrices: referPrices, //参照价格
+									IsFlavorProduct: row.IsFlavor, //商品口味
+									Profit: 0, //利润
+									CostProfitRate: 0, //成本利润率
+									TaxRate: "@Model.TaxRate", //税率%
+									ContainTaxPrice: 0, //含税价格
+									TaxPrice: 0, //税额
+									TaxPriceAmount: 0 //税价总计
+								}
+							});
+
+                            $('#ModalProductWindows').modal('hide');
+
+
+
+				}
+                catch (err)
+                {
+					console.log(err);
+					$(this).showToastr(err);
+					return;
+				}
+			}
+		};
+
+		//口味列表选择赋值
+		window.operateEventsPopFlavor = {
+			'click .rowSelect': function (e, value, row, index) {
+				try {
+					var selectIndex = $(this).attr("data-id");
+					var oldrow = $('#SaleItems').bootstrapTable('getData')[selectIndex];
+					var quantity = row.Quantity;
+					var prices = oldrow.Price;
+					var newAmount = parseFloat(quantity) * parseFloat(prices);
+					var amount = parseFloat(newAmount).toFixed(2);
+					//成本金额
+					var costAmount = quantity * oldrow.CostPrice;
+					//含税价格
+					var containTaxPrice = parseFloat((1 + oldrow.TaxRate / 100)) * oldrow.Price;
+					//税额
+					var taxPrice = parseFloat(oldrow.TaxRate / 100) * oldrow.Price;
+					//价税总计
+					var taxPriceAmount = oldrow.ContainTaxPrice * oldrow.Quantity;
+					//利润
+					var profit = taxPriceAmount - costAmount;
+					//成本利润率
+					var costProfitRate = 0;
+					if (costAmount == 0) {
+						costProfitRate = 100;
+					} else {
+						costProfitRate = profit / costAmount * 100;
+					}
+
+					$("#SaleItems").bootstrapTable('updateRow', {
+						index: selectIndex, row: { IsFlavorProduct: true, FlavorId: row.Id, Quantity: row.Quantity, Amount: amount, CostAmount: costAmount, ContainTaxPrice: containTaxPrice, TaxPrice: taxPrice, TaxPriceAmount: taxPriceAmount, Profit: profit, CostProfitRate: costProfitRate }
+					});
+					$('#FlavorModalWindows').modal('hide');
+
+				}
+				catch (err) {
+					console.log(err);
+					$(this).showToastr(err);
+					return;
+				}
+			}
+		};
+
+		//计算已收金额
+		function SumAlreadyAmount() {
+			var sumAlreadyAmount = 0;
+			var colls = $("input[name='CollectionAmount']");
+			for (var i = 0; i < colls.length; i++) {
+
+				if (isNaN($(colls[i]).val()) || $(colls[i]).val() == "") {
+					$(colls[i]).val("0.00")
+				}
+
+				sumAlreadyAmount = parseFloat(sumAlreadyAmount) + parseFloat(colls[i].value);
+			}
+			return sumAlreadyAmount;
+		}
+
+	    //获取预收金额
+        function SumAdvanceReceiptAmount() {
+            var sumAdvanceReceiptAmount = 0;
+            var colls = $("input[name='CollectionAmount']");
+            for (var i = 0; i < colls.length; i++) {
+                if ($(colls[i]).attr("data-codetype") == 24) {
+                    if (isNaN($(colls[i]).val()) || $(colls[i]).val() == "") {
+                        $(colls[i]).val("0.00")
+                    }
+                    sumAdvanceReceiptAmount = parseFloat(sumAdvanceReceiptAmount) + parseFloat(colls[i].value);
+                }
+            }
+            return sumAdvanceReceiptAmount;
+        }
+
+		//表单检查
+        var formValidator = function ()
+        {
+			var isVaild = true;
+
+            var advanceAmountBalance = $("#TBalance_AdvanceAmountBalance").val();
+
+			if ($("#TerminalId").val() == "" || $("#TerminalId").val() == "0") {
+				$("#TerminalId").focus();
+				$(this).showToastr("请先选择客户！");
+				return false;
+			}
+			else if ($("#BusinessUserId").val() == "") {
+				$("#BusinessUserId").focus();
+				$(this).showToastr("请先选择业务员！");
+				return false;
+			}
+			else if ($("#WareHouseId").val() == "") {
+				$("#WareHouseId").focus();
+				$(this).showToastr("请先选择仓库！");
+				return false;
+			}
+			else if ($("#DeliveryUserId").val() == "") {
+				$("#DeliveryUserId").focus();
+				$(this).showToastr("请先选择送货员！");
+				return false;
+			}
+			else if ($("input[name='TransactionDate']").val() == "") {
+				$("input[name='TransactionDate']").focus();
+				$(this).showToastr("请先选择交易日期！");
+				return false;
+			}
+			else if ($("#IsMinUnitSale").val() == "") {
+				$("#IsMinUnitSale").focus();
+				$(this).showToastr("请先选择按最小单位销售！");
+				return false;
+			}
+			else if ($("#DefaultAmountId").val() == "") {
+				$("#DefaultAmountId").focus();
+				$(this).showToastr("请先选择价格体系！");
+				return false;
+			}
+            else if (parseFloat(SumAdvanceReceiptAmount()) > 0 && parseFloat(advanceAmountBalance) < parseFloat(SumAdvanceReceiptAmount()))
+			{
+                //advanceAmountBalance
+                $("input[name='CollectionAmount']")[0].focus();
+                $(this).showToastr("预收款账户金额不足，请切换账户！");
+                isVaild = false;
+			}
+
+
+			return isVaild;
+		}
+
+		//销售单项目
+		$("#SaleItems").bootstrapTable(
+			{
+	        @Html.Raw(Model.Items.Count > 0 ? "url: '/SaleBill/AsyncSaleItems?saleBillId=" + Model.Id + "&targetBillId=" + Model.TargetBillIdByCopy + "'," : (Model.OrderId>0?"url: '/SaleReservationBill/AsyncSaleReservationItems?saleReservationBillId=" + Model.OrderId + "',":"length: 9,"))
+	        @*@Html.Raw(Model.Items.Count > 0 ? "method: 'post',queryParams:'function (params){ params.saleBill"+ Model + "  return params;}'" : ""))*@
+			striped: true,
+			cache: false,
+			pagination: true,
+			showPagination: false,
+			sidePagination: "server",
+			sortable: false,
+			sortOrder: "asc",
+			search: false,
+			strictSearch: false,
+			showColumns: false,
+			showRefresh: false,
+			clickToSelect: false,
+			uniqueId: "id",
+			showToggle: false,
+			editable: true,
+			cardView: false,
+			detailView: false,
+			showFooter: true,
+			onLoadSuccess: function (data) {
+				$(".fixed-table-pagination").hide();
+                if (data.hidden == true) {
+                    $('#SaleItems').bootstrapTable('showColumn', 'TaxRate');
+                    $('#SaleItems').bootstrapTable('showColumn', 'ContainTaxPrice');
+                    $('#SaleItems').bootstrapTable('showColumn', 'TaxPrice');
+                    $('#SaleItems').bootstrapTable('showColumn', 'TaxPriceAmount');
+                }
+			},
+            onPostBody: function (data) {
+                $("[data-toggle='popover']").popover();
+            },
+			columns: [
+				{
+                    title: '<i class="fa fa-gear fs18"></i>',
+                    align: 'center', formatter: function (value, row, index) {
+						return m_pagerow + index + 1;
+					},
+					footerFormatter: function (value) {
+						return '总计';
+					}
+				},
+				{
+					field: 'ProductCode',
+					title: '商品编号',
+					align: 'center', visible: false
+				},
+				{ field: 'UnitId', visible: false },
+				{ field: 'Units', visible: false },
+				{ field: 'Prices', visible: false },
+				{ field: 'ProductTierPrices', visible: false },  //价格体系
+				{ field: 'SmallUnitId', visible: false }, //小单位
+				{ field: 'StrokeUnitId', visible: false }, //中单位
+				{ field: 'BigUnitId', visible: false }, //大单位
+
+				{ field: 'ProductId', visible: false },
+				{ field: 'IsAdjustPrice', visible: false },
+				{ field: 'ReferPrices', visible: false }, //参照价格
+				{
+					field: 'ProductName',
+					title: '商品名称',
+					align: 'center',
+					width:300,
+                    formatter: function (value) {
+                        return (value == 0 || value == "" || value == undefined) ? "" : @Model.Id == 0 ? $(this).cutString(value, 50) : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='' data-container='body' data-toggle='popover' data-placement='top' data-content='" + value + "'>" + $(this).cutString(value, 50) + "</a>";
+                    }
+				},
+				{
+					field: 'SmallBarCode',
+					title: '条形码',
+                    align: 'center',
+                    formatter: $(this).formatIsNull
+				},
+				{
+					field: 'UnitName',
+					title: '单位',
+                    align: 'center',
+                    formatter: $(this).formatIsNull
+				},
+				{
+					field: 'UnitConversion',
+					title: '单位换算',
+                    align: 'center',
+                    formatter: $(this).formatIsNull
+				},
+				{
+					field: 'Quantity',
+					align: 'center',
+					width: '100',
+					title: '数量',
+					align: 'center',
+					formatter: function (value, row, index) {
+                        if (Object.keys(row).length > 1) {
+                            return (value == 0 || value == "") ? "" : value + "" + row.UnitName + (row.IsFlavorProduct ? "<span style='color:darkorange' class='mt5'>  口</span>" : "");
+                        }
+                        else {
+                            return (value == 0 || value == "" || value == undefined) ? "" : value
+                        }
+					}
+				},
+				{ field: 'IsManufactureDete', visible: false },  //该商品是否开启生产日期功能
+				{ field: 'IsFlavorProduct', visible: false },
+				{ field: 'FlavorId', visible: false },
+				{ field: 'ProductTimes', visible: false },
+				{
+					field: 'ManufactureDete',
+					title: '生产日期',
+					visible: model.IsShowCreateDate,
+					align: 'center'
+					, visible: false
+				},
+				{
+					field: 'Price',
+					title: '价格',
+					width: '100',
+					formatter: function (value, row, index) {
+						if (Object.keys(row).length > 1) {
+
+                            value = $(this).formatFixed(value);
+                            //if (value == 0) value = 0.00;
+
+                            if (row.ReferPrices && row.ReferPrices != "" && row.ReferPrices != null) {
+                                if (value != "" && value != row.ReferPrices) {
+                                    return "<span alt=" + value + " style='color:#f34a70;'>" + value + "</span>";
+                                }
+                                else {
+                                    return value;
+                                }
+                            }
+                            else {
+                                if (value != "" && value != row.Prices[0].ProductPrice.TradePrice) {
+                                    return "<span alt=" + value + " style='color:#f34a70;'>" + value + "</span>";
+                                }
+                                else {
+                                    return value;
+                                }
+                            }
+
+                        } else {
+                            return (value == 0 || value == "" || value == undefined) ? "" : value
+                        }
+					},
+					align: 'center'
+				},
+
+				{ field: 'CostPrices', visible: false },
+				{
+					field: 'CostPrice',
+					title: '成本价', visible: false, align: 'right', formatter: $(this).formatFixed
+				},
+				{
+					field: 'CostAmount',
+					title: '成本金额', visible: false, align: 'right', formatter: $(this).formatFixed
+				},
+                { field: 'Profit', title: '利润', align: 'right', formatter: $(this).formatFixed},
+                { field: 'CostProfitRate', title: '成本利润率%', align: 'right' ,formatter: $(this).formatFixed},
+                { field: 'TaxRate', title: '税率%', align: 'right', visible: '@Model.EnableTaxRate' == 'True', formatter: $(this).formatFixed },
+				{ field: 'ContainTaxPrice', title: '含税价格', align: 'right', visible: '@Model.EnableTaxRate' == 'True', formatter: $(this).formatFixed },
+				{ field: 'TaxPrice', title: '税额', align: 'right', visible: '@Model.EnableTaxRate' == 'True', formatter: $(this).formatFixed },
+                { field: 'TaxPriceAmount', title: '税价总计', align: 'right', visible: '@Model.EnableTaxRate' == 'True', formatter: $(this).formatFixed },
+				{
+					field: 'Amount',
+					title: '金额',
+					width: '100',
+					formatter: function (value, row, index) {
+                        return (value == 0 || value == "" || value == undefined) ? "" : parseFloat(value).toFixed(2);
+					},
+					align: 'center',
+					footerFormatter: function (value) {
+                        var count = $(this).alculateTaxAmountSub('@Model.Id', '@Model.AuditedStatus', '#SaleItems', '@Model.EnableTaxRate', value);
+
+						var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count);
+
+						var otherAmount = 0;
+						var accounts = $("#SaleItems_Partial_Form").find("input[name='CollectionAmount']");
+						$.each(accounts, function (i, input) {
+							var option = $(input).attr("data-account");
+							var amount = $(input).val();
+							if ($("#CollectionAccount").val() !== option) {
+								otherAmount += amount;
+							}
+						});
+
+						$("#SumAmount").val(total);
+
+						//单据审核后 欠款金额=当前实际欠款金额
+						if ("@Model.Id" != "0" && "@Model.AuditedStatus" == "True") {
+							 $("#PreferentialAmount").val(parseFloat("@Model.PreferentialAmount")); //优惠金额
+                            $("#PreferentialEndAmount").val(parseFloat("@Model.PreferentialEndAmount")); //优惠后金额
+                            $("#OweCash").val(parseFloat("@Model.OweCash")); //欠款金额
+						}
+						else {
+
+                            $("#CollectionAmount").val(parseFloat(total - otherAmount).toFixed(2));
+
+                            //优惠金额
+                            $("#PreferentialAmount").val(parseFloat($("#PreferentialAmount").val()).toFixed(2));
+                            //优惠后金额=总金额 - 优惠金额
+                            $("#PreferentialEndAmount").val(parseFloat(total - parseFloat($("#PreferentialAmount").val())).toFixed(2));
+
+                            //欠款金额=优惠后金额 - 已收金额
+                            $("#OweCash").val(parseFloat(parseFloat($("#PreferentialEndAmount").val()) - SumAlreadyAmount()).toFixed(2));
+						}
+
+                        return total.toFixed(2);
+					}
+				},
+				{
+					field: 'UnabledStockQty',
+					title: '订单占用库存',
+					align: 'center',
+					width: '100',
+					formatter: function (value, row, index) {
+
+                        if (value != "" && value != undefined && row.ProductId != "" && row.ProductId > 0) {
+
+							var bigUnitId = row.BigUnitId;
+							var bigUnitName = "";
+
+							var strokeUnitId = row.StrokeUnitId;
+							var strokeUnitName = "";
+
+							var smallUnitId = row.SmallUnitId;
+							var smallUnitName = "";
+
+							$.each(row.Units, function (key, unit) {
+								if (unit == bigUnitId) {
+									bigUnitName = key;
+								}
+								else if (unit == strokeUnitId) {
+									strokeUnitName = key;
+								}
+								else if (unit == smallUnitId) {
+									smallUnitName = key;
+								}
+							});
+
+							//计算结果数量
+							var resultQuantity = value;
+							//大单位计算结果
+							var big = parseInt(resultQuantity / row.BigQuantity);
+							resultQuantity = resultQuantity - big * row.BigQuantity;
+							//中单位计算结果
+							var stroke = 0;
+							if (strokeUnitId > 0 && row.StrokeQuantity > 0) {
+								stroke = parseInt(resultQuantity / row.StrokeQuantity);
+								resultQuantity = resultQuantity - stroke * row.StrokeQuantity;
+							}
+							//小单位计算结果
+							var small = resultQuantity;
+
+                            var content = big + "" + bigUnitName;
+
+                            if (stroke > 0)
+                                content += ((strokeUnitId > 0) ? (stroke + "" + strokeUnitName) : "");
+
+							 if (small > 0)
+                                content += small + "" + smallUnitName
+
+							return "<span alt=" + value + ">" + content + "</span>";
+
+						}
+						else {
+							return "";
+						}
+					},
+					visible: model.APPShowOrderStock
+				},
+				{
+					field: 'StockQuantity',
+					title: '可用库存',
+					align: 'center',
+					width: '100',
+					formatter: function (value, row, index) {
+
+                        if (value != "" && value != undefined && row.ProductId != "" && row.ProductId > 0) {
+
+							var bigUnitId = row.BigUnitId;
+							var bigUnitName = "";
+
+							var strokeUnitId = row.StrokeUnitId;
+							var strokeUnitName = "";
+
+							var smallUnitId = row.SmallUnitId;
+							var smallUnitName = "";
+
+							$.each(row.Units, function (key, unit) {
+								if (unit == bigUnitId) {
+									bigUnitName = key;
+								}
+								else if (unit == strokeUnitId) {
+									strokeUnitName = key;
+								}
+								else if (unit == smallUnitId) {
+									smallUnitName = key;
+								}
+							});
+
+							//计算结果数量
+							var resultQuantity = value;
+							//大单位计算结果
+							var big = parseInt(resultQuantity / row.BigQuantity);
+							resultQuantity = resultQuantity - big * row.BigQuantity;
+							//中单位计算结果
+							var stroke = 0;
+							if (strokeUnitId > 0 && row.StrokeQuantity > 0) {
+								stroke = parseInt(resultQuantity / row.StrokeQuantity);
+								resultQuantity = resultQuantity - stroke * row.StrokeQuantity;
+							}
+							//小单位计算结果
+							var small = resultQuantity;
+
+                            var content = big + "" + bigUnitName;
+
+                            if (stroke > 0)
+                                content += ((strokeUnitId > 0) ? (stroke + "" + strokeUnitName) : "");
+
+							 if (small > 0)
+                                content += small + "" + smallUnitName
+
+							return "<span alt=" + value + ">" + content + "</span>";
+
+						}
+						else {
+							return "";
+						}
+					},
+					visible: model.APPShowOrderStock
+				},
+				{
+					field: 'StockQty',
+					title: model.APPShowOrderStock == false ? '库存数量' : '实际库存',
+					align: 'center',
+					width: '100',
+					formatter: function (value, row, index) {
+
+                        if (value != "" && row.ProductId != "" && row.ProductId > 0)
+                        {
+
+							var bigUnitId = row.BigUnitId;
+							var bigUnitName = "";
+
+							var strokeUnitId = row.StrokeUnitId;
+							var strokeUnitName = "";
+
+							var smallUnitId = row.SmallUnitId;
+							var smallUnitName = "";
+
+							$.each(row.Units, function (key, unit) {
+								if (unit == bigUnitId) {
+									bigUnitName = key;
+								}
+								else if (unit == strokeUnitId) {
+									strokeUnitName = key;
+								}
+								else if (unit == smallUnitId) {
+									smallUnitName = key;
+								}
+							});
+
+							//计算结果数量
+							var resultQuantity = value;
+							//大单位计算结果
+							var big = parseInt(resultQuantity / row.BigQuantity);
+							resultQuantity = resultQuantity - big * row.BigQuantity;
+							//中单位计算结果
+							var stroke = 0;
+							if (strokeUnitId > 0 && row.StrokeQuantity > 0) {
+								stroke = parseInt(resultQuantity / row.StrokeQuantity);
+								resultQuantity = resultQuantity - stroke * row.StrokeQuantity;
+							}
+							//小单位计算结果
+							var small = resultQuantity;
+
+                            var content = big + "" + bigUnitName;
+
+                            if (stroke > 0)
+                                content += ((strokeUnitId > 0) ? (stroke + "" + strokeUnitName) : "");
+
+							 if (small > 0)
+                                content += small + "" + smallUnitName
+
+							return "<span alt=" + value + ">" + content + "</span>";
+
+						}
+						else {
+							return "";
+						}
+					}
+				},
+				{
+					field: 'Remark',
+					title: '备注',
+                    align: 'center',
+                    formatter: $(this).formatIsNull
+				},
+				{ field: 'OrderCode', title: '订货单编号', visible: false },
+				{ field: 'RemainderQty', title: '剩余还货数量', visible: false },
+				{ field: 'IsGifts', title: '是否赠品', visible: false },
+				{ field: 'SaleProductTypeId', title: '销售商品类型', visible: false },
+				{ field: 'SaleProductTypeName', title: '销售商品类型', visible: false },
+				{ field: 'GiveTypeId', title: '赠品类型', visible: false },
+				{ field: 'CampaignId', title: '促销活动Id', visible: false },
+				{ field: 'CampaignBuyProductId', title: '促销活动购买Id', visible: false },
+				{ field: 'CampaignGiveProductId', title: '促销活动赠送Id', visible: false },
+				{ field: 'CampaignLinkNumber', title: '购买赠送关联号', visible: false },
+				{ field: 'CostContractId', title: '费用合同Id', visible: false },
+				{ field: 'CostContractItemId', title: '费用合同明细Id', visible: false },
+				{ field: 'CostContractMonth', title: '费用合同使用几月份', visible: false },
+				{ field: 'TempQuantity', title: '赠品额度', visible: false },
+                { field: 'RemarkConfigId', title: '备注ID', visible: false },
+				{
+					field: 'Operate',
+					title: '操作',
+					align: 'center',
+					width: '130',
+					events: {
+						'click .rowAppend': function (e, value, row, index) { // 添加
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+								return false;
+							}
+							$('#SaleItems').bootstrapTable('insert', row);
+
+                            //修改最后一条数据uniqueid,防止复制时uniqueid相同，删除时都删除
+                            var allTableData = $('#SaleItems').bootstrapTable('getData');
+                            var maxuniqueid = 0;
+                            $.each(allTableData, function (i, row) {
+                                if (row.uniqueid > maxuniqueid) {
+                                    maxuniqueid = row.uniqueid;
+                                }
+                            });
+							allTableData[allTableData.length - 1].uniqueid = maxuniqueid + 1;
+                            allTableData[allTableData.length - 1].Id = 0;
+						},
+						'click .rowCopy': function (e, value, row, index) {
+							// 复制
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True" || row.SaleProductTypeId == 2) {
+								return false;
+							}
+
+							$('#SaleItems').bootstrapTable('copying', row);
+
+							//修改最后一条数据uniqueid,防止复制时uniqueid相同，删除时都删除
+							var allTableData = $('#SaleItems').bootstrapTable('getData');
+							var maxuniqueid = 0;
+							$.each(allTableData, function (i, row) {
+								if (row.uniqueid > maxuniqueid) {
+									maxuniqueid = row.uniqueid;
+								}
+							});
+							allTableData[allTableData.length - 1].uniqueid = maxuniqueid + 1;
+							allTableData[allTableData.length - 1].Id = 0;
+							allTableData[allTableData.length - 1].IsGifts = false;
+						},
+						'click .rowDel': function (e, value, row, index) {
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+                                $(this).showToastr('审核、红冲后不能修改');
+                                return;
+							}
+							var datas = $('#SaleItems').bootstrapTable('getData');
+							var len = datas.length;
+							if (len == 1) {
+								$(this).showToastr('单据项目不能留空');
+								return;
+							}
+
+                            console.log(row);
+                            console.log("---------uniqueid--------------------->" + row.uniqueid);
+                            console.log("------------Id------------------>" + row.Id);
+                            console.log("------------index------------------>" + index);
+
+                            if (typeof (row.uniqueid) == "undefined")
+							{
+                                console.log("------------remove------------------>" + index);
+                                $("#SaleItems").bootstrapTable('remove', { field: "Id", values: [parseInt(row.Id)] });
+							}
+							else
+							{
+								$("#SaleItems").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+							}
+						}
+					},
+					formatter: function (value, row, index) {
+						return [
+							'<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+							'<button type="button" class="btn btn-sm btn-default rowCopy" title="复制"><i class="fa fa-copy" ></i></button>',
+							'<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+						].join('');
+					}
+				}
+			],
+			onClickCell: function (field, value, row, $element)
+			{
+				debugger;
+
+				if (field == "Operate") {
+					return false;
+				}
+
+				var input = $($element).find("input");
+				var select = $($element).find("select");
+				if (input.length > 0 || select.length > 0)
+					return false;
+
+				//当前列所在行的索引
+				var index = $element.parent().attr("data-index");
+
+				//行对象，列元素，行索引，列索引
+                enterToSwitchFocus(row, $element, index, $element.context.cellIndex);
+
+				//审核、红冲后不能修改
+				if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+					return false;
+				}
+
+				//验证无效或者单据已经审核则不允许修改编辑
+				if (!formValidator() || $("#AuditedStatus").val() == "True") {
+					return false;
+				}
+
+				//选择商品
+				if (field == "ProductName") {
+					//var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+					var html = '<div class="input-group">' +
+						'<input type="text" class="form-control input-sm"  name="ProductName" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">' +
+						'<span class="input-group-btn"><button class="btn btn-default btn-sm searchproduct" id="search_' + field + "_" + row.Id + '" data-index="' + index + '"><span class="glyphicon glyphicon-search"></span></button></span>' +
+						'</div>';
+
+					$($element).html(html);
+					var inputObj = $("#search_" + field + "_" + row.Id);
+					inputObj.focus();
+					inputObj.select();
+					inputObj.bind("focusout", function () {
+						//$("#SaleItems").bootstrapTable('updateRow', { index: index, row: { ProductName: $(this).val() } });
+						$("#SaleItems").bootstrapTable('updateRow', { index: index, row: { ProductName: value } });
+						$($element).html("" + value + "");
+					});
+					//选择商品
+					inputObj.bind("click", function () {
+						//$(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup", { Index: $(this).attr("data-index") }, "选择商品", $("#ProductModalForm"),
+						//	function () { });
+						//return false;
+						var wareHouseId = $("#WareHouseId").val();
+						var terminalId = $("#TerminalId").val();
+						$(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup?wareHouseId=" + wareHouseId + "&stockQtyMoreThan=true&includeProductDetail=false&terminalId=" + terminalId, { Index: $(this).attr("data-index") }, "选择商品", $("#ProductModalForm"),
+							function () { });
+						return false;
+
+					});
+				}
+				else if (["Price", "Quantity"].indexOf(field) >= 0) {
+					html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+
+
+                    if (row.ProductId == 0 || row.ProductId == null) {
+                        $(this).showToastr('请选择商品');
+                        return;
+					}
+
+					if (field == "Price" || field == "Quantity") {
+						if (field == "Price")
+						{
+
+							//if (!row.IsAdjustPrice || row.IsAdjustPrice == true) {//允许变更价格
+							if (row.IsAdjustPrice == true && row.IsGifts == false) {//允许变更价格
+								$($element).html(html);
+								var inputObj = $("#" + $(html).attr("id"));
+
+								inputObj.focus();
+								inputObj.select();
+
+								inputObj.bind("focusout", function () {
+									if ($(this).val() == "") {
+										$(this).val(0);
+									}
+									row[field] = parseFloat($(this).val());
+									$("#SaleItems").bootstrapTable('updateRow', { index: index, row: row });
+									$($element).html("" + value + "");
+								});
+
+								inputObj.bind("change", function () {
+									if (!isNaN($(this).val())) {
+										if ($(this).val() == "") {
+											$(this).val(0);
+										}
+
+										row.Price = $(this).val();
+                                        var newAmount = $(this).floatTimes(parseFloat($(this).val()), row.Quantity);
+										row.Amount = newAmount;
+										//成本金额
+                                        row.CostAmount = $(this).floatTimes(row.Quantity, row.CostPrice);
+										//含税价格
+                                        row.ContainTaxPrice = $(this).floatTimes(parseFloat((1 + row.TaxRate / 100)), row.Price);
+										//税额
+                                        row.TaxPrice = $(this).floatTimes($(this).floatTimes(parseFloat(row.TaxRate / 100), row.Price), row.Quantity);
+										//价税总计
+                                        row.TaxPriceAmount = $(this).floatTimes(row.ContainTaxPrice, row.Quantity);
+										if ('@Model.EnableTaxRate' !== 'True') {
+                                            row.TaxPriceAmount = $(this).floatTimes(row.Price, row.Quantity);
+                                        }
+
+										//利润
+										row.Profit = row.TaxPriceAmount - row.CostAmount;
+										//成本利润率
+										if (row.CostAmount == 0) {
+											row.CostProfitRate = 100;
+										} else {
+											row.CostProfitRate = row.Profit / row.CostAmount * 100;
+										}
+
+										//格式化(先计算，再格式化，不然数据不准)
+										row.Amount = parseFloat(row.Amount).toFixed(2);
+										row.CostAmount = parseFloat(row.CostAmount).toFixed(2);
+										row.ContainTaxPrice = parseFloat(row.ContainTaxPrice).toFixed(2);
+										row.TaxPrice = parseFloat(row.TaxPrice).toFixed(2);
+										row.TaxPriceAmount = parseFloat(row.TaxPriceAmount).toFixed(2);
+										row.Profit = parseFloat(row.Profit).toFixed(2);
+										row.CostProfitRate = parseFloat(row.CostProfitRate).toFixed(2);
+									}
+									else {
+										$(this).val(0);
+										$(this).showToastr("只能输入数字!");
+									}
+								});
+							}
+						}
+						if (field == "Quantity")
+						{
+							//商品启用口味
+							if (row.IsFlavorProduct) {
+								var html = '<input type="button" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '" data-index="' + index + '">';
+								$($element).html(html);
+								var inputObj = $("#" + $(html).attr("id"));
+								inputObj.focus();
+								inputObj.select();
+								//选择口味
+								inputObj.bind("click", function () {
+									var productId = row.ProductId;
+									//var wareHouseId = 0;
+									$(this).productSelectShowModal($("#FlavorModalWindows"), "/Product/AsyncSearchSelectFlavorPopup?productId=" + productId, { Index: $(this).attr("data-index") }, "选择口味", $("#FlavorModalForm"),
+										function () { });
+									return false;
+								});
+							}
+							else {
+
+								$($element).html(html);
+								var inputObj = $("#" + $(html).attr("id"));
+
+								inputObj.focus();
+								inputObj.select();
+
+								inputObj.bind("focusout", function () {
+									if ($(this).val() == "") {
+										$(this).val(0);
+									}
+									//数量转整数
+									row[field] = parseInt($(this).val());
+									$("#SaleItems").bootstrapTable('updateRow', { index: index, row: row });
+									$($element).html("" + value + "");
+								});
+
+								inputObj.bind("change", function () {
+									if (!isNaN($(this).val())) {
+										if ($(this).val() == "") {
+											$(this).val(0);
+										}
+                                        //数量转整数
+										row.Quantity = parseInt($(this).val());
+
+										if (row.IsGifts == false)
+										{
+											var oldPrice = row.Price;
+                                        var newPrice = $(this).floatTimes(parseFloat($(this).val()), oldPrice);
+										row.Amount = newPrice;
+										//成本金额
+                                        row.CostAmount = $(this).floatTimes(parseInt($(this).val()), row.CostPrice);
+										//含税价格
+                                        row.ContainTaxPrice = $(this).floatTimes(parseFloat((1 + row.TaxRate / 100)), row.Price);
+										//税额
+                                        row.TaxPrice = $(this).floatTimes($(this).floatTimes(parseFloat(row.TaxRate / 100), row.Price), row.Quantity);
+										//价税总计
+										 row.TaxPriceAmount = $(this).floatTimes(row.ContainTaxPrice, row.Quantity);
+										if ('@Model.EnableTaxRate' !== 'True') {
+                                            row.TaxPriceAmount = $(this).floatTimes(row.Price, row.Quantity);
+										}
+
+										//利润
+										row.Profit = row.TaxPriceAmount - row.CostAmount;
+										//成本利润率
+										if (row.CostAmount == 0) {
+											row.CostProfitRate = 100;
+										} else {
+											row.CostProfitRate = row.Profit / row.CostAmount * 100;
+										}
+
+										//格式化(先计算，再格式化，不然数据不准)
+										row.Amount = parseFloat(row.Amount).toFixed(2);
+										row.CostAmount = parseFloat(row.CostAmount).toFixed(2);
+										row.ContainTaxPrice = parseFloat(row.ContainTaxPrice).toFixed(2);
+										row.TaxPrice = parseFloat(row.TaxPrice).toFixed(2);
+										row.TaxPriceAmount = parseFloat(row.TaxPriceAmount).toFixed(2);
+										row.Profit = parseFloat(row.Profit).toFixed(2);
+										row.CostProfitRate = parseFloat(row.CostProfitRate).toFixed(2);
+                                        }
+									}
+									else {
+										$(this).val(0);
+										$(this).showToastr("只能输入数字!");
+									}
+								});
+							}
+						}
+					}
+					else {
+						$($element).html(html);
+						var inputObj = $("#" + $(html).attr("id"));
+
+						inputObj.focus();
+						inputObj.select();
+
+						inputObj.bind("focusout", function () {
+							row[field] = $(this).val();
+							$("#SaleItems").bootstrapTable('updateRow', { index: index, row: row });
+							$($element).html("" + value + "");
+						});
+					}
+
+				}
+				else if (field == "Remark")
+				{
+                    if (row.ProductId == 0 || row.ProductId == null) {
+                        $(this).showToastr('请选择商品');
+                        return;
+                    }
+
+					//0元开单，必须选择备注
+					if (row.Price == 0)
+					{
+						var html = '<select name="' + field + '" id="' + field + "_" + row.Id + '">';
+						$.each(remarkConfigs, function (key, re) {
+							if (re.Id > 0) {
+								html += '<option value="' + re.Id + '"  ' + (row.Remark == re.Name ? "selected" : "") + '>' + re.Name + '</option>';
+							}
+						});
+
+						html += '</select>';
+
+						$($element).html(html);
+
+						var inputObj = $("#" + $(html).attr("id"));
+						inputObj.focus();
+						inputObj.select();
+						inputObj.bind("focusout", function () {
+							$($element).html("" + inputObj.find("option:selected").text() + "");
+							$("#SaleItems").bootstrapTable('updateRow', { index: index, row: { Remark: inputObj.find("option:selected").text() } });
+                            var remark = $(this).find("option:selected").text();
+							var remarkId = $(this).find("option:selected").val();
+                            $("#SaleItems").bootstrapTable('updateRow', { index: index, row: { Remark: remark, RemarkConfigId: remarkId, IsGifts: true, GiveTypeId: 1 } });
+						});
+						inputObj.bind("change", function ()
+						{
+                            //当前选择
+							var remark = $(this).find("option:selected").text();
+							var remarkId = $(this).find("option:selected").val();
+                            $("#SaleItems").bootstrapTable('updateRow', { index: index, row: { Remark: remark, RemarkConfigId: remarkId, IsGifts: true, GiveTypeId: 1 } });
+						});
+					}
+					else
+					{
+						var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+						$($element).html(html);
+						var inputObj = $("#" + $(html).attr("id"));
+						inputObj.focus();
+						inputObj.select();
+						inputObj.bind("focusout", function () {
+							$("#SaleItems").bootstrapTable('updateRow', { index: index, row: { Remark: $(this).val() } });
+							$($element).html("" + value + "");
+						});
+					}
+				}
+				else if (field == "UnitName")
+				{
+                    if (row.ProductId == 0 || row.ProductId == null) {
+                        $(this).showToastr('请选择商品');
+                        return;
+                    }
+
+					var html = '<select name="' + field + '" id="' + field + "_" + row.Id + '">';
+					$.each(row.Units, function (key, unit) {
+						if (unit > 0) {
+							html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+						}
+					});
+					html += '</select>';
+
+					$($element).html(html);
+
+					var inputObj = $("#" + $(html).attr("id"));
+					inputObj.focus();
+					inputObj.select();
+					inputObj.bind("focusout", function () {
+						$($element).html("" + inputObj.find("option:selected").text() + "");
+						$("#SaleItems").bootstrapTable('updateRow', { index: index, row: { UnitName: inputObj.find("option:selected").text() } });
+					});
+
+					//单位选择
+					inputObj.bind("change", function () {
+						//alert("change");
+						//用户选择的价格体系
+						//@*var defaultAmountId = "@Model.DefaultAmountId";*@
+						var defaultAmountId = $("#DefaultAmountId").val();
+						//用户当前选择的单位
+						var unitId = $(this).val();
+						//价格
+						var price = 0;
+						//金额
+						var amount = 0;
+
+						//成本价
+						var costPrice = 0;
+						//成本金额
+						var costAmount = 0;
+						var ck = Object.keys(row.CostPrices);
+						var cv = Object.values(row.CostPrices);
+						ck.forEach(function (a, b) {
+							if (a == unitId) {
+								costPrice = cv[b];
+							}
+						});
+
+						//判断用户当前选择的单位是小，中，大
+						var unitType = "SmallUnitId";
+						if (unitId == row.SmallUnitId) {
+							unitType = "SmallUnitId";
+						}
+						if (unitId == row.StrokeUnitId) {
+							unitType = "StrokeUnitId";
+						}
+						if (unitId == row.BigUnitId) {
+							unitType = "BigUnitId";
+						}
+
+						//如果此商品有价格体系
+						row.ProductTierPrices.forEach(function (a, b) {
+							var planIdTypeId = a.PricesPlanId + "_" + a.PriceTypeId;
+							if (defaultAmountId == planIdTypeId) {
+								if (unitType == "SmallUnitId") {
+									price = a.SmallUnitPrice;
+								}
+								if (unitType == "StrokeUnitId") {
+									price = a.StrokeUnitPrice;
+								}
+								if (unitType == "BigUnitId") {
+									price = a.BigUnitPrice;
+								}
+							}
+						});
+
+						//如果不允许改价,则用商品批发价
+						if (row.IsAdjustPrice == false) {
+							if (unitType == "SmallUnitId") {
+								price = row.Prices[0].ProductPrice.TradePrice;
+							}
+							if (unitType == "StrokeUnitId") {
+								price = row.Prices[1].ProductPrice.TradePrice;
+							}
+							if (unitType == "BigUnitId") {
+								price = row.Prices[2].ProductPrice.TradePrice;
+							}
+						}
+
+						amount = parseFloat(parseFloat((row.Quantity == undefined || row.Quantity == "") ? "0" : row.Quantity) * parseFloat(price)).toFixed(2);
+						costAmount = parseFloat(parseFloat((row.Quantity == undefined || row.Quantity == "") ? "0" : row.Quantity) * parseFloat(costPrice)).toFixed(2);
+
+						$("#SaleItems").bootstrapTable('updateRow', { index: index, row: { UnitId: unitId, UnitName: inputObj.find("option:selected").text(), Units: row.Units, Price: price, Amount: amount, CostPrice: costPrice, CostAmount: costAmount } });
+
+					});
+
+				}
+				else if (field == "ManufactureDete") {
+					if (row.IsManufactureDete == true) {
+						var html = '<select class="form-control input-sm" name="' + field + '" id="' + field + "_" + row.Id + '">';
+						if (row.ProductTimes != null) {
+							$.each(row.ProductTimes, function (key, date) {
+								if (date > 0) {
+									html += '<option value="' + date + '"  ' + (row.ManufactureDete == date ? "selected" : "") + '>' + key + '</option>';
+								}
+							});
+						}
+
+						html += '</select>';
+
+						$($element).html(html);
+
+						var inputObj = $("#" + $(html).attr("id"));
+						inputObj.focus();
+						inputObj.select();
+						inputObj.bind("focusout", function () {
+							$($element).html("" + inputObj.find("option:selected").text() + "");
+							$("#SaleItems").bootstrapTable('updateRow', { index: index, row: { ManufactureDete: inputObj.find("option:selected").text() } });
+						});
+					}
+				}
+				else if (field == "TaxRate") {
+					html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+					$($element).html(html);
+					var inputObj = $("#" + $(html).attr("id"));
+
+					inputObj.focus();
+					inputObj.select();
+
+					inputObj.bind("focusout", function () {
+						if ($(this).val() == "") {
+							$(this).val(0);
+						}
+						if ($(this).val() > 100) {
+							$(this).showToastr("税率不能大于100!");
+							$(this).val(0);
+						}
+						row[field] = parseFloat($(this).val());
+						$("#SaleItems").bootstrapTable('updateRow', { index: index, row: row });
+						$($element).html("" + value + "");
+					});
+
+					inputObj.bind("change", function () {
+						if (!isNaN($(this).val())) {
+							if ($(this).val() == "") {
+								$(this).val(0);
+							}
+							if ($(this).val() > 100) {
+								$(this).showToastr("税率不能大于100!");
+								$(this).val(0);
+							}
+							//税率
+							row.TaxRate = parseFloat($(this).val()).toFixed(2);
+							//含税价格
+                            row.ContainTaxPrice = $(this).floatTimes(parseFloat((1 + $(this).val() / 100)), row.Price);
+							//税额
+                            row.TaxPrice = $(this).floatTimes($(this).floatTimes(parseFloat($(this).val() / 100), row.Price), row.Quantity);
+							//价税总计
+							 row.TaxPriceAmount = $(this).floatTimes(row.ContainTaxPrice, row.Quantity);
+							if ('@Model.EnableTaxRate' !== 'True') {
+                                row.TaxPriceAmount = $(this).floatTimes(row.Price, row.Quantity);
+                            }
+
+							//利润
+							row.Profit = row.TaxPriceAmount - row.CostAmount;
+							//成本利润率
+							if (row.CostAmount == 0) {
+								row.CostProfitRate = 100;
+							} else {
+								row.CostProfitRate = row.Profit / row.CostAmount * 100;
+							}
+
+							//格式化(先计算，再格式化，不然数据不准)
+							row.Amount = parseFloat(row.Amount).toFixed(2);
+							row.CostAmount = parseFloat(row.CostAmount).toFixed(2);
+							row.ContainTaxPrice = parseFloat(row.ContainTaxPrice).toFixed(2);
+							row.TaxPrice = parseFloat(row.TaxPrice).toFixed(2);
+							row.TaxPriceAmount = parseFloat(row.TaxPriceAmount).toFixed(2);
+							row.Profit = parseFloat(row.Profit).toFixed(2);
+							row.CostProfitRate = parseFloat(row.CostProfitRate).toFixed(2);
+
+						}
+						else {
+							$(this).val(0);
+							$(this).showToastr("只能输入数字!");
+						}
+					});
+				}
+
+			}
+		});
+
+		//优惠
+		$("#PreferentialAmount").bind("change", function () {
+
+			if (isNaN($(this).val()) || $(this).val() == "" || parseFloat($(this).val()) < 0) {
+				$(this).val("0.00")
+			}
+			$("#PreferentialAmount").focus();
+			var sumAmount = $("#SumAmount").val();
+			var oweCash = (parseFloat(sumAmount) - parseFloat($(this).val())).toFixed(2);
+			$("#PreferentialEndAmount").val(oweCash);
+
+			//剩余欠款金额
+			var thisOwnCash = parseFloat(oweCash - SumAlreadyAmount()).toFixed(2);
+			if (thisOwnCash < 0) {
+				$(this).val("0.00");
+				$("#PreferentialEndAmount").val((parseFloat(sumAmount)).toFixed(2));
+				$("#OweCash").val(parseFloat(parseFloat(sumAmount) - SumAlreadyAmount()).toFixed(2));
+			} else {
+				$("#OweCash").val(thisOwnCash);
+			}
+
+		});
+
+		//优惠金额选择
+		$("#PreferentialAmount").focus(function () {
+			$("#PreferentialAmount").select();
+		});
+
+		//科目选择
+		$(document).on('click', "#SaleItems_Partial_Form input[name='CollectionAmount']", function () {
+			debugger;
+			$(this).select();
+		});
+
+		//科目
+		$(document).on('change', "#SaleItems_Partial_Form input[name='CollectionAmount']", function () {
+			$(this).focus();
+
+			if (isNaN($(this).val())) {
+				$(this).showToastr("只能输入数字!");
+				$(this).val('0.0');
+				return false;
+			}
+
+            if (parseInt($(this).val()) < 0 && $(this).attr("data-codetype") != 24) {
+                $(this).showToastr("只能输入正数!");
+                $(this).val('0.0');
+                return false;
+            }
+            else {
+                if ($(this).attr("data-codetype") == 24) {
+                    if (model.AllowAdvancePaymentsNegative == false && parseInt($(this).val()) < 0) {
+                        $(this).showToastr("只能输入正数!");
+                        $(this).val('0.0');
+                        return false;
+                    }
+                }
+            }
+
+			var preferentialEndAmount = $("#PreferentialEndAmount").val();
+
+			//欠款金额=优惠后金额-已收会计科目总金额
+			//var oweCash = (parseFloat(preferentialEndAmount) - SumAlreadyAmount()).toFixed(model.AccuracyRounding);
+			//$("#OweCash").val(oweCash);
+
+			var thisOwnCash = (parseFloat(preferentialEndAmount) - SumAlreadyAmount()).toFixed(2);
+			//剩余欠款金额
+			if (thisOwnCash < 0) {
+				$(this).val("0.00");
+				$("#OweCash").val(parseFloat(parseFloat(preferentialEndAmount) - SumAlreadyAmount()).toFixed(2));
+			} else {
+				$("#OweCash").val(thisOwnCash);
+			}
+
+		})
+
+		//保存服务器
+        var submitRemoteServer = function (items, showMessage, doAudit,callback, loadingButton)
+		{
+			if (!formValidator()) {
+				if (loadingButton != undefined) {
+					loadingButton.stop();
+				}
+				return false;
+			};
+			var reg = /^[0-9]+.?[0-9]*$/;
+
+
+			//获取表格的所有内容行
+			var allTableData = $('#SaleItems').bootstrapTable('getData');
+			var accounts = $("#SaleItems_Partial_Form").find("input[name='CollectionAmount']");
+			var flag = 0;
+			var numFlag = 0;
+			var accFlag = 0;
+			var errMsg = "";
+			$.each(allTableData, function (i, row) {
+				if (Object.keys(row).length > 1) {
+                    var manDate = $("#selDate_" + i).val();
+                    if (row.ProductId == "" || row.Quantity == "" || (manDate == "" && row.IsManufactureDete == true))
+                        flag++;
+                    else if (!reg.test(row.Quantity))
+                        numFlag++;
+                    else if (!reg.test(row.Price))
+                        numFlag++;
+                    if (row.ProductId != "" && row.Quantity == "") {
+                        errMsg += "商品：" + row.ProductName + " 数量为0.";
+                    }
+                    if (row.ProductId != "" && row.Price == 0 && row.Remark == "") {
+                        errMsg += "商品：" + row.ProductName + " ,0元开单，必须选择备注.";
+					}
+                    if (row.IsGifts == true && row.GiveTypeId == 4 && row.Quantity > row.TempQuantity) {
+                        errMsg += "商品：" + row.ProductName + " ,赠品额度不够.";
+                    }
+				}
+			});
+
+			//商品验证
+			if (errMsg != "") {
+				if (loadingButton != undefined) {
+					loadingButton.stop();
+				}
+				$(this).showToastr(errMsg);
+				return false;
+			}
+
+			if ($("#WareHouseId").val() == 0 || $("#WareHouseId").val() == "")
+			{
+                if (loadingButton != undefined) {
+                    loadingButton.stop();
+                }
+                $(this).showToastr("请选择仓库!");
+                return false;
+			}
+
+            if ($("#BusinessUserId").val() == 0 || $("#BusinessUserId").val() == "") {
+                if (loadingButton != undefined) {
+                    loadingButton.stop();
+                }
+                $(this).showToastr("请选择业务员!");
+                return false;
+			}
+
+            if ($("#DeliveryUserId").val() == 0 || $("#DeliveryUserId").val() == "") {
+                if (loadingButton != undefined) {
+                    loadingButton.stop();
+                }
+                $(this).showToastr("请选择送货员!");
+                return false;
+            }
+
+			$.each(accounts, function (i, input) {
+				if (isNaN($(input).val()))
+					accFlag++;
+			});
+			if (flag == allTableData.length) {
+				if (loadingButton != undefined) loadingButton.stop();
+				$(this).showToastr("请先完整填写单据明细!");
+				return false;
+			}
+			else if (numFlag > 0) {
+				if (loadingButton != undefined) loadingButton.stop();
+				$(this).showToastr("数量只允许输入数字!");
+				return false;
+			}
+			else if (accFlag > 0) {
+                if (loadingButton != undefined) loadingButton.stop();
+				$(this).showToastr("收款账户信息中数据格式不正确!");
+				return false;
+            }
+
+            if ($("#TerminalId") != null)
+            {
+      //          var data = $(this).getSyncData('/RecordingVoucher/GetUserOwnCash', { userId: $("#BusinessUserId").val() });
+      //          if (data != null)
+      //          {
+      //              //业务员已用欠款
+      //              $("#UserUsedAmount").val(parseFloat(data.UserUsedAmount).toFixed(2));
+      //              //业务员可用欠款
+      //              $("#UserAvailableAmount").val(parseFloat(data.UserAvailableOweCash).toFixed(2));
+
+      //              if (parseFloat(data.UserUsedAmount) != 0 && (parseFloat(data.UserUsedAmount) < parseFloat($("#OweCash").val()))) {
+      //                  $(this).showToastr("客户可用欠款额度不足!");
+						//if (loadingButton != undefined) loadingButton.stop();
+      //                  return false;
+      //              }
+
+      //              if (parseFloat(data.UserAvailableOweCash) != 0 && (parseFloat(data.UserAvailableOweCash) < parseFloat($("#OweCash").val()))) {
+      //                  $(this).showToastr("业务员可用欠款额度不足!");
+						//if (loadingButton != undefined) loadingButton.stop();
+      //                  return false;
+      //              }
+				//          }
+                var userAvailableOweCash = $("#UserAvailableAmount").val(); //业务员可用欠款
+                var oweCashBalance = $("#TBalance_OweCashBalance").val(); //终端欠款余额
+                if (parseFloat(userAvailableOweCash) != 0 && (parseFloat(userAvailableOweCash) < parseFloat($("#OweCash").val()))) {
+                    $(this).showToastr("业务员可用欠款额度不足!");
+                    if (loadingButton != undefined) loadingButton.stop();
+                    return false;
+                }
+
+                if (parseFloat(oweCashBalance) != 0 && (parseFloat(oweCashBalance) < parseFloat($("#OweCash").val()))) {
+                    $(this).showToastr("业务员可用欠款额度不足!");
+                    if (loadingButton != undefined) loadingButton.stop();
+                    return false;
+                }
+            }
+
+			var serializeData = [];
+			var accountingOption = { AccountingOptionId: 0, CollectionAmount: 0 };
+			var accountings = [];
+			$.each(allTableData, function (i, row) {
+
+				var manDate = $("#selDate_" + i).val();
+				var tmpObj = {
+
+					"Id": typeof (row.Id) == 'undefined' || ("@(Model.OrderId != 0)".toLowerCase() == "true") ? "0" : row.Id,
+					"ProductId": typeof (row.ProductId) == 'undefined' ? "0" : row.ProductId,
+					"UnitId": typeof (row.UnitId) == 'undefined' ? "0" : row.UnitId,
+					"Quantity": typeof (row.Quantity) == 'undefined' ? "0" : row.Quantity,
+					"Price": typeof (row.Price) == 'undefined' ? "0" : row.Price,
+					"Amount": typeof (row.Amount) == 'undefined' ? "0" : row.Amount,
+					"CostPrice": typeof (row.Price) == 'undefined' ? "0" : row.CostPrice,
+					"CostAmount": typeof (row.Amount) == 'undefined' ? "0" : row.CostAmount,
+					"StockQty": typeof (row.StockQty) == 'undefined' ? "0" : row.StockQty,
+					"RemainderQty": typeof (row.RemainderQty) == 'undefined' ? "0" : row.RemainderQty,
+					"Remark": typeof (row.Remark) == 'undefined' ? "" : row.Remark,
+					"ManufactureDete": typeof (row.ManufactureDete) == 'undefined' ? "" : row.ManufactureDete,
+
+                    "IsGifts": typeof (row.IsGifts) == 'undefined' ? false : row.IsGifts,
+					"SaleProductTypeId": typeof (row.SaleProductTypeId) == 'undefined' ? "0" : row.SaleProductTypeId,
+					"GiveTypeId": typeof (row.GiveTypeId) == 'undefined' ? "0" : row.GiveTypeId,
+					"CampaignId": typeof (row.CampaignId) == 'undefined' ? "0" : row.CampaignId,
+					"CampaignBuyProductId": typeof (row.CampaignBuyProductId) == 'undefined' ? "0" : row.CampaignBuyProductId,
+					"CampaignGiveProductId": typeof (row.CampaignGiveProductId) == 'undefined' ? "0" : row.CampaignGiveProductId,
+					"CampaignLinkNumber": typeof (row.CampaignLinkNumber) == 'undefined' ? "" : row.CampaignLinkNumber,
+					"CostContractId": typeof (row.CostContractId) == 'undefined' ? "0" : row.CostContractId,
+					"CostContractItemId": typeof (row.CostContractItemId) == 'undefined' ? "0" : row.CostContractItemId,
+					"CostContractMonth": typeof (row.CostContractMonth) == 'undefined' ? "0" : row.CostContractMonth,
+					"IsFlavorProduct": typeof (row.IsFlavorProduct) == 'undefined' ? false : row.IsFlavorProduct,
+					"FlavorId": typeof (row.FlavorId) == 'undefined' ? "" : row.FlavorId,
+					"TaxRate": typeof (row.TaxRate) == 'undefined' ? "0" : row.TaxRate,
+					"ContainTaxPrice": typeof (row.ContainTaxPrice) == 'undefined' ? "0" : row.ContainTaxPrice,
+                    "RemarkConfigId": typeof (row.RemarkConfigId) == 'undefined' ? "0" : row.RemarkConfigId
+				};
+				serializeData.push(tmpObj);
+			});
+
+			//获取收款账户
+			$.each(accounts, function (i, input) {
+				var option = $(input).attr("data-account");
+				var amount = $(input).val();
+				accountings.push({ AccountingOptionId: option, CollectionAmount: $(input).val() });
+			});
+
+			//保存的数据
+			var postData = {
+				//客户
+				TerminalId: $("#TerminalId").val(),
+				//收款人
+				BusinessUserId: $("#BusinessUserId").val(),
+				//仓库
+				WareHouseId: $("#WareHouseId").val(),
+				//送货员
+				DeliveryUserId: $("#DeliveryUserId").val(),
+				//交易日期
+				TransactionDate: $("input[name='TransactionDate']").val(),
+				//按最小单位销售
+				IsMinUnitSale: $("#IsMinUnitSale").val(),
+				//备注
+				Remark: $("#Remark").val(),
+				//价格体系
+				DefaultAmountId: $("#DefaultAmountId").val(),
+				//优惠金额
+				PreferentialAmount: $("#PreferentialAmount").val(),
+				//优惠后金额
+				PreferentialEndAmount: $("#PreferentialEndAmount").val(),
+				//欠款金额
+				OweCash: $("#OweCash").val(),
+				//商品项目
+				Items: serializeData,
+				//收款账户
+                Accounting: accountings,
+				//转订单
+				OrderId: $("#OrderId").val(),
+                //预收金额
+                AdvanceAmount: SumAdvanceReceiptAmount(),
+				//预收款余额
+				AdvanceAmountBalance: $("#TBalance_AdvanceAmountBalance").val(),
+				//单号
+                BillNumber: $("#BillNumber").val(),
+            };
+
+			//保存服务器
+            $(this).remoteSubmit("post", "/SaleBill/CreateOrUpdate?billId=@(Model.Id)&doAudit=" + doAudit, postData, items, callback, showMessage, loadingButton);
+		}
+
+		//保存单据项目
+        $("#FormSubmit").click(function ()
+		{
+			var doAudit = true;
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+            submitRemoteServer(null, null, doAudit, function (data)
+            {
+				if (data.Success) {
+					if (@Model.OrderId == 0)
+						window.location.href = "/SaleBill/List";
+					else
+                        window.location.href = "/ChangeReservation/List";
+                }
+
+            }, loadingButton);
+		});
+
+		//保存并继续
+        $("#FormSubmitContinue").click(function ()
+		{
+            var doAudit = false;
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+			if ("@Model.Id" == "0") {
+                submitRemoteServer(null, null, doAudit, function () { window.location.href = "/SaleBill/Create"; }, loadingButton);
+			} else {
+                submitRemoteServer($("#SaleItems"), null, doAudit, function () { window.location.href = "/SaleBill/Edit/" + "@Model.Id"; }, loadingButton);
+			}
+		});
+
+		//会计科目选择
+        $(document).on('click', "#Accounting_AsyncSearchSelectPopup", function ()
+		{
+			//var actionUrl = "/Accounting/AsyncSearchSelectPopup?type=1&accountCodeTypeIds=1,2,17,75";
+            var billTypeId = $("#BillTypeEnumId").val();
+            var actionUrl = "/Accounting/AsyncSearchSelectPopup?billTypeId=" + billTypeId;
+			var accounts = $("#SaleItems_Partial_Form").find("input[name='CollectionAmount']");
+			if (accounts.length == 0) {
+				$(this).showToastr("默认科目未指定！");
+				return false;
+			}
+
+			$(this).accountingSearchSelectPopup($("#AccountingModalWindow"), actionUrl, null, "选择科目", $("#AccountingForm"), $("#CollectionAccount"), $("#CollectionAccountBox"));
+		});
+
+		//赠品选择
+		$(document).on('click', "#GiveQuotaSelect", function () {
+
+			if ($("#TerminalId").val() == "" || $("#TerminalId").val() == "0") {
+				$("#TerminalId").focus();
+				$(this).showToastr("请先选择客户！");
+				return false;
+			}
+			var channelId = $("#ChannelId").val();
+			if (channelId == "" || typeof (channelId) == 'undefined') {
+				channelId = 0;
+			}
+
+			var businessUserId = $("#BusinessUserId").val();
+			//仓库
+			if ($("#WareHouseId").val() == "" || $("#WareHouseId").val() == "0") {
+				$("#WareHouseId").focus();
+				$(this).showToastr("请先选择仓库！");
+				return false;
+			}
+
+			var actionUrl = "/Product/AsyncGiveQuotaSelectPopup?channelId=" + channelId + "&terminalId=" + $("#TerminalId").val() + "&businessUserId=" + businessUserId + "&wareHouseId=" + $("#WareHouseId").val();
+			$(this).giveQuotaSelectPopup($("#GiveQuotaProductWindows"), actionUrl, null, "选择赠品", $("#GiveQuotaModalForm"), function (obj) {
+				console.log(obj);
+			});
+		});
+
+		//促销活动选择
+		window.operateEventsPopCampaign = {
+			'click .rowSelect': function (e, value, row, index) {
+				try {
+					var saleBuyQuantity = row.SaleBuyQuantity;
+					if (saleBuyQuantity < 1) {
+						$(this).showToastr("销售商品倍数必须大于等于1");
+						return false;
+					}
+					if (row.CampaignBuyProducts.length == 0) {
+						$(this).showToastr("销售商品不存在");
+						return false;
+					}
+					if (row.CampaignGiveProducts.length == 0) {
+						$(this).showToastr("赠送商品不存在");
+						return false;
+					}
+
+					//添加销售
+					row.CampaignBuyProducts.forEach(function (a, b) {
+						var buyUnitIds = Object.values(a.Units);
+						var quantity = saleBuyQuantity * a.Quantity;
+
+						//1.默认价格
+						var price = 0;
+						//如果此商品有价格体系
+						var defaultAmountId = $("#DefaultAmountId").val();
+						a.ProductTierPrices.forEach(function (a2, b2) {
+							var planIdTypeId = a2.PricesPlanId + "_" + a2.PriceTypeId;
+							if (defaultAmountId == planIdTypeId) {
+								if (a.UnitId == buyUnitIds[0]) {
+									price = a2.SmallUnitPrice;
+								}
+								else if (a.UnitId == buyUnitIds[1]) {
+									price = a2.StrokeUnitPrice;
+								}
+								else if (a.UnitId == buyUnitIds[2]) {
+									price = a2.BigUnitPrice;
+								}
+							}
+						});
+
+						//2.成本价
+						var costPrice = 0;
+						var ck = Object.keys(a.CostPrices);
+						var cv = Object.values(a.CostPrices);
+						ck.forEach(function (x, y) {
+							if (x == a.UnitId) {
+								costPrice = cv[y];
+							}
+						});
+
+						var amount = price * quantity;
+						var costAmount = costPrice * quantity;
+
+						//3.库存数量
+						var stockQty = 0;
+						var actualQty = 0;
+						var unableQty = 0;
+
+						//仓库Id
+						var wareHouseId = $("#WareHouseId").val();
+                        a.StockQuantities.forEach(function (a2, b)
+                        {
+							if (a2.WareHouseId == wareHouseId) {
+								stockQty = model.APPShowOrderStock == true ? a2.CurrentQuantity : a2.UsableQuantity;
+								actualQty = a2.UsableQuantity;
+								unableQty = a2.CurrentQuantity - a2.UsableQuantity;
+							}
+						});
+
+						var taxRate = parseFloat(model.TaxRate).toFixed(2);
+						var containTaxPrice = parseFloat((1 + taxRate / 100)) * price;
+						var taxPrice = parseFloat(taxRate / 100) * price * quantity;
+
+                        var taxPriceAmount = containTaxPrice * quantity;
+						if ('@Model.EnableTaxRate' !== 'True') {
+							taxPriceAmount = price * quantity;
+                         }
+
+						var profit = taxPriceAmount - costAmount;
+						var costProfitRate = 0;
+						if (costAmount == 0) {
+							costProfitRate = 100;
+						} else {
+							costProfitRate = profit / costAmount * 100;
+						}
+
+						//格式化(先计算，再格式化，不然数据不准)
+						containTaxPrice = parseFloat(containTaxPrice).toFixed(2);
+						taxPrice = parseFloat(taxPrice).toFixed(2);
+						taxPriceAmount = parseFloat(taxPriceAmount).toFixed(2);
+						profit = parseFloat(profit).toFixed(2);
+						costProfitRate = parseFloat(costProfitRate).toFixed(2);
+
+						//table添加销售商品
+						var rowbuy =
+						{
+							UnitId: a.UnitId,
+							Units: a.Units,
+							Prices: a.Prices,
+							ProductTierPrices: a.ProductTierPrices,
+							BigQuantity: a.BigQuantity,//大转小
+							StrokeQuantity: a.StrokeQuantity,//中转小
+							SmallUnitId: buyUnitIds[0],
+							StrokeUnitId: buyUnitIds[1],
+							BigUnitId: buyUnitIds[2],
+							ProductId: a.ProductId,
+							IsAdjustPrice: true,
+							ReferPrices: {},
+							ProductName: a.ProductName,
+							SmallBarCode: "",
+							UnitName: a.UnitName,
+							UnitConversion: a.UnitConversion,
+							Quantity: quantity,
+							IsManufactureDete: false,
+							ProductTimes: {},
+							ManufactureDete: "",
+							Price: price,
+							Amount: amount,
+							CostPrices: row.CostPrices,
+							CostPrice: costPrice,
+							CostAmount: costAmount,
+							Profit: profit,
+							CostProfitRate: costProfitRate,
+							TaxRate: taxRate,
+							ContainTaxPrice: containTaxPrice,
+							TaxPrice: taxPrice,
+							TaxPriceAmount: taxPriceAmount,
+							StockQty: stockQty,
+							UnabledStockQty: unableQty,
+							StockQuantity: actualQty,
+							StockQuantities: a.StockQuantities, //库存数量
+							Remark: "",
+							OrderCode: "",
+							RemainderQty: 0,
+							SaleProductTypeId: a.BuyProductTypeId,
+							SaleProductTypeName: a.BuyProductTypeName,
+							GiveTypeId: row.GiveTypeId,
+							CampaignId: row.CampaignId,
+							CampaignBuyProductId: a.ProductId,
+							CampaignLinkNumber: row.CampaignLinkNumber
+
+						}
+
+						//行数
+						var rowbuys = $('#SaleItems').bootstrapTable('getData');
+						var indexbuy = 0;
+						var existbuy = false;
+						for (var i = 0; i < rowbuys.length; i++) {
+							if (rowbuys[i].ProductId == 0) {
+								indexbuy = i;
+								existbuy = true;
+								break;
+							}
+						}
+						if (existbuy) {
+							$("#SaleItems").bootstrapTable('updateRow', {
+								index: indexbuy, row: rowbuy
+							});
+						}
+						else {
+							$('#SaleItems').bootstrapTable('copying', rowbuy);
+						}
+
+					});
+
+					//添加赠送
+					row.CampaignGiveProducts.forEach(function (a, b) {
+						//table添加赠送商品
+						var giveUnitIds = Object.values(a.Units);
+
+						var quantity = saleBuyQuantity * a.Quantity;
+
+						//1.默认价格
+						var price;
+						//如果此商品有价格体系
+						var defaultAmountId = $("#DefaultAmountId").val();
+						a.ProductTierPrices.forEach(function (a2, b2) {
+							var planIdTypeId = a2.PricesPlanId + "_" + a2.PriceTypeId;
+							if (defaultAmountId == planIdTypeId) {
+								if (a.UnitId == giveUnitIds[0]) {
+									price = a2.SmallUnitPrice;
+								}
+								else if (a.UnitId == giveUnitIds[1]) {
+									price = a2.StrokeUnitPrice;
+								}
+								else if (a.UnitId == giveUnitIds[2]) {
+									price = a2.BigUnitPrice;
+								}
+							}
+						});
+
+						//2.成本价
+						var costPrice = 0;
+						var ck = Object.keys(a.CostPrices);
+						var cv = Object.values(a.CostPrices);
+						ck.forEach(function (x, y) {
+							if (x == a.UnitId) {
+								costPrice = cv[y];
+							}
+						});
+
+						var costAmount = costPrice * quantity;
+
+						//3.库存数量
+						var stockQty = 0;
+						var actualQty = 0;
+						var unableQty = 0;
+
+						//仓库Id
+						var wareHouseId = $("#WareHouseId").val();
+						a.StockQuantities.forEach(function (a2, b) {
+							if (a2.WareHouseId == wareHouseId) {
+								stockQty = model.APPShowOrderStock == true ? a2.CurrentQuantity : a2.UsableQuantity;
+								actualQty = a2.UsableQuantity;
+								unableQty = a2.CurrentQuantity - a2.UsableQuantity;
+							}
+						});
+
+						var rowgive =
+						{
+							UnitId: a.UnitId,
+							Units: a.Units,
+							Prices: a.Prices,
+							ProductTierPrices: a.ProductTierPrices,
+							BigQuantity: a.BigQuantity,//大转小
+							StrokeQuantity: a.StrokeQuantity,//中转小
+							SmallUnitId: giveUnitIds[0],
+							StrokeUnitId: giveUnitIds[1],
+							BigUnitId: giveUnitIds[2],
+							ProductId: a.ProductId,
+							IsAdjustPrice: false,
+							ReferPrices: {},
+							ProductName: a.ProductName,
+							SmallBarCode: "",
+							UnitName: a.UnitName,
+							UnitConversion: a.UnitConversion,
+							Quantity: quantity,
+							IsManufactureDete: false,
+							ProductTimes: {},
+							ManufactureDete: "",
+							Price: price,//赠送价格为0
+							Amount: 0,//赠送金额为0
+							CostPrices: row.CostPrices,
+							CostPrice: costPrice,
+							CostAmount: costAmount,
+							Profit: 0,
+							CostProfitRate: 0,
+							TaxRate: 0,
+							ContainTaxPrice: 0,
+							TaxPrice: 0,
+							TaxPriceAmount: 0,
+							StockQty: stockQty,
+							UnabledStockQty: unableQty,
+							StockQuantity: actualQty,
+							StockQuantities: row.StockQuantities, //库存数量
+							Remark: "有成本兑奖赠酒",
+							OrderCode: "",
+							RemainderQty: 0,
+							IsGifts: true,
+							SaleProductTypeId: a.GiveProductTypeId,
+							SaleProductTypeName: a.GiveProductTypeName,
+							GiveTypeId: row.GiveTypeId,
+							CampaignId: row.CampaignId,
+							CampaignGiveProductId: a.ProductId,
+							CampaignLinkNumber: row.CampaignLinkNumber
+						}
+
+						//行数
+						var rowgives = $('#SaleItems').bootstrapTable('getData');
+						var indexgive = 0;
+						var existgive = false;
+						for (var i = 0; i < rowgives.length; i++) {
+							if (rowgives[i].ProductId == 0) {
+								indexgive = i;
+								existgive = true;
+								break;
+							}
+						}
+						if (existgive) {
+							$("#SaleItems").bootstrapTable('updateRow', {
+								index: indexgive, row: rowgive
+							});
+						}
+						else {
+							$('#SaleItems').bootstrapTable('copying', rowgive);
+						}
+
+					});
+
+					$('#GiveQuotaProductWindows').modal('hide');
+				}
+				catch (err) {
+					console.log(err);
+					$(this).showToastr(err);
+					return;
+				}
+			}
+		};
+
+		//费用合同选择
+		window.operateEventsPopCostContract = {
+			'click .rowSelect': function (e, value, row, index) {
+				try {
+					//商品数量
+					var quantity = 0;
+					//费用合同金额
+					var costContractAmount = 0;
+					//row.CType：0 商品
+					//row.CType：1 现金
+					if (row.CType == 0) {
+						quantity = row.AvailableQuantityOrAmount;
+					}
+					else {
+						costContractAmount = row.AvailableQuantityOrAmount;
+					}
+					//注意：费用合同是现金逻辑
+
+					//table添加费用合同
+					var unitIds = Object.values(row.Units);
+
+					//2.成本价
+					var costPrice = 0;
+					var ck = Object.keys(row.CostPrices);
+					var cv = Object.values(row.CostPrices);
+					ck.forEach(function (a, b) {
+						if (a == row.UnitId) {
+							costPrice = cv[b];
+						}
+					});
+
+					var costAmount = costPrice * quantity;
+
+					//3.库存数量
+					var stockQty = 0;
+					var actualQty = 0;
+					var unableQty = 0;
+
+					//仓库Id
+					var wareHouseId = $("#WareHouseId").val();
+					row.StockQuantities.forEach(function (a2, b) {
+						if (a2.WareHouseId == wareHouseId) {
+							stockQty = model.APPShowOrderStock == true ? a2.CurrentQuantity : a2.UsableQuantity;
+							actualQty = a2.UsableQuantity;
+							unableQty = a2.CurrentQuantity - a2.UsableQuantity;
+						}
+					});
+
+					var taxRate = parseFloat(model.TaxRate).toFixed(2);
+					var containTaxPrice = parseFloat((1 + taxRate / 100)) * row.Price;
+                    var taxPrice = parseFloat(taxRate / 100) * row.Price * quantity;
+
+					var taxPriceAmount = containTaxPrice * quantity;
+					if ('@Model.EnableTaxRate' !== 'True') {
+						taxPriceAmount = row.Price * quantity;
+					}
+
+					var profit = taxPriceAmount - costAmount;
+					var costProfitRate = 0;
+					if (costAmount == 0) {
+						costProfitRate = 100;
+					} else {
+						costProfitRate = profit / costAmount * 100;
+					}
+
+					//格式化(先计算，再格式化，不然数据不准)
+					containTaxPrice = parseFloat(containTaxPrice).toFixed(2);
+					taxPrice = parseFloat(taxPrice).toFixed(2);
+					taxPriceAmount = parseFloat(taxPriceAmount).toFixed(2);
+					profit = parseFloat(profit).toFixed(2);
+					costProfitRate = parseFloat(costProfitRate).toFixed(2);
+
+					var rowbuy =
+					{
+						UnitId: row.UnitId,
+						Units: row.Units,
+						Prices: row.Prices,
+						ProductTierPrices: row.ProductTierPrices,
+						BigQuantity: row.BigQuantity,//大转小
+						StrokeQuantity: row.StrokeQuantity,//中转小
+						SmallUnitId: unitIds[0],
+						StrokeUnitId: unitIds[1],
+						BigUnitId: unitIds[2],
+						ProductId: row.ProductId,
+						IsAdjustPrice: true,
+						ReferPrices: {},
+						ProductName: row.ProductName,
+						SmallBarCode: "",
+						UnitName: row.UnitName,
+						UnitConversion: row.UnitConversion,
+						Quantity: row.CType == 0 ? quantity : costContractAmount,
+                        TempQuantity: row.CType == 0 ? quantity : costContractAmount,
+						IsManufactureDete: false,
+						ProductTimes: {},
+						ManufactureDete: "",
+						//Price: row.Price,
+						//Amount: amount,
+						Price: 0,//价格为0
+						Amount: 0,//金额为0
+						CostPrices: row.CostPrices,
+						CostPrice: costPrice,
+						CostAmount: costAmount,
+						Profit: profit,
+						CostProfitRate: costProfitRate,
+						TaxRate: taxRate,
+						ContainTaxPrice: containTaxPrice,
+						TaxPrice: taxPrice,
+						TaxPriceAmount: taxPriceAmount,
+						StockQty: stockQty,
+						UnabledStockQty: unableQty,
+						StockQuantity: actualQty,
+						StockQuantities: row.StockQuantities, //库存数量
+						Remark: "赠酒",
+						OrderCode: "",
+						RemainderQty: 0,
+						IsGifts: true,
+
+						SaleProductTypeId: row.SaleProductTypeId,
+						SaleProductTypeName: row.SaleProductTypeName,
+						GiveTypeId: row.GiveTypeId,
+						CostContractId: row.CostContractBillId,
+						CostContractItemId: row.Id,
+						CostContractMonth: row.Month,
+						GiveTypeId: row.GiveTypeId
+
+					}
+
+					//行数
+					var rowbuys = $('#SaleItems').bootstrapTable('getData');
+					var indexbuy = 0;
+					var existbuy = false;
+					for (var i = 0; i < rowbuys.length; i++) {
+						if (rowbuys[i].ProductId == 0) {
+							indexbuy = i;
+							existbuy = true;
+							break;
+						}
+					}
+					if (existbuy) {
+						$("#SaleItems").bootstrapTable('updateRow', {
+							index: indexbuy, row: rowbuy
+						});
+					}
+					else {
+						$('#SaleItems').bootstrapTable('copying', rowbuy);
+					}
+
+					$('#GiveQuotaProductWindows').modal('hide');
+				}
+				catch (err) {
+					console.log(err);
+					$(this).showToastr(err);
+					return;
+				}
+			}
+		};
+
+
+		//==========================================
+		var $column_g;
+        var $rowIndex = 0;
+        var $columnIndex = 1;
+		var indexs = [1, 3, 5,11];
+
+		//回车切换焦点
+		function enterToSwitchFocus(row, column, rowIndex, columnIndex)
+        {
+            var datas = $('#SaleItems').bootstrapTable('getData');
+            var pds = [];
+            datas.forEach((p, i) => {
+                if (p.ProductId > 0) {
+                    pds.push(p);
+                }
+			});
+			if (pds.length) {
+                if (rowIndex < pds.length) {
+                    $rowIndex = pds.length;
+                }
+            }
+            console.log("----------$rowIndex----->>>------" + $rowIndex);
+			console.log("----------$columnIndex----->>>------" + $columnIndex);
+        }
+
+		//引入键盘事件
+        $(document).keydown(function (event) {
+            // 兼容FF和IE和Opera
+            var theEvent = event || window.event;
+            var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+            switch (code) {
+                case 13: //回车
+                    keyEnter();
+                    break;
+            }
+            return true;
+		});
+
+        //回车执行键盘操作事件
+		function keyEnter()
+		{
+			if ($rowIndex == 0) $rowIndex = 1;
+
+			//获取可见列
+            var cols = $('#SaleItems').bootstrapTable('getVisibleColumns')
+
+			//判断索引队列
+			if (indexs.length > 0) {
+
+				//遍历队列
+				for (var i = 0; i < cols.length; i++) {
+					//下标是否存在队列中，单元格索引是否在列集合索引中
+                    var cindex = indexs.indexOf(i);
+                    if (cindex >= 0 && indexs[cindex] <= 11) {
+                        //存在则取出单元格索引
+                        var cur = indexs[cindex];
+
+						//点击列
+						$columnIndex = cur;
+
+						console.log("----------$rowIndex-----------" + $rowIndex);
+						console.log("----------$columnIndex-----------" + $columnIndex);
+
+						//获取行列所在单元格元素
+						$column_g = $("#SaleItems").find("tr").eq($rowIndex).find("td").eq($columnIndex);
+
+						console.log($column_g);
+
+						if ($column_g != null)
+						{
+							$column_g.click();
+
+                            //从队列移除单元格索引
+                            indexs.splice(cindex, 1);
+
+                            //如果列索引移除完，空队列时
+							if (indexs.length == 0)
+							{
+                                indexs = [1, 3, 5 , 11];
+                                //列复位
+                                $columnIndex = 1;
+                                //换下一行
+                                $rowIndex++;
+							}
+						}
+                        //跳出循环
+                        break;
+					}
+				}
+			}
+        }
+		//==========================================
+
+
+		/*
+		 * ======================================================
+		 * mschen 2018-12-5 11:24:43 end
+		 * ======================================================
+		 */
+	});
+
+</script>
+

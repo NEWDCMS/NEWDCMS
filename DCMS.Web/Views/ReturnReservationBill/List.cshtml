@@ -1,0 +1,503 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Sales;
+
+@model ReturnReservationBillListModel
+
+@{
+    var refURL = Context.Request.GetAbsoluteUri();
+}
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">销售</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">销售单据</a>
+                </li>
+                <li class="crumb-trail">退货订单</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <form asp-action="List" asp-controller="ReturnReservationBill" method="get" id="formSearch" novalidate="novalidate">
+                    <div class="panel panel-default" id="panel0">
+                        <div class="panel-heading">
+                            <span class="glyphicon glyphicon-search"></span> 高级搜索
+                            <a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedSearch"><i class="fa fa-angle-double-right"></i></a>
+                        </div>
+                        <div class="panel-body p10">
+                            @*打印区域*@
+                            <div id="printData"></div>
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <input asp-for="TerminalId" type="hidden" />
+                                    <div class="input-group">
+                                        <input asp-for="TerminalName" class="form-control" placeholder="客户..." />
+                                        <span class="input-group-btn">
+                                            <button id="btn_search_customer" type="button" class="btn btn-default">
+                                                <span class="glyphicon glyphicon-search"></span>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="BusinessUserId" asp-items="@Model.BusinessUsers" asp-default="选择业务员" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <input asp-for="BillNumber" class="form-control" placeholder="单据号..." />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-select asp-for="WareHouseId" asp-items="@Model.WareHouses" asp-default="选择仓库" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <input asp-for="Remark" class="form-control" placeholder="备注..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="DeliveryUserId" asp-items="@Model.DeliveryUsers" asp-default="选择配送员" />
+                                </div>
+                            </div>
+
+                            <div class="row mt10 mb10">
+
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="StartTime" placeholder="开始..." />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="EndTime" placeholder="结束..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="DistrictId" asp-items="@Model.Districts" asp-default="选择区域" />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-select-bool asp-for="AuditedStatus" asp-items="@(new string[] {  "已审核", "未审核"})" asp-default="审核状态" />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-select-bool asp-for="SortByAuditedTime" asp-items="@(new string[] {  "是", "否"})" asp-default="按审核时间" />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-select-bool asp-for="ShowReverse" asp-items="@(new string[] {  "是", "否"})" asp-default="显示红冲的数据" />
+                                </div>
+                                @*<div class=" col-sm-1">
+                                        <dcms-select-bool asp-for="ShowReturn" asp-items="@(new string[] {  "是", "否"})" asp-default="显示退货单" />
+                                    </div>*@
+                                @*<div class=" col-sm-1">
+                                        <dcms-select-bool asp-for="AlreadyChange" asp-items="@(new string[] { "是", "否"})" asp-default="已转订单" />
+                                    </div>*@
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <button id="btn_query" type="submit" class="btn btn-primary btn-block">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 退货订单列表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+
+                        <!--Begin _Toolbar-->
+                        @await Html.PartialAsync("_Toolbar", Model)
+                        <!--End _Toolbar-->
+
+                        <div class="bootstrap-table">
+
+                            <div class="fixed-table-container">
+                                <div class="fixed-table-body">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <thead>
+                                            <tr class="datagrid-header-row">
+                                                <th class="bs-checkbox "><div class="th-inner"><input name="btSelectAll" type="checkbox"></div></th>
+                                                <th class="text-center w150"><div class="th-inner">编号</div></th>
+                                                <th rowspan="2" class="text-center w50">详细</th>
+                                                <th class="text-right"><div class="th-inner">总金额</div></th>
+                                                <th class="text-right"><div class="th-inner">应收金额</div></th>
+                                                <th class="text-right"><div class="th-inner">优惠金额</div></th>
+                                                <th class="text-right"><div class="th-inner">已支付金额</div></th>
+                                                <th class="text-right"><div class="th-inner">待支付金额</div></th>
+                                                <th class="text-center"><div class="th-inner">状态</div></th>
+                                                <th class="text-center"><div class="th-inner">销售来源</div></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                if (Model.Lists == null || Model.Lists.Count == 0)
+                                                {
+                                                    <tr class="no-records-found"><td colspan="@(Model.DynamicColumns.Count + 10)">没有找到匹配的记录</td></tr>
+                                                }
+                                                else
+                                                {
+                                                    foreach (var returnReservation in Model.Lists)
+                                                    {
+                                                        <tr>
+                                                            <td class="bs-checkbox ">
+                                                                <input name="btSelectItem" class="btSelectItem" type="checkbox" value="@returnReservation.Id">
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <a href="@Url.Action("Edit","ReturnReservationBill",new { id= returnReservation.Id,returnURL= refURL})">@returnReservation.BillNumber</a>
+                                                                @if (returnReservation.ReturnBillId != 0)
+                                                                {
+                                                                    <br />
+                                                                    <a href="@Url.Action("Edit","ReturnBill",new { id= returnReservation.ReturnBillId,returnURL= refURL})" style="color:#ddd">@returnReservation.ReturnBillNumber</a>
+                                                                }
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <a href="javascript:;" class="showChildRow" data-id="@returnReservation.Id" data-open="false"><i class="fa fa-plus"></i></a>
+                                                            </td>
+                                                            <td class="text-right">￥ @returnReservation.SumAmount.ToString("0.00")</td>
+                                                            <td class="text-right">￥ @returnReservation.ReceivableAmount.ToString("0.00")</td>
+                                                            <td class="text-right">￥ @returnReservation.PreferentialAmount.ToString("0.00")</td>
+                                                            @if (returnReservation.ReturnReservationBillAccountings == null || returnReservation.ReturnReservationBillAccountings.Count == 0)
+                                                            {
+                                                                <td class="text-right"></td>
+                                                            }
+                                                            else
+                                                            {
+                                                                @foreach (var account in returnReservation.ReturnReservationBillAccountings)
+                                                                {
+                                                                    <td class="text-right">￥ @account.CollectionAmount.ToString("0.00")</td>
+                                                                }
+                                                            }
+                                                            <td class="text-right">
+                                                                ￥ @Html.Raw((returnReservation.OweCash != 0) ? "<b>" + returnReservation.OweCash.ToString("0.00") + "</b>" : returnReservation.OweCash.ToString("0.00"))
+                                                            </td>
+                                                            <td class="text-center">
+                                                                @Html.AuditedStatus(returnReservation.ReversedStatus, returnReservation.AuditedStatus)
+                                                            </td>
+                                                            <td class="text-center">
+                                                                @Html.Operation(returnReservation.Operation)
+                                                            </td>
+                                                        </tr>
+                                                        <tr class="showChildRow_@returnReservation.Id" style="display:none">
+                                                            <td colspan="2"></td>
+                                                            <td class="text-center"><span>详细</span></td>
+                                                            <td colspan="7" class="text-left">
+                                                                业务员：@(returnReservation.BusinessUserName)
+                                                                <br />
+                                                                客户：@(returnReservation.TerminalName)
+                                                                <br />
+                                                                客户编码：@(returnReservation.TerminalPointCode)
+                                                                <br />
+                                                                仓库：@(returnReservation.WareHouseName)
+                                                                <br />
+                                                                交易时间：@(returnReservation.TransactionDate.HasValue ? returnReservation.TransactionDate.Value.ToString("yyyy/MM/dd HH:mm:ss") : "")
+                                                                <br />
+                                                                审核时间：@(returnReservation.AuditedDate.HasValue ? returnReservation.TransactionDate.Value.ToString("yyyy/MM/dd HH:mm:ss") : "")
+                                                                <br />
+                                                                打印数：@(returnReservation.PrintNum)
+                                                                <br />
+                                                                备注：@(returnReservation.Remark)
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+
+                                            }
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            @{
+                                var pager = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+                            }
+
+                            @if (!pager.IsEmpty())
+                            {
+                                <div class="fixed-table-pagination" style="display: block;">
+                                    @Html.Raw(pager.ToString())
+                                </div>
+                            }
+
+
+                            <div class="clearfix"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+</section>
+
+
+
+@{
+
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+
+}
+
+
+
+@section CurPageScripts
+{
+
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            //全选
+            $("input[name='btSelectAll']").click(function () {
+                var selectStatus = $(this).is(':checked')
+                if (selectStatus) {
+                    $("input[name='btSelectItem']").each(function (i, n) {
+                        n.checked = true;
+                    });
+                } else {
+                    $("input[name='btSelectItem']").each(function (i, n) {
+                        n.checked = false;
+                    });
+                }
+            });
+
+            //高级搜索
+            $("#panel0 #AdvancedSearch").click(function () {
+                var ico = $(this).find(".fa");
+                if (ico.hasClass('fa-angle-double-right'))
+                    ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+                else
+                    ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+                $("#panel0").find(".panel-body").toggleClass("hidden fadeIn");
+            });
+
+            //客户搜索
+            $(document).on('click', "#btn_search_customer", function () {
+                var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+                $(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { ids: "" }, "选择终端", $("#TerminalSelectForm"), function (rows) { });
+            });
+
+            window.operateEventsPopTerminal = {
+                'click .rowSelect': function (e, value, row, index) {
+                    try {
+                        $("#TerminalId").val(row.Id);
+                        $("#TerminalName").val(row.Name);
+                        $('#TerminalSelectModalWindow').modal('hide');
+                    }
+                    catch (err) {
+                        console.log(err);
+                        $(this).showToastr(err);
+                        return;
+                    }
+                }
+            };
+
+            //导出选择
+            $("#export_select").click(function () {
+                Export(1);
+            });
+            //导出全部
+            $("#export_all").click(function () {
+                Export(2);
+            });
+            var Export = function (t) {
+                var queryParams = {};
+                queryParams.type = t;
+                queryParams.selectData = "";
+                if (t == 1) {
+                    var selectData = "";
+                    //获取用户选择的单据
+                    var arrselections = $("input[name='btSelectItem']:checked").each(function (i, j) {//把所有被选中的复选框的值存入数组
+                        selectData += (selectData != "" ? "," : "") + $(this).val();
+                    });
+
+                    if (selectData == "") {
+                        $(this).showToastr("没有选择数据");
+                        return false;
+                    }
+                    queryParams.selectData = selectData;
+
+                }
+
+                BindQueryParams(queryParams);
+                window.location.href = "/ReturnReservationBill/Export?type=" + queryParams.type + "&selectData=" + queryParams.selectData + "&terminalId=" + queryParams.TerminalId + "&businessUserId=" + queryParams.BusinessUserId + "&deliveryUserId=" + queryParams.DeliveryUserId + "&billNumber=" + queryParams.BillNumber + "&wareHouseId=" + queryParams.WareHouseId + "&remark=" + queryParams.Remark + "&startTime=" + queryParams.StartTime + "&endTime=" + queryParams.EndTime + "&districtId=" + queryParams.DistrictId + "&auditedStatus=" + queryParams.AuditedStatus + "&sortByAuditedTime=" + queryParams.SortByAuditedTime + "&showReverse=" + queryParams.ShowReverse + "&showReturn=" + queryParams.ShowReturn + "&alreadyChange=" + queryParams.AlreadyChange + "&terminalName=" + queryParams.TerminalName;
+
+            }
+
+            //打印选择
+            $("#print_select").click(function () {
+                Print(1);
+            });
+            //打印全部
+            $("#print_all").click(function () {
+                Print(2);
+            });
+            var Print = function (t) {
+                var loadingButton = Ladda.create($("#btn_print")[0]);
+                var queryParams = {};
+                queryParams.type = t;
+                queryParams.selectData = "";
+                if (t == 1) {
+                    var selectData = "";
+                    //获取用户选择的单据
+                    var arrselections = $("input[name='btSelectItem']:checked").each(function (i, j) {//把所有被选中的复选框的值存入数组
+                        selectData += (selectData != "" ? "," : "") + $(this).val();
+                    });
+
+                    if (selectData == "") {
+                        $(this).showToastr("没有选择数据");
+                        return false;
+                    }
+                    queryParams.selectData = selectData;
+
+                }
+                BindQueryParams(queryParams);
+                WinMsg.confirm({ message: "打印单据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    loadingButton.start();
+                    var setting = {}
+                    var LODOP = null;
+                    var rs = $(this).getSyncData("/ReturnReservationBill/PrintSetting", null, "get");
+                    if (rs.Success) {
+                        setting = rs.Data;
+                        loadCLodop(document, setting.PrintPort, () => {
+                            //判断页面是否已加载LODOP
+                            if (LODOP == null || LODOP == undefined) {
+                                LODOP = getLodopFirst(document);
+                                LODOP = getLodopSecond(document);
+                            }
+                            if (LODOP == null || LODOP == undefined) {
+                                loadingButton.stop();
+                                return;
+                            } else {
+                                $("#printData").html("");
+                            }
+                        });
+                        $(this).remoteRequest('GET', '/ReturnReservationBill/Print', queryParams, function (result) {
+                            if (result.Success) {
+                                var htmls = result.Data;
+                                LODOP.PRINT_INIT("退货订单");
+                                if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+                                    LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+                                }
+                                htmls.forEach(function (html, index) {
+                                    if (setting.IsPrintPageNumber) {
+                                        LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+                                    }
+                                    if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+                                        LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+                                    }
+                                    LODOP.NewPageA();
+                                });
+                                LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+                                LODOP.PREVIEW(true);
+                                loadingButton.stop();
+                            }
+                            else {
+                                $(this).showToastr(result.Message);
+                                loadingButton.stop();
+                            }
+                        });
+                    }
+
+                });
+            }
+
+            //绑定查询参数
+            var BindQueryParams = function (queryParams) {
+                queryParams.TerminalId = $("#TerminalId").val();
+                queryParams.TerminalName = $("#TerminalName").val();
+                queryParams.BusinessUserId = $("#BusinessUserId").val();
+                queryParams.BillNumber = $("#BillNumber").val();
+                queryParams.WareHouseId = $("#WareHouseId").val();
+                queryParams.Remark = $("#Remark").val();
+                queryParams.DeliveryUserId = $("#DeliveryUserId").val();
+                //queryParams.StartTime = $("#datetimepicker_StartTime").val();
+                //queryParams.EndTime = $("#datetimepicker_EndTime").val();
+                queryParams.StartTime = $("#StartTime").val();
+                queryParams.EndTime = $("#EndTime").val();
+                queryParams.DistrictId = $("#DistrictId").val();
+                queryParams.AuditedStatus = $("#AuditedStatus").val();
+                queryParams.SortByAuditedTime = $("#SortByAuditedTime").val();
+                queryParams.ShowReverse = $("#ShowReverse").val();
+                queryParams.ShowReturn = $("#ShowReturn").val();
+                queryParams.AlreadyChange = $("#AlreadyChange").val();
+            }
+
+            //防止重复查询
+            var queryNumber = 1;
+            $("#btn_query").click(function () {
+                if (queryNumber > 1) {
+                    return false;
+                }
+                queryNumber = queryNumber + 1;
+            });
+
+            //用户修改客户名称，将客户Id置零
+            $("#TerminalName").bind("change", function () {
+                $("#TerminalId").val(0);
+            });
+
+
+        });
+
+    </script>
+
+}

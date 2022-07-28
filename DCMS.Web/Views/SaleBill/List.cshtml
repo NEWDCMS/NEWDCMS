@@ -1,0 +1,819 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Sales;
+@using DCMS.Core;
+
+@model SaleBillListModel
+
+@{
+
+ var refURL = Context.Request.GetAbsoluteUri();
+}
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">销售</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">销售单据</a>
+                </li>
+                <li class="crumb-trail">销售单</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <form asp-action="List" asp-controller="SaleBill" method="get" id="formSearch" novalidate="novalidate">
+
+                    <div class="panel panel-default" id="panel0">
+                        <div class="panel-heading">
+                            <span class="glyphicon glyphicon-search"></span> 高级搜索
+                            <a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedSearch"><i class="fa fa-angle-double-right"></i></a>
+                        </div>
+                        <div class="panel-body p10">
+                            @*打印区域*@
+                            <div id="printData"></div>
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <input asp-for="TerminalId" type="hidden" />
+                                    <div class="input-group">
+                                        <input asp-for="TerminalName" class="form-control" placeholder="客户..." />
+                                        <span class="input-group-btn">
+                                            <button id="btn_search_customer" type="button" class="btn btn-default">
+                                                <span class="glyphicon glyphicon-search"></span>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="BusinessUserId" asp-items="@Model.BusinessUsers" asp-default="选择业务员" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <input asp-for="BillNumber" class="form-control" placeholder="单据号..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="WareHouseId" asp-items="@Model.WareHouses" class="form-control" asp-default="选择仓库" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select-bool asp-for="AuditedStatus" asp-items="@(new string[] {  "已审核", "未审核"})" asp-default="审核状态" />
+                                </div>
+
+                                <div class="col-sm-2">
+                                    <input asp-for="Remark" class="form-control" placeholder="备注..." />
+                                </div>
+
+                            </div>
+
+                            <div class="row mt10 mb10">
+
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="StartTime" placeholder="开始..." />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="EndTime" placeholder="结束..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="DistrictId" asp-items="@Model.Districts" asp-default="选择片区" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="DeliveryUserId" asp-items="@Model.DeliveryUsers" asp-default="选择配送员" />
+                                </div>
+
+
+                                <div class=" col-sm-2">
+                                    <dcms-select-bool asp-for="SortByAuditedTime" asp-items="@(new string[] {  "是", "否"})" asp-default="按审核时间" />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-select-bool asp-for="ShowReverse" asp-items="@(new string[] {  "是", "否"})" asp-default="显示红冲的数据" />
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <div class="input-group">
+                                        <input asp-for="ProductId" type="hidden" />
+                                        <input asp-for="ProductName" class="form-control" placeholder="商品..." />
+                                        <span class="input-group-btn">
+                                            <button id="btn_search_product" type="button" class="btn btn-default">
+                                                <span class="glyphicon glyphicon-search"></span>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <a href="@Url.Action("List")" class="btn btn-warning btn-block">
+                                        <span class="fa fa-trash-o mr5" aria-hidden="true"></span>清除
+                                    </a>
+                                </div>
+                                <div class="col-sm-8">
+                                    <button id="btn_query" type="submit" class="btn btn-primary btn-block">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 销售单列表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+
+
+                        <!--Begin _Toolbar-->
+                        @await Html.PartialAsync("_Toolbar", Model)
+                        <!--End _Toolbar-->
+
+                        <div class="bootstrap-table">
+
+                            <div class="fixed-table-container">
+                                <div class="fixed-table-body">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr class="datagrid-header-row">
+                                                <th rowspan="2" class="bs-checkbox "><div class="th-inner"><input name="btSelectAll" type="checkbox"></div></th>
+                                                <th rowspan="2" class="text-center w150"><div class="th-inner">编号</div></th>
+                                                <th rowspan="2" class="text-center w50">详细</th>
+                                                <th rowspan="2" class="text-center w150">终端名称</th>
+                                                <th rowspan="2" class="text-center w100">业务员</th>
+                                                <th rowspan="2" class="text-center">仓库</th>
+                                                <th rowspan="2" class="text-right"><div class="th-inner">应收金额</div></th>
+                                                <th rowspan="2" class="text-right"><div class="th-inner">优惠金额</div></th>
+                                                <th colspan="@(Model.DynamicColumns.Count)" class="text-center ptn pbn"><div class="th-inner ptn pbn">收款账户</div></th>
+                                                <th rowspan="2" class="text-right"><div class="th-inner">欠款金额</div></th>
+                                                <th rowspan="2" class="text-center w150">交易时间</th>
+                                                <th rowspan="2" class="text-center w150">备注</th>
+                                                <th rowspan="2" class="text-center w50">打印</th>
+                                                <th rowspan="2" class="text-center w50"><div class="th-inner">状态</div></th>
+                                                <th rowspan="2" class="text-center w50"><div class="th-inner">来源</div></th>
+                                                <th rowspan="2" class="text-center w50"><div class="th-inner">收款</div></th>
+                                                <th rowspan="2" class="text-center w50"><div class="th-inner">对账</div></th>
+                                            </tr>
+                                            <tr class="datagrid-header-row">
+                                                @foreach (var account in Model.DynamicColumns)
+                                                {
+
+                                                <th class="text-right ptn pbn"><div class="th-inner ptn pbn">@account</div></th>
+                                                }
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                if (Model.Lists == null || Model.Lists.Count == 0)
+                                                {
+                                                <tr class="no-records-found"><td colspan="@(Model.DynamicColumns.Count + 16)"> 没有找到匹配的记录 </td></tr>
+                                                }
+                                                else
+                                                {
+                                                    foreach (var sale in Model.Lists)
+                                                    {
+                                                <tr style="background-color:@(sale.Remark!=null && sale?.Remark?.IndexOf("应收款销售单")!=-1 && sale.Items.Count==0?"#ddd":"") !important">
+                                                    <td class="bs-checkbox ">
+                                                        <input name="btSelectItem" class="btSelectItem" type="checkbox" value="@sale.Id">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <a href="@Url.Action("Edit","SaleBill",new { id= sale.Id,returnURL= refURL})">@sale.BillNumber</a>
+                                                        @if (sale.SaleChangePrice)
+                                                {
+
+                                                        <span style="color:darkorange"> 变 </span>
+
+                                                }
+                                                        @if (sale.SaleReservationBillId != 0)
+                                                {
+
+                                                        <br />
+
+                                                        <a href="@Url.Action("Edit","SaleReservationBill",new { id= sale.SaleReservationBillId})" style="color:#ddd"> @sale.SaleReservationBillNumber </a>
+
+                                                    if (sale.SaleReservationChangePrice)
+                                                    {
+
+                                                        <span style="color:darkorange"> 变 </span>
+
+                                                    }
+                                                }
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <a href="javascript:;" class="showSaleChildRow" data-id="@sale.Id" data-open="false"><i class="fa fa-plus"></i></a>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @sale.TerminalName
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @sale.BusinessUserName
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @sale.WareHouseName
+                                                    </td>
+                                                    <td class="text-right">￥ @sale.ReceivableAmount.ToString("0.00")</td>
+                                                    <td class="text-right">￥ @sale.PreferentialAmount.ToString("0.00")</td>
+                                                    @if (sale.SaleBillAccountings == null || sale.SaleBillAccountings.Count == 0)
+                                            {
+                                                    <td class="text-right"></td>
+                                            }
+                                            else
+                                            {
+                                                    @foreach (var account in sale.SaleBillAccountings)
+                                                {
+
+                                                    <td class="text-right">￥ @account.CollectionAmount.ToString("0.00")</td>
+                                                }
+                                            }
+                                                    <td class="text-right">
+                                                        ￥ @Html.Raw((sale.OweCash != 0) ? "<b>" + sale.OweCash.ToString("0.00") + "</b>" : sale.OweCash.ToString("0.00"))
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @(sale.TransactionDate.HasValue ? sale.TransactionDate.Value.ToString("yyyy/MM/dd HH:mm:ss") : "")
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @sale.Remark
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @if (sale.PrintNum > 0)
+                                                {
+                                                        <span class="label label-info">已打印</span>
+                                                }
+                                                else
+                                                {
+                                                        <span class="label label-default">未打印</span>
+                                                }
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @Html.AuditedStatus(sale.ReversedStatus, sale.AuditedStatus)
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @Html.Operation(sale.Operation)
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @Html.ReceiptStatus(sale.ReceiptStatus)
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @if (sale.HandInStatus??false)
+                                                {
+                                                        <span class="label label-info">已上缴</span>
+                                                }
+                                                else
+                                                {
+                                                        <span class="label label-default">未上缴</span>
+                                                }
+                                                    </td>
+
+                                                </tr>
+                                                <tr class="showSaleChildRow_@sale.Id" style="display:none">
+                                                    <td colspan="2"></td>
+                                                    <td class="text-center"><span>详细</span></td>
+                                                    <td colspan="2" class="text-left">
+                                                        业务员：@(sale.BusinessUserName)
+                                                        <br />
+                                                        开单人：@(sale.MakeUserName)
+                                                        <br />
+                                                        客户：@(sale.TerminalName)
+                                                        <br />
+                                                        客户编码：@(sale.TerminalPointCode)
+                                                        <br />
+                                                        仓库：@(sale.WareHouseName)
+                                                        <br />
+                                                        交易时间：@(sale.TransactionDate.HasValue ? sale.TransactionDate.Value.ToString("yyyy/MM/dd HH:mm:ss") : "")
+                                                        <br />
+                                                        审核时间：@(sale.AuditedDate.HasValue ? sale.AuditedDate.Value.ToString("yyyy/MM/dd HH:mm:ss") : "")
+                                                        <br />
+                                                        打印数：@(sale.PrintNum)
+                                                        <br />
+                                                        备注：@(sale.Remark)
+                                                    </td>
+                                                    <td colspan="15">
+                                                        <table class="table table-striped table-bordered table-hover" id="SaleItems_@sale.Id"></table>
+                                                    </td>
+                                                </tr>
+                                                    }
+                                                }
+                                            }
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            @{
+                                var pager = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+                            }
+
+                            @if (!pager.IsEmpty())
+                            {
+                            <div class="fixed-table-pagination" style="display: block;">
+                                @Html.Raw(pager.ToString())
+                            </div>
+                            }
+
+                            <div class="clearfix"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+</section>
+
+
+
+@{
+
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+    //商品选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ProductModalForm" }, { "modalWindow", "ModalProductWindows" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+
+}
+
+@section CurPageScripts
+{
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            //商品列表选择赋值
+            window.operateEventsPop = {
+                'click .rowSelect': function (e, value, row, index) {
+                    var index = $(this).attr("data-id");
+                    var keys = Object.keys(row.Units);
+                    $("#ProductName").val(row.Name);
+                    $("#ProductId").val(row.Id);
+                    $('#ModalProductWindows').modal('hide');
+                }
+            };
+            $("#btn_search_product").click(function () {
+                $(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup", null, "选择商品", $("#ProductModalForm"),
+                    function () { });
+            });
+
+            //function getUrlQueryString(name) {
+            //	var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+            //	var r = window.location.search.substr(1).match(reg);
+            //	if (r != null) {
+            //		return unescape(r[2]);
+            //	}
+            //	return null;
+            //}
+            //getUrlQueryString((int)AccessGranularityEnum.SaleReservationPrint)
+
+            //全选
+            $("input[name='btSelectAll']").click(function () {
+                var selectStatus = $(this).is(':checked')
+                if (selectStatus) {
+                    $("input[name='btSelectItem']").each(function (i, n) {
+                        n.checked = true;
+                    });
+                } else {
+                    $("input[name='btSelectItem']").each(function (i, n) {
+                        n.checked = false;
+                    });
+                }
+            });
+
+            //高级搜索
+            $("#panel0 #AdvancedSearch").click(function () {
+                var ico = $(this).find(".fa");
+                if (ico.hasClass('fa-angle-double-right'))
+                    ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+                else
+                    ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+                $("#panel0").find(".panel-body").toggleClass("hidden fadeIn");
+            });
+
+            $(document).on('click', "#btn_search_customer", function () {
+                var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+                $(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { ids: "" }, "选择终端", $("#TerminalSelectForm"), function (rows) { });
+            });
+
+            window.operateEventsPopTerminal = {
+                'click .rowSelect': function (e, value, row, index) {
+                    try {
+                        $("#TerminalId").val(row.Id);
+                        $("#TerminalName").val(row.Name);
+                        $('#TerminalSelectModalWindow').modal('hide');
+                    }
+                    catch (err) {
+                        console.log(err);
+                        $(this).showToastr(err);
+                        return;
+                    }
+                }
+            };
+
+
+            //导出选择
+            $("#export_select").click(function () {
+                Export(1);
+            });
+            //导出全部
+            $("#export_all").click(function () {
+                Export(2);
+            });
+            var Export = function (t) {
+                var queryParams = {};
+                queryParams.type = t;
+                queryParams.selectData = "";
+                if (t == 1) {
+                    var selectData = "";
+                    //获取用户选择的单据
+                    var arrselections = $("input[name='btSelectItem']:checked").each(function (i, j) {//把所有被选中的复选框的值存入数组
+                        selectData += (selectData != "" ? "," : "") + $(this).val();
+                    });
+
+                    if (selectData == "") {
+                        $(this).showToastr("没有选择数据");
+                        return false;
+                    }
+                    queryParams.selectData = selectData;
+
+                }
+                BindQueryParams(queryParams);
+                window.location.href = "/SaleBill/Export?type=" + queryParams.type + "&selectData=" + queryParams.selectData + "&terminalId=" + queryParams.TerminalId + "&businessUserId=" + queryParams.BusinessUserId + "&billNumber=" + queryParams.BillNumber + "&wareHouseId=" + queryParams.WareHouseId + "&paymentMethodType=" + queryParams.PaymentMethodType + "&remark=" + queryParams.Remark + "&startTime=" + queryParams.StartTime + "&endTime=" + queryParams.EndTime + "&districtId=" + queryParams.DistrictId + "&deliveryUserId=" + queryParams.DeliveryUserId + "&auditedStatus=" + queryParams.AuditedStatus + "&sortByAuditedTime=" + queryParams.SortByAuditedTime + "&showReverse=" + queryParams.ShowReverse + "&showReturn=" + queryParams.ShowReturn + "&billSourceType=" + queryParams.BillSourceType + "&terminalName=" + queryParams.TerminalName;
+
+            }
+
+            //打印选择
+            $("#print_select").click(function () {
+                Print(1);
+            });
+            //打印全部
+            $("#print_all").click(function () {
+                Print(2);
+            });
+
+
+
+            var Print = function (t) {
+                var loadingButton = Ladda.create($("#btn_print")[0]);
+                var queryParams = {};
+                queryParams.type = t;
+                //queryParams.billType = 12;
+                //queryParams.billIds = "";
+                queryParams.selectData = "";
+                if (t == 1) {
+                    var selectData = "";
+                    //获取用户选择的单据
+                    var arrselections = $("input[name='btSelectItem']:checked").each(function (i, j) {//把所有被选中的复选框的值存入数组
+                        selectData += (selectData != "" ? "," : "") + $(this).val();
+                    });
+
+                    if (selectData == "") {
+                        $(this).showToastr("没有选择数据");
+                        return false;
+                    }
+                    queryParams.selectData = selectData;
+
+                }
+                BindQueryParams(queryParams);
+                WinMsg.confirm({ message: "打印单据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    loadingButton.start();
+                    var setting = {}
+                    var LODOP = null;
+                    var rs = $(this).getSyncData("/SaleBill/PrintSetting", null, "get");
+                    if (rs.Success) {
+                        setting = rs.Data;
+                        console.info(setting);
+                        loadCLodop(document, setting.PrintPort, function () {
+                            //判断页面是否已加载LODOP
+                            if (LODOP == null || LODOP == undefined) {
+                                LODOP = getLodopFirst(document);
+                                LODOP = getLodopSecond(document);
+                            }
+                            if (LODOP == null || LODOP == undefined) {
+                                loadingButton.stop();
+                                return;
+                            } else {
+                                $("#printData").html("");
+                            }
+                            $(this).remoteRequest('GET', '/SaleBill/Print', queryParams, function (result) {
+                                if (result.Success) {
+                                    var htmls = result.Data;
+                                    LODOP.PRINT_INIT("销售单");
+                                    if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+                                        LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+                                    }
+                                    //订单变量模拟后台配置
+                                    var headerHeight = setting.HeaderHeight;
+                                    var footerHeight = setting.FooterHeight - setting.MarginBottom;
+                                    var bodyBeginSite = headerHeight + 1 + setting.MarginTop;
+                                    var bodyHeight = (setting.PageRowsCount + 3) * 5.8;
+                                    var footerBeginSite = bodyHeight + bodyBeginSite;
+                                    var linkedItem = 0;
+                                    //打印分页
+                                    if (setting.IsPrintPageNumber) {
+                                        LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+                                        linkedItem += 1;
+                                    }
+                                    htmls.forEach(function (html, index) {
+                                        //获取样式
+                                        var reg = /<\s*(\S+)(\s[^>]*)?>[\s\S]*<\s*\/\1\s*>/
+                                        var result = reg.exec(html);
+                                        var strStyle = "";
+                                        if (result.length > 0) { 
+                                            strStyle = reg.exec(html)[0];
+                                        }
+                                        //获取html内容
+                                        var elements = $(html);
+                                        //打印页体
+                                        if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+                                            if (setting.PrintInAllPages) {
+                                                LODOP.ADD_PRINT_TABLE(bodyBeginSite + "mm", 10, "100%", bodyHeight + "mm", html);
+                                                LODOP.SET_PRINT_STYLEA(0, "TableHeightScope", 1);
+                                                linkedItem += 1;
+                                            } else {
+                                                LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+                                            }
+                                        }
+                                        if (setting.PrintInAllPages) {
+                                            //打印页眉
+                                            var header = $('.header', elements);
+                                            LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", 30, "95%", headerHeight + "mm", strStyle + header.html());
+                                            LODOP.SET_PRINT_STYLEA(0, "ItemType", 1);
+                                            //打印页脚
+                                            var footer = $('.footer', elements);
+                                            LODOP.ADD_PRINT_HTM(footerBeginSite + "mm", 30, "95%", footerHeight+"mm", strStyle + footer.html());
+                                            LODOP.SET_PRINT_STYLEA(0, "LinkedItem", linkedItem);
+                                            //LODOP.SET_PRINT_STYLEA(0, "PageIndex", "Last");
+                                            LODOP.SET_PRINT_STYLEA(0, "ItemType", 1);
+                                        }
+                                        //LODOP.ADD_PRINT_HTM("70mm", "160mm", "150mm", "5mm", "<font>111111111111111111111</font>");
+                                        //LODOP.SET_PRINT_STYLEA(0, "PageIndex", "Last");
+                                        LODOP.NewPageA();
+                                    });
+                                    LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+                                    LODOP.PREVIEW(true);
+                                    loadingButton.stop();
+                                }
+                                else {
+                                    $(this).showToastr(result.Message);
+                                    loadingButton.stop();
+                                }
+                            });
+                        });
+                    }
+                });
+            }
+
+            //绑定查询参数
+            var BindQueryParams = function (queryParams) {
+                queryParams.TerminalId = $("#TerminalId").val();
+                queryParams.TerminalName = $("#TerminalName").val();
+                queryParams.BusinessUserId = $("#BusinessUserId").val();
+                queryParams.BillNumber = $("#BillNumber").val();
+                queryParams.WareHouseId = $("#WareHouseId").val();
+                queryParams.PaymentMethodType = $("#PaymentMethodType").val();
+                queryParams.Remark = $("#Remark").val();
+                //queryParams.StartTime = $("#datetimepicker_StartTime").val();
+                //queryParams.EndTime = $("#datetimepicker_EndTime").val();
+                queryParams.StartTime = $("#StartTime").val();
+                queryParams.EndTime = $("#EndTime").val();
+                queryParams.DistrictId = $("#DistrictId").val();
+                queryParams.DeliveryUserId = $("#DeliveryUserId").val();
+                queryParams.AuditedStatus = $("#AuditedStatus").val();
+                queryParams.SortByAuditedTime = $("#SortByAuditedTime").val();
+                queryParams.ShowReverse = $("#ShowReverse").val();
+                queryParams.ShowReturn = $("#ShowReturn").val();
+                queryParams.AlreadyChange = $("#BillSourceType").val();
+            }
+
+            //防止重复查询
+            var queryNumber = 1;
+            $("#btn_query").click(function () {
+                if (queryNumber > 1) {
+                    return false;
+                }
+                queryNumber = queryNumber + 1;
+            });
+
+            //用户修改客户名称，将客户Id置零
+            $("#TerminalName").bind("change", function () {
+                $("#TerminalId").val(0);
+            });
+
+            //折叠项目  //minus
+            $(".showSaleChildRow").click(function () {
+                var id = $(this).attr("data-id");
+                var open = $(this).attr("data-open");
+                if (open == "true") {
+                    $(".showSaleChildRow_" + id).hide();
+                    $(this).attr("data-open", false);
+                    $(this).html('<i class="fa fa-plus"></i>');
+                }
+                else {
+                    //SaleItems_
+                    $("#SaleItems_" + id)
+                    $(".showSaleChildRow_" + id).show();
+                    $(this).attr("data-open", true);
+                    $(this).html('<i class="fa fa-minus"></i>');
+
+                    //载入明细
+                    $("#SaleItems_" + id).bootstrapTable({
+                        url: '/SaleBill/AsyncSaleItems?saleBillId=' + id,
+                        striped: true,
+                        cache: false,
+                        pagination: true,
+                        showPagination: false,
+                        sidePagination: "server",
+                        sortable: false,
+                        sortOrder: "asc",
+                        search: false,
+                        strictSearch: false,
+                        showColumns: false,
+                        showRefresh: false,
+                        clickToSelect: false,
+                        uniqueId: "id",
+                        showToggle: false,
+                        editable: true,
+                        cardView: false,
+                        detailView: false,
+                        showFooter: true,
+                        onLoadSuccess: function (data) {
+                            //$(".fixed-table-pagination").hide();
+                        },
+                        onPostBody: function (data) {
+                            $("[data-toggle='popover']").popover();
+                        },
+                        columns: [
+                            {
+                                title: '<i class="fa fa-gear fs18"></i>',
+                                align: 'center', formatter: function (value, row, index) {
+                                    return m_pagerow + index + 1;
+                                },
+                                footerFormatter: function (value) {
+                                    return '总计';
+                                }
+                            },
+                            {
+                                field: 'ProductCode',
+                                title: '商品编号',
+                                align: 'center', visible: false
+                            },
+                            { field: 'UnitId', visible: false },
+                            { field: 'Units', visible: false },
+                            { field: 'Prices', visible: false },
+                            { field: 'ProductTierPrices', visible: false },  //价格体系
+                            { field: 'SmallUnitId', visible: false }, //小单位
+                            { field: 'StrokeUnitId', visible: false }, //中单位
+                            { field: 'BigUnitId', visible: false }, //大单位
+
+                            { field: 'ProductId', visible: false },
+                            { field: 'IsAdjustPrice', visible: false },
+                            { field: 'ReferPrices', visible: false }, //参照价格
+                            {
+                                field: 'ProductName',
+                                title: '商品名称',
+                                align: 'center',
+                                width: 300
+                            },
+                            {
+                                field: 'SmallBarCode',
+                                title: '条形码',
+                                align: 'center',
+                                formatter: $(this).formatIsNull
+                            },
+                            {
+                                field: 'UnitName',
+                                title: '单位',
+                                align: 'center',
+                                formatter: $(this).formatIsNull
+                            },
+                            {
+                                field: 'UnitConversion',
+                                title: '单位换算',
+                                align: 'center',
+                                formatter: $(this).formatIsNull
+                            },
+                            {
+                                field: 'Quantity',
+                                align: 'center',
+                                width: '100',
+                                title: '数量',
+                                align: 'center'
+                            },
+                            {
+                                field: 'Price',
+                                title: '价格',
+                                width: '100',
+                                formatter: function (value, row, index) {
+                                    if (Object.keys(row).length > 1) {
+
+                                        value = $(this).formatFixed(value);
+                                        //if (value == 0) value = 0.00;
+
+                                        if (row.ReferPrices && row.ReferPrices != "" && row.ReferPrices != null) {
+                                            if (value != "" && value != row.ReferPrices) {
+                                                return "<span alt=" + value + " style='color:#f34a70;'>" + value + "</span>";
+                                            }
+                                            else {
+                                                return value;
+                                            }
+                                        }
+                                        else {
+                                            if (value != "" && value != row.Prices[0].ProductPrice.TradePrice) {
+                                                return "<span alt=" + value + " style='color:#f34a70;'>" + value + "</span>";
+                                            }
+                                            else {
+                                                return value;
+                                            }
+                                        }
+
+                                    } else {
+                                        return (value == 0 || value == "" || value == undefined) ? "" : value
+                                    }
+                                },
+                                align: 'center'
+                            },
+                            {
+                                field: 'Amount',
+                                title: '金额',
+                                width: '100',
+                                formatter: function (value, row, index) {
+                                    return (value == 0 || value == "" || value == undefined) ? "" : parseFloat(value).toFixed(2);
+                                },
+                                align: 'center',
+                                footerFormatter: function (value) {
+                                    var count = $(this).alculateTaxAmountSub(id, 'false', '#SaleItems', 'false', value);
+                                    var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count);
+                                    return total.toFixed(2);
+                                }
+                            },
+                            {
+                                field: 'Remark',
+                                title: '备注',
+                                align: 'center',
+                                formatter: $(this).formatIsNull
+                            },
+                        ]
+                    });
+                }
+            });
+        });
+    </script>
+}

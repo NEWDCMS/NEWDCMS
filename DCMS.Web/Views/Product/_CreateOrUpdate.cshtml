@@ -1,0 +1,243 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+@using DCMS.ViewModel.Models.Products;
+
+@model ProductModel
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="CombinationId" type="hidden" />
+
+
+@if (!ViewData.ModelState.IsValid)
+{
+	<div class="alert alert-warning alert-dismissable mt10">
+		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+		<div asp-validation-summary="All"></div>
+	</div>
+}
+
+<div class="form-group">
+	<label asp-for="Name" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<input asp-for="Name" class="form-control" placeholder="商品名称..." />
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.Name)
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="MnemonicCode" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<input asp-for="MnemonicCode" class="form-control" placeholder="助记码..." />
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.MnemonicCode)
+	</div>
+</div>
+
+
+<div class="form-group">
+	<label asp-for="CategoryId" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<dcms-select asp-for="CategoryId" asp-items="@Model.ParentList" class="form-control" />
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.CategoryId)
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="BrandId" asp-postfix=":" class="col-lg-3 control-label" />
+	<input asp-for="BrandId" type="hidden" />
+	<div class="col-lg-4">
+		<div class="input-group">
+			<input asp-for="BrandName" class="form-control" placeholder="品牌..." />
+			<span class="input-group-btn">
+				<button id="btn_search" type="button" class="btn btn-default">
+					<span class="glyphicon glyphicon-search"></span>
+				</button>
+			</span>
+		</div>
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.BrandId)
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="IsAdjustPrice" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<label class="checkbox-inline">
+			@Html.CheckBoxFor(model => model.IsAdjustPrice, new { @class = "mt15" })
+		</label>
+	</div>
+	<div class="col-lg-4"></div>
+</div>
+
+<div class="form-group">
+	<label asp-for="Status" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<label class="checkbox-inline">
+			@Html.CheckBoxFor(model => model.Status, new { @class = "mt15" })
+		</label>
+	</div>
+	<div class="col-lg-4"></div>
+</div>
+
+@if (Model.IsShowCreateDate)
+{
+	<div class="form-group">
+		<label asp-for="IsManufactureDete" asp-postfix=":" class="col-lg-3 control-label" />
+		<div class="col-lg-4" style="padding-top:12px;">
+			@Html.RadioButton("IsManufactureDete", "true", true, new { id = "type1" }) <label>启用</label> &nbsp;&nbsp;
+			@Html.RadioButton("IsManufactureDete", "false", false, new { id = "type2" })<label>禁用</label>
+		</div>
+		<div class="col-lg-4"></div>
+	</div>
+}
+
+<div class="form-group">
+	<label asp-for="DisplayOrder" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<input asp-for="DisplayOrder" class="form-control" placeholder="排序..." />
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.DisplayOrder)
+	</div>
+</div>
+
+<div class="section-divider">
+	<span>单位换算</span>
+</div>
+
+<div class="form-group">
+	<label asp-for="SmallUnitId" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-3">
+		<dcms-select asp-for="SmallUnitId" asp-items="@Model.SmallUnits" class="form-control" readonly="readonly" />
+	</div>
+	<label asp-for="SmallBarCode" asp-postfix=":" class="col-lg-1 control-label" />
+	<div class="col-lg-3">
+		<input asp-for="SmallBarCode" class="form-control" placeholder="条码..." />
+	</div>
+</div>
+
+
+<div class="form-group" id="StrokeUnitBox">
+	<label asp-for="StrokeUnitId" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-3">
+		<dcms-select asp-for="StrokeUnitId" asp-items="@Model.StrokeUnits" class="form-control" />
+	</div>
+	<label asp-for="StrokeBarCode" asp-postfix=":" class="col-lg-1 control-label" />
+	<div class="col-lg-3">
+		<input asp-for="StrokeBarCode" class="form-control" placeholder="条码..." />
+	</div>
+</div>
+
+<div class="form-group" id="BigUnitBox">
+	<label asp-for="BigUnitId" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-3">
+		<dcms-select asp-for="BigUnitId" asp-items="@Model.BigUnits" class="form-control" />
+	</div>
+	<label asp-for="BigBarCode" asp-postfix=":" class="col-lg-1 control-label" />
+	<div class="col-lg-3">
+		<input asp-for="BigBarCode" class="form-control" placeholder="条码..." />
+	</div>
+</div>
+
+<div class="form-group" id="BigQuantityBox" style="@(!Model.BigUnitId.HasValue || Model.BigUnitId==0?"display:none":"")">
+	<label asp-for="BigQuantity" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-1 va-m lh40 w50">1 <span class="BigName">@(Model.bigOption != null ? Model.bigOption.Name : "箱")</span></div>
+	<div class="col-lg-1 va-m lh40 w50">=</div>
+	<div class="col-lg-1">
+		<dcms-input asp-for="BigQuantity" class="form-control" placeholder="数值..." asp-readonly="@(Model.HasSold)" />
+	</div>
+	<div class="col-lg-1 va-m lh40 w50">
+		<span class="SmallName">@(Model.smallOption != null ? Model.smallOption.Name : "箱")</span>
+	</div>
+	<div class="col-lg-5">
+		@Html.Raw(Model.HasSold ? "<span class=\"label label-system mr5 mb10 ib lh15\">已开单</span>" : "")
+	</div>
+</div>
+
+
+<div class="form-group" id="StrokeQuantityBox" style="@(!Model.StrokeUnitId.HasValue || Model.StrokeUnitId==0?"display:none":"")">
+	<label asp-for="StrokeQuantity" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-1 va-m lh40 w50">1 <span class="StrokeName">@(Model.strokeOption != null ? Model.strokeOption.Name : "箱")</span></div>
+	<div class="col-lg-1 va-m lh40 w50">=</div>
+	<div class="col-lg-1">
+		<dcms-input asp-for="StrokeQuantity" class="form-control" placeholder="数值..." asp-readonly="@(Model.HasSold)" />
+	</div>
+	<div class="col-lg-1 va-m lh40 w50">
+		<span class="SmallName">@(Model.smallOption != null ? Model.smallOption.Name : "箱")</span>
+	</div>
+	<div class="col-lg-5">
+		@Html.Raw(Model.HasSold ? "<span class=\"label label-system mr5 mb10 ib lh15\">已开单</span>" : "")
+	</div>
+</div>
+
+
+<div class="form-group">
+	<div class="col-lg-3"></div>
+	<div class="col-lg-7">
+		<table class="table table-bordered" id="pricesTable">
+			<thead>
+				<tr>
+					<th class="w100 text-center">单位</th>
+					<th><span class="star-common"></span>批发价</th>
+					<th>零售价</th>
+					<th>最低售价</th>
+					<th>进价</th>
+					<th>成本价</th>
+					<th>特价1</th>
+					<th>特价2</th>
+					<th>特价3</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr id="SmallOptionBox" style="@(Model.SmallUnitId==0?"display:none":"")">
+					<td class="SmallName text-center">@(Model.smallOption != null ? Model.smallOption.Name : "请选择")</td>
+					@foreach (var p in Model.SmallProductPrices.GetType().GetProperties())
+					{
+						if (p.Name != "UnitName" && p.Name != "Id" && p.Name != "UnitId" && p.Name != "ProductId" && p.Name != "CustomProperties"&& p.Name != "StoreId")
+						{
+							<td><input type="text" class="form-control priceinput" @(Model.HasSold ? "readonly=\"readonly\"" : "") name="@("Small_"+p.Name)" id="@("Small_"+p.Name)" value="@(p.GetValue(Model.SmallProductPrices))"></td>
+						}
+					}
+				</tr>
+
+				<tr id="StrokeOptionBox" style="@(!Model.StrokeUnitId.HasValue || Model.StrokeUnitId==0?"display:none":"")">
+					<td class="StrokeName text-center">@(Model.strokeOption != null ? Model.strokeOption.Name : "请选择")</td>
+					@foreach (var p in Model.StrokeProductPrices.GetType().GetProperties())
+					{
+						if (p.Name != "UnitName" && p.Name != "Id" && p.Name != "UnitId" && p.Name != "ProductId" && p.Name != "CustomProperties" && p.Name != "StoreId")
+						{
+							<td><input type="text" class="form-control priceinput" @(Model.HasSold ? "readonly=\"readonly\"" : "") name="@("Stroke_"+p.Name)" id="@("Stroke_"+p.Name)" value="@(p.GetValue(Model.StrokeProductPrices))"></td>
+						}
+					}
+				</tr>
+				<tr id="BigOptionBox" style="@(!Model.BigUnitId.HasValue || Model.BigUnitId==0?"display:none":"")">
+					<td class="BigName text-center">@(Model.bigOption != null ? Model.bigOption.Name : "请选择")</td>
+					@foreach (var p in Model.BigProductPrices.GetType().GetProperties())
+					{
+
+						if (p.Name != "UnitName" && p.Name != "Id" && p.Name != "UnitId" && p.Name != "ProductId" && p.Name != "CustomProperties"&& p.Name != "StoreId")
+						{
+							<td><input type="text" class="form-control priceinput" @(Model.HasSold ? "readonly=\"readonly\"" : "") name="@("Big_"+p.Name)" id="@("Big_"+p.Name)" value="@(p.GetValue(Model.BigProductPrices))"></td>
+						}
+					}
+				</tr>
+			</tbody>
+			<tfoot>
+				<input type="hidden" name="Small_UnitId" id="Small_UnitId" value="@Model.SmallUnitId" />
+				<input type="hidden" name="Stroke_UnitId" id="Stroke_UnitId" value="@Model.StrokeUnitId" />
+				<input type="hidden" name="Big_UnitId" id="Big_UnitId" value="@Model.BigUnitId" />
+			</tfoot>
+		</table>
+	</div>
+	<div class="col-lg-2"></div>
+</div>
+
+
+

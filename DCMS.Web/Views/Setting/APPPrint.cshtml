@@ -1,0 +1,320 @@
+﻿@using DCMS.Web.Framework.UI;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model APPPrintSettingModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">首页</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="dashboard.html">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">系统配置</a>
+                </li>
+                <li class="crumb-trail">APP打印设置</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span> 手机端打印设置
+                        </span>
+                    </div>
+                    <div class="admin-form panel-body p5">
+                        <form asp-action="APPPrint" asp-controller="Setting" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="SettingForm" enctype="multipart/form-data">
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+
+                                <div class="alert alert-warning alert-dismissable mt10">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                    <div asp-validation-summary="All"></div>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <label asp-for="AllowPrintPackPrice" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.AllowPrintPackPrice, new { @class = "mt15" })
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.AllowPrintPackPrice)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="PrintMode" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @*@Html.RadioButtonFor(model => model.PrintMode, Model.PrintModes)*@
+                                    @Html.RadioButtonFor(m => m.PrintMode, 1, new { @id = "PrintMode1", @name = "PrintMode", @class = "mt15" })紧缩模式
+                                    @Html.RadioButtonFor(m => m.PrintMode, 2, new { @id = "PrintMode2", @name = "PrintMode", @class = "mt15" })宽松模式
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.PrintMode)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="PrintingNumber" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    <dcms-editor asp-for="PrintingNumber" />
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.PrintingNumber)
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label asp-for="AllowAutoPrintSalesAndReturn" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.AllowAutoPrintSalesAndReturn, new { @class = "mt15" })
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.AllowAutoPrintSalesAndReturn)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="AllowAutoPrintOrderAndReturn" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.AllowAutoPrintOrderAndReturn, new { @class = "mt15" })
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.AllowAutoPrintOrderAndReturn)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="AllowAutoPrintAdvanceReceipt" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.AllowAutoPrintAdvanceReceipt, new { @class = "mt15" })
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.AllowAutoPrintAdvanceReceipt)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="AllowAutoPrintArrears" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.AllowAutoPrintArrears, new { @class = "mt15" })
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.AllowAutoPrintArrears)
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label asp-for="AllowPrintOnePass" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.AllowPrintOnePass, new { @class = "mt15" })
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.AllowPrintOnePass)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="AllowPrintProductSummary" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.AllowPrintProductSummary, new { @class = "mt15" })
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.AllowPrintProductSummary)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="AllowPringMobile" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.AllowPringMobile, new { @class = "mt15" })
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.AllowPringMobile)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="AllowPrintingTimeAndNumber" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.AllowPrintingTimeAndNumber, new { @class = "mt15" })
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.AllowPrintingTimeAndNumber)
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="AllowPrintCustomerBalance" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.AllowPrintCustomerBalance, new { @class = "mt15" })
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.AllowPrintCustomerBalance)
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="PageHeaderText" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    <dcms-editor asp-for="PageHeaderText" />
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.PageHeaderText)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="PageFooterText1" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    <dcms-editor asp-for="PageFooterText1" />
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.PageFooterText1)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="PageFooterText2" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    <dcms-editor asp-for="PageFooterText2" />
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.PageFooterText2)
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="PageHeaderImage" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-1">
+                                    <span id="del1" class="btn btn-primary">删除</span>
+                                </div>
+                                <div class="col-lg-3">
+                                    <input asp-for="PageHeaderImage" type="hidden" />
+                                    <label for="file1" class="field file state-success">
+                                        <span class="button btn-primary">上传</span>
+                                        <input type="file" class="gui-file" name="upload1" id="file1" aria-required="true" aria-invalid="false">
+                                        <input type="text" class="gui-input" id="uploader1" placeholder="请选择要上传的图片" readonly="">
+                                    </label>
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.PageHeaderImage)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="PageFooterImage" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-1">
+                                    <span id="del2" class="btn btn-primary">删除</span>
+                                </div>
+                                <div class="col-lg-3">
+                                    <input asp-for="PageFooterImage" type="hidden" />
+                                    <label for="file2" class="field file state-success">
+                                        <span class="button btn-primary">上传</span>
+                                        <input type="file" class="gui-file" name="upload2" id="file2" aria-required="true" aria-invalid="false">
+                                        <input type="text" class="gui-input" id="uploader2" placeholder="请选择要上传的图片" readonly="">
+                                    </label>
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.PageFooterImage)
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <lable class="col-lg-3 control-label"></lable>
+                                <div class="col-lg-8">
+                                    <button class="btn btn-primary" type="submit" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } }); }
+
+
+@section CurPageScripts
+{
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+
+            // Init Demo JS
+
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            $("#file1").change(function () {
+                document.getElementById('uploader1').value = this.value;
+                $("#PageHeaderImage").val(this.value);
+            });
+
+            $("#file2").change(function () {
+                document.getElementById('uploader2').value = this.value;
+                $("#PageFooterImage").val(this.value);
+            });
+
+            $("#del1").click(function () {
+                $("#img1").attr("src", "/Content/Images/app.jpg");
+                $("#PageHeaderImage").val("");
+            });
+            $("#del2").click(function () {
+                $("#img2").attr("src", "/Content/Images/app.jpg");
+                $("#PageFooterImage").val("");
+            });
+        });
+    </script>
+}

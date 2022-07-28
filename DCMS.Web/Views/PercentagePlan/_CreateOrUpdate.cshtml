@@ -1,0 +1,39 @@
+﻿@using DCMS.ViewModel.Models.Plan;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+
+
+
+@model PercentagePlanModel
+
+<input asp-for="Id" type="hidden" />
+
+<div class="form-group">
+    <label asp-for="Name" asp-postfix=":" class="col-lg-3 control-label"/>
+    <div class="col-lg-4">
+        <input asp-for="Name" class = "form-control" placeholder = "名称..."/>
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Name)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="PlanTypeId" asp-postfix=":" class="col-lg-3 control-label"/>
+    <div class="col-lg-4">
+        <dcms-select asp-for="PlanTypeId" asp-items="@Html.GetEnumSelectList<PercentagePlanType>().ToSelectListDescription<PercentagePlanType>()" asp-default="提成类型" />
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="IsByReturn" asp-postfix=":" class="col-lg-3 control-label"/>
+    <div class="col-lg-4">
+        <label class="checkbox-inline">
+            @*@Html.CheckBoxFor(model => model.IsByReturn, new { @class = "mt15" })*@
+            @Html.CheckBoxFor(model => model.IsByReturn)
+
+        </label>
+    </div>
+    <div class="col-lg-4"></div>
+</div>

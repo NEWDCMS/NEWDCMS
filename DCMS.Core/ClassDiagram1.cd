@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="DCMS.Core.Data.InstallSettings">
+    <Position X="0.5" Y="2.5" Width="3.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\DataSettings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DCMS.Core.Data.DCMSDataSettingsDefaults">
+    <Position X="0.5" Y="0.5" Width="3.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAABAAQAAAAA=</HashCode>
+      <FileName>Data\DCMSDataSettingsDefaults.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DCMS.Core.Data.DataSettingsManager">
+    <Position X="0.5" Y="4.25" Width="4" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAQAAAAAAAAAAAAAAAACAAAAAAQAAAAAA=</HashCode>
+      <FileName>Data\DataSettingsManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="DCMS.Core.Infrastructure.IDCMSFileProvider">
+    <Position X="5.25" Y="0.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAACAIESQIAAQBAAFCYEAAgAQIQEAAAAMAExAAgSASE=</HashCode>
+      <FileName>Infrastructure\IDCMSFileProvider.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

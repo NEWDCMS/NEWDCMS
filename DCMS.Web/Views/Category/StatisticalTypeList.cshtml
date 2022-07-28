@@ -1,0 +1,373 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Products;
+
+@model StatisticalTypeListModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">档案</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">商品相关</a>
+                </li>
+                <li class="crumb-trail">统计类别</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <form asp-action="StatisticalTypeList" asp-controller="Category" method="post" class="form-horizontal" id="formSearch">
+                    <div class="panel panel-default" id="panel0">
+                        <div class="panel-heading">
+                            <span class="glyphicon glyphicon-search"></span> 高级搜索
+                            <a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedSearch"><i class="fa fa-angle-double-right"></i></a>
+                        </div>
+                        <div class="panel-body p10">
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <input asp-for="Name" class="form-control" placeholder="类别关键字..." />
+                                </div>
+                                <div class="col-sm-10">
+                                    <button id="btn_query" type="submit" class="btn btn-primary btn-block">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 类别列表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+
+
+                        <div class="bootstrap-table">
+                            <div class="fixed-table-toolbar">
+                                <div class="bs-bars pull-left">
+                                    <div id="toolbar" class="btn-group">
+                                        <a id="btn_add" class="btn btn-primary btn-sm">
+                                            <span class="glyphicon glyphicon-plus mr5" aria-hidden="true"></span>添加
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="columns columns-right btn-group pull-right">
+                                    <a class="btn btn-default" href="@Url.Action("StatisticalTypeList")" id="btn_refresh" name="refresh" aria-label="refresh" title="刷新"><i class="glyphicon glyphicon-refresh icon-refresh"></i></a>
+                                </div>
+                            </div>
+                            <div class="fixed-table-container">
+
+
+                                <table class="table table-striped table-bordered table-hover" id="datatable">
+                                    <thead>
+                                        <tr>
+                                            @*<th class="bs-checkbox " style="text-align: center; vertical-align: middle; width: 36px; " data-field="id"><div class="th-inner "><input name="btSelectAll" type="checkbox"></div></th>*@
+                                            <th class="text-center" data-field="Id"><div class="th-inner">序号</div></th>
+                                            <th class="text-left" data-field="Name"><div class="th-inner">键名</div></th>
+                                            <th class="text-left" data-field="Value"><div class="th-inner">键值</div></th>
+                                            <th class="text-center" data-field="CreatedOnUtc" data-align="center" data-sortable="true"><div class="th-inner">创建时间</div></th>
+                                            <th class="text-center w200" data-field="Operator" data-align="center"><div class="th-inner">操作</div></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            int index = 0;
+                                            foreach (var type in Model.Items)
+                                            {
+                                                <tr>
+                                                    @*<td class="bs-checkbox ">
+                                                            <input data-index="@index" name="btSelectItem" class="btSelectItem" type="checkbox" value="@type.Id">
+                                                        </td>*@
+                                                    <td class="text-center">@type.Id</td>
+                                                    <td class="text-left">@type.Name</td>
+                                                    <td class="text-left">@type.Value</td>
+                                                    <td class="text-center">@(type.CreatedOnUtc.ToString("yyyy-MM-dd hh:mm:ss"))</td>
+                                                    <td class="text-center">
+                                                        <a class="btn btn-sm btn-primary btn_editstatisticaltype" data-id="@type.Id" title="编辑"><i class="glyphicon glyphicon-pencil mr5"></i> 编辑</a>
+                                                        <a class="btn btn-sm btn-danger btn_deletestatisticaltype" data-id="@type.Id" title="删除"><i class="glyphicon glyphicon-remove mr5"></i> 删除</a>
+                                                    </td>
+
+                                                </tr>
+                                                index++;
+                                            }
+
+                                        }
+                                    </tbody>
+                                </table>
+
+
+
+                            </div>
+
+
+                            <div class="fixed-table-pagination" style="display: block;">
+
+                                @{
+                                    var pager = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+                                }
+
+                                @if (!pager.IsEmpty())
+                                {
+                                    <div class="fixed-table-pagination" style="display: block;">
+                                        @Html.Raw(pager.ToString())
+                                    </div>
+                                }
+
+                            </div>
+
+                        </div>
+
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+
+    </section>
+
+    <!-- End: Content -->
+    <input id="hid_CategoryId" type="hidden" value="" />
+    <input id="hid_CategoryPId" type="hidden" value="" />
+</section>
+
+
+@{
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } });
+
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "StatisticalTypeForm" }, { "modalWindow", "StatisticalTypeWindow" }, { "showSave", "true" } });
+}
+
+
+
+@section CurPageScripts
+{
+
+
+    <script type="text/javascript">
+		jQuery(document).ready(function () {
+			"use strict";
+
+			// Init Theme Core
+			Core.init({
+				sbm: "sb-l-c",
+			});
+
+			// Init Demo JS
+			Demo.init();
+
+			//权限提示
+			if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+				$('#alert-demo-2').fadeToggle();
+				setTimeout(function () {
+					$('#alert-demo-2').fadeToggle();
+				}, 3000);
+			}
+
+			//全选
+			$("input[name='btSelectAll']").click(function () {
+				var selectStatus = $(this).is(':checked')
+				if (selectStatus) {
+					$("input[name='btSelectItem']").each(function (i, n) {
+						n.checked = true;
+					});
+				} else {
+					$("input[name='btSelectItem']").each(function (i, n) {
+						n.checked = false;
+					});
+				}
+			});
+
+			//高级搜索
+			$("#panel0 #AdvancedSearch").click(function () {
+				var ico = $(this).find(".fa");
+				if (ico.hasClass('fa-angle-double-right'))
+					ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+				else
+					ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+				$("#panel0").find(".panel-body").toggleClass("hidden fadeIn");
+			});
+
+
+			$("#btn_add").click(function () {
+				var actionUrl = "/Category/StatisticalTypeCreate";
+				//var param = { productId: $(this).val() };
+
+				$(this).showModalV2($("#StatisticalTypeWindow"), actionUrl, null, "添加统计类别", $("#StatisticalTypeForm"), function () {
+					$('#btnSave_' + $("#StatisticalTypeWindow").attr("id") + '').unbind("click").bind('click', function () {
+						//表单验证
+						jQuery.validator.addMethod("notZero", function (value, element, param) {
+							return this.optional(element) || (value != 0);
+						}, "请确保输入的值不为零");
+
+						var validator = $("#StatisticalTypeForm").validate({
+							/* @@validation states + elements
+							------------------------------------------- */
+							errorClass: "text-danger",
+							validClass: "text-success",
+							/* @@validation rules
+							------------------------------------------ */
+							rules: {
+								Name: {
+									required: true
+                                },
+                                Value: {
+									required: true
+								}
+							},
+							messages: {
+								Name: {
+									required: '统计类别名称不能为空'
+                                },
+                                Value: {
+									required: '统计类别值不能为空'
+								}
+							},
+							/* @@validation highlighting + error placement
+							---------------------------------------------------- */
+							highlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').addClass(errorClass).removeClass(validClass);
+							},
+							unhighlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').removeClass(errorClass).addClass(validClass);
+							},
+							errorPlacement: function (error, element) {
+								if (element.is(":radio") || element.is(":checkbox")) {
+									element.closest('.option-group').after(error);
+								} else {
+									//error.insertAfter(element.parent());
+									element.parent().append(error);
+								}
+							},
+							submitHandler: function (form) {
+								//alert("submitted");
+								form.submit();
+							}
+						});
+
+						$(this).saveModalV3($("#StatisticalTypeWindow"), "/Category/StatisticalTypeList", $("#StatisticalTypeForm"));
+					});
+				});
+
+			});
+
+			$(".btn_editstatisticaltype").click(function () {
+				var actionUrl = "/Category/StatisticalTypeEdit";
+				var param = { id: $(this).attr("data-id") };
+
+				$(this).showModalV2($("#StatisticalTypeWindow"), actionUrl, param, "编辑统计类别", $("#StatisticalTypeForm"), function () {
+					$('#btnSave_' + $("#StatisticalTypeWindow").attr("id") + '').unbind("click").bind('click', function () {
+						//表单验证
+						jQuery.validator.addMethod("notZero", function (value, element, param) {
+							return this.optional(element) || (value != 0);
+						}, "请确保输入的值不为零");
+
+						var validator = $("#StatisticalTypeForm").validate({
+							/* @@validation states + elements
+							------------------------------------------- */
+							errorClass: "text-danger",
+							validClass: "text-success",
+							errorElement: "em",
+							/* @@validation rules
+							------------------------------------------ */
+							rules: {
+								Name: {
+									required: true
+								}
+							},
+							messages: {
+								Name: {
+									required: '统计类别名称不能为空'
+								}
+							},
+							/* @@validation highlighting + error placement
+							---------------------------------------------------- */
+							highlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').addClass(errorClass).removeClass(validClass);
+							},
+							unhighlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').removeClass(errorClass).addClass(validClass);
+							},
+							errorPlacement: function (error, element) {
+								if (element.is(":radio") || element.is(":checkbox")) {
+									element.closest('.option-group').after(error);
+								} else {
+									//error.insertAfter(element.parent());
+									element.parent().append(error);
+								}
+							},
+							submitHandler: function (form) {
+								//alert("submitted");
+								form.submit();
+							}
+						});
+
+						//保存保存
+						$(this).saveModalV3($("#StatisticalTypeWindow"), "/Category/StatisticalTypeList", $("#StatisticalTypeForm"));
+
+					});
+				});
+
+
+			});
+
+			//删除
+			$(".btn_deletestatisticaltype").click(function ()
+            {
+				var id = $(this).attr("data-id");
+                WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+					}
+					location.href = "@Url.Action("StatisticalTypeDelete")?ids=" + id;
+                });
+            });
+
+		});
+    </script>
+}

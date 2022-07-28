@@ -1,0 +1,319 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Products;
+
+@model SpecificationAttributeModel
+
+
+<section id="content_wrapper">
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">档案</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">商品相关</a>
+                </li>
+                <li class="crumb-trail">单位档案</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 编辑单位档案
+                        </div>
+                    </div>
+                    <div class="panel-body p10 pt10">
+
+                        <div class="tab-block mb25">
+                            <ul class="nav nav-tabs tabs-bg">
+                                <li class="active">
+                                    <a href="#tab10_1" data-toggle="tab" aria-expanded="true"><i class="fa fa-align-justify text-purple"></i> 基本信息</a>
+                                </li>
+                                <li>
+                                    <a href="#tab10_2" data-toggle="tab" aria-expanded="false"><i class="fa fa-list text-purple"></i> 属性项目</a>
+                                </li>
+
+                            </ul>
+                            <div class="tab-content">
+                                <div id="tab10_1" class="tab-pane active">
+                                    <form asp-action="Edit" asp-controller="SpecificationAttribute" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="StoreForm">
+                                        @await Html.PartialAsync("_CreateOrUpdate", Model)
+                                    </form>
+
+                                </div>
+
+                                <div id="tab10_2" class="tab-pane">
+                                    <table class="table table-striped table-bordered table-hover" id="datatable"></table>
+                                    <button class="btn btn-primary btn-sm mt10" type="submit" id="subFormSubmit" value="@Model.Id" @(Model.Id != 0 ? "" : "disabled")><i class="fa fa-floppy-o mr5"></i>添加项目</button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+
+    <!-- End: Content -->
+</section>
+
+
+@{
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "SpecificationForm" }, { "modalWindow", "SpecificationWindow" }, { "showSave", "true" } });
+}
+
+
+
+@section CurPageScripts
+{
+    @{ @*Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.unobtrusive.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/jquery.treegrid.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/locale/bootstrap-table-zh-CN.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table-treegrid.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");*@
+    }
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+
+
+            //得到表格查询的参数
+            var dbQueryParams = function (params) {
+                  var param = {
+                        specificationAttributeId: '@Model.Id'
+                };
+                return param;
+            };
+
+            //初始化表格
+            $("#datatable").bootstrapTable({
+                url: "/SpecificationAttribute/OptionList",  //请求后台的URL（*）
+                method: 'get',                      //请求方式（*）
+                toolbar: '#toolbar',                //工具按钮用哪个容器
+                striped: true,                      //是否显示行间隔色
+                cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                pagination: true,                   //是否显示分页（*）
+                sortable: true,                     //是否启用排序
+                sortOrder: "asc",                   //排序方式
+                queryParams: dbQueryParams,         //传递参数（*）
+                sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                pageNumber: 1,                       //初始化加载第一页，默认第一页
+                pageSize: 25,                       //每页的记录行数（*）
+                pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                search: false,                      //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+                strictSearch: true,
+                showColumns: false,                  //是否显示所有的列
+                showRefresh: false,                  //是否显示刷新按钮
+                clickToSelect: false,                //是否启用点击选中行
+                uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                showToggle: false,                    //是否显示详细视图和列表视图的切换按钮
+                cardView: false,                    //是否显示详细视图
+                detailView: false,                   //是否显示父子表
+                columns: [
+                    {
+                        field: 'check', checkbox: true, formatter: function (value, row, index) {
+                            if (row.check == true) {
+                                //设置选中
+                                return { checked: true };
+                            }
+                        }
+                    },
+                    { field: 'Name', title: '名称', width: '300' },
+                    { field: 'DisplayOrder', title: '排序', align: 'center' },
+                    {
+                        field: 'Operate', title: '操作', align: 'center', width: '250',
+                        events: {
+                            'click .rowdel': function (e, value, row, index) {
+                                var $tb = $("#datatable");
+                                WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                                    if (!e) {
+                                        return;
+									}
+									//$(this).remoteSubmit("get", "/SpecificationAttribute/OptionDelete", { optionId: row.optionId, specificationAttributeId: row.specificationAttributeId }, null, function () {
+         //                               $tb.bootstrapTable('refresh');
+         //                           });
+									$(this).remoteSubmit("get", "/SpecificationAttribute/OptionDelete", { optionId: row.Id, specificationAttributeId: row.specificationAttributeId }, $("#datatable"), null);
+                                });
+                            },
+                            'click .rowedit': function (e, value, row, index) {
+                                var actionUrl = "/SpecificationAttribute/OptionEditPopup";
+								var param = { id: row.Id };
+
+								$(this).showModalV2($("#SpecificationWindow"), actionUrl, param, "编辑项目", $("#SpecificationForm"), function () {
+									$('#btnSave_' + $("#SpecificationWindow").attr("id") + '').unbind("click").bind('click', function () {
+
+										var validator = $("#SpecificationForm").validate({
+											/* @@validation states + elements
+											------------------------------------------- */
+											errorClass: "text-danger",
+											validClass: "text-success",
+											errorElement: "em",
+											/* @@validation rules
+											------------------------------------------ */
+											rules: {
+												Name: {
+													required: true
+												}
+											},
+											messages: {
+												Name: {
+													required: '请输入规格项名称'
+												}
+											},
+											/* @@validation highlighting + error placement
+											---------------------------------------------------- */
+											highlight: function (element, errorClass, validClass) {
+												$(element).closest('.field').addClass(errorClass).removeClass(validClass);
+											},
+											unhighlight: function (element, errorClass, validClass) {
+												$(element).closest('.field').removeClass(errorClass).addClass(validClass);
+											},
+											errorPlacement: function (error, element) {
+												if (element.is(":radio") || element.is(":checkbox")) {
+													element.closest('.option-group').after(error);
+												} else {
+													//error.insertAfter(element.parent());
+													element.parent().append(error);
+												}
+											},
+											submitHandler: function (form) {
+												//alert("submitted");
+												form.submit();
+											}
+										});
+
+										if (!validator.valid()) {
+											return false;
+										}
+
+										$(this).saveModalV2($("#SpecificationWindow"), $("#datatable"), $("#SpecificationForm"));
+
+									});
+
+								});
+                            }
+                        },
+                        formatter: function (value, row, index) {
+                            return [
+                                '<button type="button" class="btn btn-sm btn-info mr15 rowedit"><i class="fa fa-pencil-square-o" ></i>&nbsp;修改</button>',
+                                '<button type="button" class="btn btn-sm btn-danger mr15 rowdel"><i class="fa fa-trash-o" ></i>&nbsp;删除</button>'
+                            ].join('');
+                        }
+                    },
+                ]
+            });
+
+
+            //添加项目
+			$("#subFormSubmit").click(function () {
+				var actionUrl = "/SpecificationAttribute/OptionCreatePopup";
+				var param = { specificationAttributeId: $(this).val() };
+				$(this).showModalV2($("#SpecificationWindow"), actionUrl, param, "添加口味", $("#SpecificationForm"), function () {
+
+					$('#btnSave_' + $("#SpecificationWindow").attr("id") + '').unbind("click").bind('click', function () {
+
+						var validator = $("#SpecificationForm").validate({
+							/* @@validation states + elements
+							------------------------------------------- */
+							errorClass: "text-danger",
+							validClass: "text-success",
+							errorElement: "em",
+							/* @@validation rules
+							------------------------------------------ */
+							rules: {
+								Name: {
+									required: true
+								}
+							},
+							messages: {
+								Name: {
+									required: '请输入规格项名称'
+								}
+							},
+							/* @@validation highlighting + error placement
+							---------------------------------------------------- */
+							highlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').addClass(errorClass).removeClass(validClass);
+							},
+							unhighlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').removeClass(errorClass).addClass(validClass);
+							},
+							errorPlacement: function (error, element) {
+								if (element.is(":radio") || element.is(":checkbox")) {
+									element.closest('.option-group').after(error);
+								} else {
+									//error.insertAfter(element.parent());
+									element.parent().append(error);
+								}
+							},
+							submitHandler: function (form) {
+								//alert("submitted");
+								form.submit();
+							}
+						});
+
+						if (!validator.valid()) {
+							return false;
+						}
+
+						$(this).saveModalV2($("#SpecificationWindow"), $("#datatable"), $("#SpecificationForm"));
+
+					});
+
+				});
+			});
+
+        });
+    </script>
+}
+
+

@@ -1,0 +1,8 @@
+﻿@{
+    //客户选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+    //商品选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ProductModalForm" }, { "modalWindow", "ModalProductWindows" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+    //预览选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "RecordsModalForm" }, { "modalWindow", "ModalRecordsWindows" }, { "windowWidth", "1000px" }, { "showSave", "false" } });
+}

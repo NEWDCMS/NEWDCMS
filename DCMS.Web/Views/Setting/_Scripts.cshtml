@@ -1,0 +1,142 @@
+﻿
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        "use strict";
+        // Init Theme Core
+        Core.init({
+            sbm: "sb-l-c",
+        });
+        // Init Demo JS
+        Demo.init();
+
+		//权限提示
+		if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+			$('#alert-demo-2').fadeToggle();
+			setTimeout(function () {
+				$('#alert-demo-2').fadeToggle();
+			}, 3000);
+		}
+
+        //商品列表选择赋值
+        window.operateEventsPop = {
+            'click .rowSelect': function (e, value, row, index) {
+                var index = $(this).attr("data-id");
+                var keys = Object.keys(row.Units);
+                $("#ProductName").val(row.Name);
+                $("#ProductId").val(row.Id) ;
+                var html = "<option value=\"-1\">选择单位</option>";
+                $.each(row.Units, function (key, unit) {
+                    //html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+					if (unit > 0) {
+						html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+					}
+                });
+				//$("#UnitId").html(html);
+				$("select[name=UnitId]").html(html);
+				$('#ModalProductWindows').modal('hide');
+            }
+        };
+
+        $("#btn_search_product").click(function () {
+            $(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup", null, "选择商品", $("#ProductModalForm"),
+                function () { });
+        });
+
+
+        // Init Summernote 富文本编辑器
+        $('#ContentSummernote').summernote({
+            height: 255, //set editable area's height
+            focus: false, //set focus editable area after Initialize summernote
+            oninit: function () {
+                
+            },
+            onChange: function (contents, $editable) {
+                var comment = $("#ContentSummernote").code()
+                //console.log(comment);
+                $("#Content").val(comment);
+            },
+            onEnter: function () {
+                var comment = $("#ContentSummernote").code()
+                $("#Content").val(comment);
+            },
+            onPaste: function (e) {
+                var comment = $("#ContentSummernote").code()
+                $("#Content").val(comment);
+            }
+        });
+
+        $('#PrintTemplateForm').on('submit', function (e)
+        {
+            var comment = $("#ContentSummernote").code()
+            $("#Content").val(comment);
+        });
+
+        $("#PaperType").change(function (val) { 
+            //console.log($(this).val());
+            var w, h = 0;
+            switch ($(this).val())
+            {
+                case "2"://215.9*139.7mm
+                    w = 215.9;
+                    h = 139.7;
+                    break;
+                case "3"://215.9*93.1mm
+                    w = 215.9;
+                    h = 93.1;
+                    break;
+                case "4"://215.9*69.9mm
+                    w = 215.9;
+                    h = 69.9;
+                    break;
+                case "5"://594*841mm
+                    w = 594;
+                    h = 841;
+                    break;
+                case "6"://420*594mm
+                    w = 420;
+                    h = 594;
+                    break;
+                case "7"://297*420mm
+                    w = 297;
+                    h = 420;
+                    break;
+                case "8"://210*297mm
+                    w = 210;
+                    h = 297;
+                    break;
+                case "9"://148*210mm
+                    w = 148;
+                    h = 210;
+                    break;
+                case "10"://728*1030
+                    w = 728;
+                    h = 1030;
+                    break;
+                case "11"://515*728mm
+                    w = 515;
+                    h = 728;
+                    break;
+                case "12"://364*515mm
+                    w = 364;
+                    h = 515;
+                    break;
+                case "13"://257*364mm
+                    w = 257;
+                    h = 364;
+                    break;
+                case "14"://182*257mm
+                    w = 182;
+                    h = 257;
+                    break;
+                default:
+                    w = 0;
+                    h = 0;
+                    break;
+            }
+
+            $("#PaperWidth").val(w);
+            $("#PaperHeight").val(h);
+        });
+    });
+
+</script>

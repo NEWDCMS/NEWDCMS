@@ -1,0 +1,1240 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+
+@model CostContractBillModel
+
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //$('#AccountingOptionSelect').multiselect({
+            //    buttonContainer: '<div class="btn-group btn-block" />',
+            //    buttonClass: 'multiselect dropdown-toggle btn btn-default btn-block'
+            //});
+
+			//客户搜索
+			$(document).on('click', "#btn_search_customer", function () {
+				var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+				$(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { ids: "" }, "选择终端", $("#TerminalSelectForm"), function (rows) { });
+			});
+
+			window.operateEventsPopTerminal = {
+				'click .rowSelect': function (e, value, row, index) {
+					try {
+						$("#CustomerId").val(row.Id);
+						$("#CustomerName").val(row.Name);
+						$('#TerminalSelectModalWindow').modal('hide');
+					}
+					catch (err) {
+						console.log(err);
+						$(this).showToastr(err);
+						return;
+					}
+				}
+            };
+
+            //会计科目
+            $(document).on('click', "#btn_search_options", function () {
+                var actionUrl = "/Accounting/AsyncSearchSelectPopup?Multi=0&ifcheck=1&self=0&billTypeId=" + $("#BillTypeEnumId").val();
+                $(this).accountingSingleSelectPopup($("#AccountingModalWindow"), actionUrl, 1, "选择科目", $("#AccountingForm"), null, function (options)
+                {
+                    $("#AccountingOptionId").val(options[0].Id);
+                    $("#AccountCodeTypeId").val(options[0].accountCodeTypeId);
+                    $("#AccountingOptionName").val(options[0].name);
+                });
+            });
+
+            //商品列表选择赋值
+            window.operateEventsPop = {
+                'click .rowSelect': function (e, value, row, index) {
+                    var index = $(this).attr("data-id");
+                    var keys = Object.keys(row.Units);
+
+                    //默认价格
+                    var prices = row.Prices[0].ProductPrice.TradePrice;
+                    //用户选择的价格体系
+                    var defaultAmountId = 0;
+                    //初始最小单位单位
+                    var unitId = row.SmallUnitId;
+                    //如果此商品有价格体系
+                    row.ProductTierPrices.forEach(function (a, b) {
+                        var planIdTypeId = a.PricesPlanId + "_" + a.PriceTypeId;
+                        if (defaultAmountId == planIdTypeId) {
+                            prices = a.SmallUnitPrice;
+                        }
+                    });
+
+                    $("#CostContractItems").bootstrapTable('updateRow', {
+                        index: index, row: {
+                            CType: row.CType,
+                            ProductSKU: row.Sku,
+                            ProductId: row.Id,
+                            Name: row.Name,
+                            BarCode: row.SmallBarCode,
+                            UnitConversion: row.UnitConversion,
+                            Units: row.Units,
+                            UnitId: row.SmallUnitId,
+                            UnitName: keys[0],
+                            Price: prices,
+                            Amount: 0,
+                            Prices: row.Prices,
+                            ProductTierPrices: row.ProductTierPrices,  //价格体系
+                            SmallUnitId: row.SmallUnitId,  //小单位
+                            StrokeUnitId: row.StrokeUnitId,  //中单位
+                            BigUnitId: row.BigUnitId  //大单位
+                        }
+                    });
+                    $('#ModalProductWindows').modal('hide');
+                }
+            };
+
+            var monthly = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            var $initTable = function ()
+            {
+                var curDate = new Date();
+                $("#CostContractItems").bootstrapTable({
+                    @Html.Raw(Model.Items.Count > 0 ? "url: '/CostContract/AsyncCostContractItems?billId=" + Model.Id + "'," : "length: 8,")
+                    striped: true,
+                    cache: false,
+                    pagination: true,
+                    showPagination: false,
+                    sidePagination: "server",
+                    sortable: false,
+                    sortOrder: "asc",
+                    search: false,
+                    strictSearch: false,
+                    showColumns: false,
+                    showRefresh: false,
+                    clickToSelect: false,
+                    uniqueId: "id",
+                    showToggle: false,
+                    editable: true,
+                    cardView: false,
+                    detailView: false,
+                    showFooter: false,
+                    onLoadSuccess: function (data)
+                    {
+                        $(".fixed-table-pagination").hide();
+                    },
+                    onPostBody: function (data) {
+                        $("[data-toggle='popover']").popover();
+                    },
+                    columns: [
+                        {
+                            title: '<i class="fa fa-gear fs18"></i>',
+                            align: 'center',
+                            width: '50',
+                            formatter: function (value, row, index) {
+                                return index + 1;
+                            }
+						},
+						{
+							field: 'GiveQuotaOptionId',
+							visible: false
+						},
+                        {
+                            field: 'UnitId',
+                            visible: false
+                        },
+                        {
+                            field: 'Units',
+                            visible: false
+                        },
+                        {
+                            field: 'ProductId',
+                            visible: false
+                        },
+                        {
+                            field: 'CType',
+                            visible: false
+                        },
+                        {
+                            field: 'Name',
+                            title: '商品名称/现金',
+                            class: 'editable',
+                            align: 'left',
+                            width: '100',
+                            formatter: function (value) {
+                                return (value == 0 || value == "" || value == undefined) ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='' data-container='body' data-toggle='popover' data-placement='top' data-content='" + value + "'>" + $(this).cutString(value, 10) + "</a>";
+                            }
+                        },
+                        {
+                            field: 'BarCode',
+                            title: '条形码',
+                            formatter: $(this).formatIsNull
+                        }, {
+                            field: 'UnitConversion',
+                            title: '单位换算',
+                            formatter: $(this).formatIsNull
+                        }, {
+                            field: 'UnitName',
+                            title: '单位',
+                            align: 'center',
+                            formatter: $(this).formatIsNull
+                        },
+                        {
+                            field: 'Jan',
+                            align: 'right',
+                            class: 'editable',
+                            title: '1月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 1)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Jan_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Feb',
+                            align: 'right',
+                            class: 'editable',
+                            title: '2月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 2)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Feb_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Mar',
+                            align: 'right',
+                            class: 'editable',
+                            title: '3月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 3)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Mar_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Apr',
+                            align: 'right',
+                            class: 'editable',
+                            title: '4月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 4)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else 
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Apr_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'May',
+                            align: 'right',
+                            class: 'editable',
+                            title: '5月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 5)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.May_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Jun',
+                            align: 'right',
+                            class: 'editable',
+                            title: '6月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 6)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Jun_Balance + row.SmallUnitName +"'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Jul',
+                            align: 'right',
+                            class: 'editable',
+                            title: '7月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 7)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Jul_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Aug',
+                            align: 'right',
+                            class: 'editable',
+                            title: '8月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 8)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Aug_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Sep',
+                            align: 'right',
+                            class: 'editable',
+                            title: '9月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 9)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Sep_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Oct',
+                            align: 'right',
+                            class: 'editable',
+                            title: '10月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 10)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Oct_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Nov',
+                            align: 'right',
+                            class: 'editable',
+                            title: '11月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 11)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Nov_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Dec',
+                            align: 'right',
+                            class: 'editable',
+                            title: '12月',
+                            width: '52',
+                            cellStyle: function () {
+                                if (parseInt(curDate.getMonth()) + 1 > 12)
+                                    return { css: { "background-color": "#eae7e7" } };
+                                else
+                                    return { css: { "background-color": "" } };
+                            },
+                            formatter: function (value, row) {
+                                if ("@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Dec_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        },
+                        {
+                            field: 'Total',
+                            title: '总计',
+                            formatter: function (value, row) {
+                                if ('@Model.ContractType' !== '0' && "@Model.AuditedStatus" == "True") {
+                                    return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Total_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                                }
+                                else {
+                                    return (value == 0 || value == "") ? "" : value;
+                                }
+                            }
+                        }, {
+                            field: 'Remark',
+                            title: '备注',
+                            width: '100',
+                            formatter: $(this).formatIsNull
+                        },
+                        {
+                            field: 'Operate',
+                            title: '操作',
+                            align: 'center',
+                            width: '100',
+                            events: {
+                                'click .rowAppend': function (e, value, row, index) {// 添加
+                                    //审核、驳回后不能修改
+                                    if ("@Model.AuditedStatus" == "True" || "@Model.RejectedStatus" == "True") {
+                                        return false;
+                                    }
+                                    $('#CostContractItems').bootstrapTable('insert', row);
+                                },
+                                'click .rowCopy': function (e, value, row, index) {// 复制
+                                    //审核、驳回后不能修改
+                                    if ("@Model.AuditedStatus" == "True" || "@Model.RejectedStatus" == "True") {
+                                        return false;
+                                    }
+									$('#CostContractItems').bootstrapTable('copying', row);
+                                    //修改最后一条数据uniqueid,防止复制时uniqueid相同，删除时都删除
+									var allTableData = $('#CostContractItems').bootstrapTable('getData');
+									var maxuniqueid = 0;
+									$.each(allTableData, function (i, row) {
+										if (row.uniqueid > maxuniqueid) {
+											maxuniqueid = row.uniqueid;
+										}
+									});
+									allTableData[allTableData.length - 1].uniqueid = maxuniqueid + 1;
+                                },
+								'click .rowDel': function (e, value, row, index) {// 删除
+
+                                    //审核、驳回后不能修改
+                                    if ("@Model.AuditedStatus" == "True" || "@Model.RejectedStatus" == "True") {
+                                        return false;
+                                    }
+                                    var datas = $('#CostContractItems').bootstrapTable('getData');
+                                    var len = datas.length;
+                                    if (len == 1) {
+										$(this).showToastr('数据不能删除');
+										return false;
+                                    }
+
+                                    //if (row.uniqueid == undefined) {
+                                    //    $("#CostContractItems").bootstrapTable('remove', { field: "id", values: [parseInt(row.Id)] });
+                                    //}
+                                    //else {
+                                    //    $("#CostContractItems").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+                                    //}
+                                    if (row.Id >0) {
+                                        $("#CostContractItems").bootstrapTable('remove', { field: "id", values: [parseInt(row.Id)] });
+									}
+									else if (row.GiveQuotaOptionId > 0) {
+                                        $("#CostContractItems").bootstrapTable('remove', { field: "GiveQuotaOptionId", values: [parseInt(row.GiveQuotaOptionId)] });
+									}
+                                    else {
+                                        $("#CostContractItems").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+                                    }
+
+                                }
+                            },
+                            formatter: function (value, row, index) {
+                                return [
+                                    '<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+                                    '<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+                                ].join('');
+                            }
+                        }
+                    ],
+                    onClickCell: function (field, value, row, $element) {
+
+						if (field == "Operate") {
+							return false;
+						}
+
+                        var input = $($element).find("input");
+                        var select = $($element).find("select");
+                        if (input.length > 0 || select.length > 0)
+                            return false;
+
+                        //当前列所在行的索引
+                        var index = $element.parent().attr("data-index");
+                        //console.log(index);
+
+                        //审核、驳回后不能修改
+                        if ("@Model.AuditedStatus" == "True" || "@Model.RejectedStatus" == "True") {
+                            return false;
+                        }
+
+                        //if ($("#CustomerName").val() == "" || typeof (value) == 'undefined' || value == null) {
+						if ($("#CustomerName").val() == "") {
+                            $(this).showToastr("请选择客户！")
+                            return false;
+                        }
+
+                        if (field == "Name")
+                        {
+							if (row.CType == 1) { return; }
+
+							var html = '<div class="input-group">' +
+								'<input type="text" class="form-control input-sm"  name="Name" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">' +
+								'<span class="input-group-btn"><button type="button" class="btn btn-default btn-sm searchproduct" id="search_' + field + "_" + row.Id + '" data-index="' + index + '"><span class="glyphicon glyphicon-search"></span></button></span>' +
+								'</div>';
+							$($element).html(html);
+							var inputObj = $("#search_" + field + "_" + row.Id);
+							inputObj.focus();
+							inputObj.select();
+							inputObj.bind("focusout", function () {
+								$("#CostContractItems").bootstrapTable('updateRow', { index: index, row: { Name: value, CType: 0 } });
+								$($element).html("" + value + "");
+							});
+							//选择商品
+                            inputObj.bind("click", function ()
+                            {
+								$(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup", { Index: $(this).attr("data-index") }, "选择商品", $("#ProductModalForm"),
+									function () { });
+							});
+						}
+                        else if (monthly.indexOf(field) >= 0) {
+                            var order = monthly.indexOf(field);
+
+                            if (parseInt(curDate.getMonth()) >= (parseInt(order)+1)) {
+                                $(this).showToastr("以往月份不能修改！")
+                                return false;
+                            }
+
+							var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+							$($element).html(html);
+							var inputObj = $("#" + $(html).attr("id"));
+							inputObj.focus();
+							inputObj.select();
+							inputObj.bind("focusout", function () {
+								if (isNaN($(this).val())) {
+									$(this).showToastr("数字格式不正确！")
+                                }
+                                else if ($(this).val() == "") {
+                                    $(this).val(0);
+                                }
+
+                                row[field] = $(this).val();
+								row.Total = parseFloat(parseFloat(row.Jan == '' ? "0" : row.Jan) + parseFloat(row.Feb == '' ? "0" : row.Feb) + parseFloat(row.Mar == '' ? "0" : row.Mar) + parseFloat(row.Apr == '' ? "0" : row.Apr) + parseFloat(row.May == '' ? "0" : row.May) + parseFloat(row.Jun == '' ? "0" : row.Jun) + parseFloat(row.Jul == '' ? "0" : row.Jul) + parseFloat(row.Aug == '' ? "0" : row.Aug) + parseFloat(row.Sep == '' ? "0" : row.Sep) + parseFloat(row.Oct == '' ? "0" : row.Oct) + parseFloat(row.Nov == '' ? "0" : row.Nov) + parseFloat(row.Dec == '' ? "0" : row.Dec)).toFixed(2);
+								$("#CostContractItems").bootstrapTable('updateRow', { index: index, row: row });
+								$($element).html("" + value + "");
+							});
+
+						}
+						else if (field == "Remark") {
+							var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' || value == null ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+							$($element).html(html);
+							var inputObj = $("#" + $(html).attr("id"));
+							inputObj.focus();
+							inputObj.select();
+							inputObj.bind("focusout", function () {
+								$("#CostContractItems").bootstrapTable('updateRow', { index: index, row: { Remark: $(this).val() } });
+								$($element).html("" + value + "");
+							});
+						}
+						else if (field == "UnitName") {
+							if (row.CType == 1) { return; }
+							if (row.Units == null || row.Units == "") {
+								$(this).showToastr('请选择商品');
+								return;
+							}
+							//console.log("UnitId:"+row.UnitId);
+							var html = '<select name="' + field + '" id="' + field + "_" + row.Id + '">';
+							//var keys = Object.keys(row.Units);
+							$.each(row.Units, function (key, unit) {
+								//html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+								if (unit > 0) {
+									html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+								}
+							});
+							html += '</select>';
+
+							$($element).html(html);
+							var inputObj = $("#" + $(html).attr("id"));
+							inputObj.focus();
+							inputObj.bind("focusout", function () {
+								//console.log(row.UnitId + "=" + inputObj.val());
+								console.log(inputObj.find("option:selected").text());
+								$($element).html("" + inputObj.find("option:selected").text() + "");
+								$("#CostContractItems").bootstrapTable('updateRow', { index: index, row: { UnitName: inputObj.find("option:selected").text(), Units: row.Units } });
+							});
+
+							//单位选择
+							inputObj.bind("change", function () {
+								//alert("change");
+								//用户选择的价格体系
+								@*var defaultAmountId = "@Model.DefaultAmountId";*@
+						var defaultAmountId = $("#DefaultAmountId").val();
+								//用户当前选择的单位
+								var unitId = $(this).val();
+
+								$("#CostContractItems").bootstrapTable('updateRow', { index: index, row: { UnitId: unitId, UnitName: inputObj.find("option:selected").text(), Units: row.Units, } });
+
+							});
+						}
+
+						else if (field == "Total") {
+							//按年兑付、从主管赠品扣减
+							if ($("#costCheckType1").is(':checked') == false) {
+								var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+								$($element).html(html);
+								var inputObj = $("#" + $(html).attr("id"));
+								inputObj.focus();
+								inputObj.select();
+								inputObj.bind("focusout", function () {
+									if (isNaN($(this).val())) {
+										$(this).val(0);
+                                    }
+                                    else if ($(this).val() == "") {
+                                        $(this).val(0);
+                                    }
+
+                                    row[field] = $(this).val();
+                                    row.Total = parseFloat($(this).val()).toFixed(2);
+									$("#CostContractItems").bootstrapTable('updateRow', { index: index, row: row });
+									$($element).html("" + row.Total + "");
+								});
+							}
+						}
+                    }
+            });
+                var firstRow = $('#CostContractItems').bootstrapTable('getData')[0];
+                firstRow.CostContractBillId = 0;
+                firstRow.CType = 1;
+                firstRow.Name = "现金";
+                firstRow.UnitName = "元";
+                firstRow.UnitId = 0;
+                firstRow.BigUnitId = 0;
+                firstRow.SmallUnitId = 0;
+                firstRow.BigUnitQuantity = 0;
+                firstRow.SmallUnitQuantity = 0;
+                firstRow.Jan = 0;
+                firstRow.Feb = 0;
+                firstRow.Mar = 0;
+                firstRow.Apr = 0;
+                firstRow.May = 0;
+                firstRow.Jun = 0;
+                firstRow.Jul = 0;
+                firstRow.Aug = 0;
+                firstRow.Sep = 0;
+                firstRow.Oct = 0;
+                firstRow.Nov = 0;
+                firstRow.Dec = 0;
+                firstRow.Remark = "现金";
+                $('#CostContractItems').bootstrapTable('insert', firstRow);
+            };
+            $initTable();
+
+            //表单检查
+			var formValidator = function () {
+				var isVaild = true;
+
+                var allTableData = $('#CostContractItems').bootstrapTable('getData');
+
+				var flag = 0;
+				var numFlag = 0;
+				$.each(allTableData, function (i, row) {
+					//if (row.ProductId == "" || (row.Jan == "" && row.Feb == "" && row.Mar == "" && row.Apr == "" && row.May == ""
+					//	&& row.Jul == "" && row.Jun == "" && row.Aug == "" && row.Sep == "" && row.Oct == "" && row.Nov == "" && row.Dec == ""))
+					//	flag++;
+					//else if (isNaN(row.Jan) || isNaN(row.Feb) || isNaN(row.Mar) || isNaN(row.Apr) || isNaN(row.May) || isNaN(row.Jul) || isNaN(row.Jun)
+					//	|| isNaN(row.Aug) || isNaN(row.Sep) || isNaN(row.Oct) || isNaN(row.Nov) || isNaN(row.Dec))
+					//	numFlag++;
+					//按月兑付
+					if ($("#costCheckType1").is(':checked')) {
+                        //商品
+						if (row.CType == 0) {
+                            if (row.ProductId == "" || (row.Jan == "" && row.Feb == "" && row.Mar == "" && row.Apr == "" && row.May == ""
+							&& row.Jul == "" && row.Jun == "" && row.Aug == "" && row.Sep == "" && row.Oct == "" && row.Nov == "" && row.Dec == ""))
+							flag++;
+						}
+                        //现金
+						else if (row.CType == 1) {
+							if (row.Jan == "" && row.Feb == "" && row.Mar == "" && row.Apr == "" && row.May == ""
+								&& row.Jul == "" && row.Jun == "" && row.Aug == "" && row.Sep == "" && row.Oct == "" && row.Nov == "" && row.Dec == "")
+								flag++;
+						}
+                        //金额是否异常
+						if (isNaN(row.Jan) || isNaN(row.Feb) || isNaN(row.Mar) || isNaN(row.Apr) || isNaN(row.May) || isNaN(row.Jul) || isNaN(row.Jun)
+							|| isNaN(row.Aug) || isNaN(row.Sep) || isNaN(row.Oct) || isNaN(row.Nov) || isNaN(row.Dec))
+							numFlag++;
+					}
+					//从主管赠品扣减
+					else if ($("#costCheckType2").is(':checked')) {
+						if (row.ProductId == ""  || row.Total == "")
+							flag++;
+						else if (isNaN(row.Total))
+							numFlag++;
+					}
+					//2个都不选
+					else {
+						//商品
+						if (row.CType == 0) {
+                            if (row.ProductId == "" || row.Total == "")
+							flag++;
+						}
+						//现金
+						if (row.CType == 1) {
+							if (row.Total == "") {
+                                flag++;
+							}
+						}
+
+						if (isNaN(row.Total))
+							numFlag++;
+					}
+
+                });
+
+				if ($("#CustomerId").val() == "" || $("#CustomerId").val() == "0") {
+					$("#CustomerId").focus();
+					$(this).showToastr("请先选择客户！");
+					return false;
+				}
+				else if ($("#EmployeeId").val() == "" || $("#EmployeeId").val() == "0") {
+					$("#EmployeeId").focus();
+					$(this).showToastr("请先选择员工！");
+					return false;
+				}
+                else if ($("#AccountingOptionId").val() == "" || $("#AccountingOptionId").val() == "0") {
+					$(this).showToastr("请先选择费用类别！");
+					return false;
+				}
+				else if ($("#Year").val() == "" || $("#Year").val() == "0") {
+					$("#Year").focus();
+					$(this).showToastr("请先选择年份！");
+					return false;
+				}
+				else if (flag == allTableData.length) {
+					//$(this).showToastr("请确认合同项目完整！");
+					//$(this).showToastr("请选择合同兑付商品！");
+                    //按月兑付（现金、商品）
+					if ($("#costCheckType1").is(':checked')) {
+                        $(this).showToastr("请选择合同兑付商品或输入现金金额！");
+					}
+					//从主管赠品扣减（商品）
+					else if ($("#costCheckType2").is(':checked')) {
+						$(this).showToastr("请选择合同兑付商品！");
+					}
+					//2个都不选（现金、商品）
+					else {
+						$(this).showToastr("请选择合同兑付商品或输入现金金额！");
+					}
+
+					return false;
+				}
+				else if (numFlag > 0) {
+					$(this).showToastr("合同项目中含有非法输入!");
+					return false;
+				}
+
+				//从主管赠品扣减 必须选择主管
+				if ($("#costCheckType2").is(':checked') && ($("#LeaderId").val() == "0" || $("#LeaderId").val() == "")) {
+					$(this).showToastr("从主管赠品扣减,必须选择主管!");
+					return false;
+				}
+
+				return isVaild;
+			}
+
+
+            //保存服务器
+            var submitRemoteServer = function (showMessage, doAudit, callback,loadingButton)
+            {
+                if (!formValidator()) {
+	                if(loadingButton != undefined){
+				       loadingButton.stop();
+			        }
+                    return false;
+                };
+
+
+                //注意：保存时，如果是从从主管赠品扣减，这里需要检测主管是否具有额度
+
+                 //获取表格的所有内容行
+                var allTableData = $('#CostContractItems').bootstrapTable('getData');
+
+                if ($("#costCheckType2").is(':checked')) {
+                    if (allTableData[0].Name == "现金") {
+                        allTableData.splice(0, 1);
+                    }
+                }
+
+                var serializeData = [];
+				$.each(allTableData, function (i, row) {
+                    var tmpObj = {
+                        "Id": typeof (row.Id) == 'undefined' ? "0" : row.Id,
+                        "ProductId": typeof (row.ProductId) == 'undefined' || row.ProductId == "" ? "0" : row.ProductId,
+                        "UnitId": typeof (row.UnitId) == 'undefined' || row.UnitId == "" ? "0" : row.UnitId,
+                        "CType": typeof (row.CType) == 'undefined' || row.CType == "" ? "0" : row.CType,
+                        "Name": typeof (row.Name) == 'undefined' ? "" : row.Name,
+                        "UnitName": typeof (row.UnitName) == 'undefined' ? "" : row.UnitName,
+                        "Jan": typeof (row.Jan) == 'undefined' || row.Jan == "" ? "0" : row.Jan,
+                        "Feb": typeof (row.Feb) == 'undefined' || row.Feb == "" ? "0" : row.Feb,
+                        "Mar": typeof (row.Mar) == 'undefined' || row.Mar == "" ? "0" : row.Mar,
+                        "Apr": typeof (row.Apr) == 'undefined' || row.Apr == "" ? "0" : row.Apr,
+                        "May": typeof (row.May) == 'undefined' || row.May == "" ? "0" : row.May,
+                        "Jun": typeof (row.Jun) == 'undefined' || row.Jun == "" ? "0" : row.Jun,
+                        "Jul": typeof (row.Jul) == 'undefined' || row.Jul == "" ? "0" : row.Jul,
+                        "Aug": typeof (row.Aug) == 'undefined' || row.Aug == "" ? "0" : row.Aug,
+                        "Sep": typeof (row.Sep) == 'undefined' || row.Sep == "" ? "0" : row.Sep,
+                        "Oct": typeof (row.Oct) == 'undefined' || row.Oct == "" ? "0" : row.Oct,
+                        "Nov": typeof (row.Nov) == 'undefined' || row.Nov == "" ? "0" : row.Nov,
+                        "Dec": typeof (row.Dec) == 'undefined' || row.Dec == "" ? "0" : row.Dec,
+                        "Total": typeof (row.Total) == 'undefined' || row.Total == "" ? "0" : row.Total,
+						"Remark": typeof (row.Remark) == 'undefined' ? "" : row.Remark,
+						"GiveQuotaOptionId": typeof (row.GiveQuotaOptionId) == 'undefined' ? "0" : row.GiveQuotaOptionId,
+                    };
+                    serializeData.push(tmpObj);
+                });
+
+                var contractType = 0;
+                if ($("#costCheckType1").prop("checked")) {
+                    //按月兑付
+                    contractType = 0;
+                    $("#LeaderId").val(0);
+                }
+                else
+                {
+                    serializeData = [];
+					$.each(allTableData, function (i, row) {
+                        var tmpObj = {
+                            "Id": typeof (row.Id) == 'undefined' ? "0" : row.Id,
+                            "ProductId": typeof (row.ProductId) == 'undefined' || row.ProductId == "" ? "0" : row.ProductId,
+                            "UnitId": typeof (row.UnitId) == 'undefined' || row.UnitId == "" ? "0" : row.UnitId,
+                            "CType": typeof (row.CType) == 'undefined' || row.CType == "" ? "0" : row.CType,
+                            "Name": typeof (row.Name) == 'undefined' ? "" : row.Name,
+                            "UnitName": typeof (row.UnitName) == 'undefined' ? "" : row.UnitName,
+                            "Jan": "0",
+                            "Feb": "0",
+                            "Mar": "0",
+                            "Apr": "0",
+                            "May": "0",
+                            "Jun": "0",
+                            "Jul": "0",
+                            "Aug": "0",
+                            "Sep": "0",
+                            "Oct": "0",
+                            "Nov": "0",
+                            "Dec": "0",
+                            "Total": typeof (row.Total) == 'undefined' || row.Total == "" ? "0" : row.Total,
+							"Remark": typeof (row.Remark) == 'undefined' ? "" : row.Remark,
+							"GiveQuotaOptionId": typeof (row.GiveQuotaOptionId) == 'undefined' ? "0" : row.GiveQuotaOptionId,
+                        };
+                        serializeData.push(tmpObj);
+                    });
+
+                    //按单位量总计兑付
+                    contractType = 1;
+                    if ($("#costCheckType2").prop("checked"))
+                    {
+                        //从主管赠品扣减
+                         contractType = 2;
+                    }
+                }
+
+                //保存的数据
+                var postData = {
+                    //类型
+                    ContractType: contractType,
+                    //月份
+                    Month: $("#Month").val(),
+                    //主管
+                    LeaderId: ($("#LeaderId").val() == null || $("#LeaderId").val() == '') ? 0 : $("#LeaderId").val(),
+                    //客户
+                    CustomerId: ($("#CustomerId").val() == null || $("#CustomerId").val() == '') ? 0 : $("#CustomerId").val(),
+                    //员工
+                    EmployeeId: ($("#EmployeeId").val() == null || $("#EmployeeId").val() == '') ? 0 : $("#EmployeeId").val(),
+                    //费用类别 
+                    AccountingOptionId: $("#AccountingOptionId").val(),
+                    AccountCodeTypeId: $("#AccountCodeTypeId").val(),
+                    //年份
+                    Year: $("#Year").val(),
+                    ////开始时间
+                    //StartTime: $("#StartTime").val(),
+                    ////结束时间
+                    //EndTime: $("#EndTime").val(),
+                    //TPM协议编码
+                    ProtocolNum: $("#ProtocolNum").val(),
+                    //备注
+                    Remark: $("#Remark").val(),
+                    //销售备注
+                    Remark: $("#SaleRemark").val(),
+                    //单据项目
+                    Items: serializeData
+                };
+
+                //debug
+                //console.log(postData);
+                //return false;
+
+                //保存服务器
+                $(this).remoteSubmit("post", "/CostContract/CreateOrUpdate?billId=@(Model.Id)&doAudit=" + doAudit, postData, $("#CostContractItems"), callback, showMessage,loadingButton);
+
+            };
+
+           //保存单据项目
+            $("#FormSubmit").click(function () {
+                var doAudit = true;
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+				loadingButton.start();
+                submitRemoteServer(null,doAudit, function (data) {
+                    if (data.Success) {
+                        window.location.href = "/CostContract/List";
+                    }
+                }, loadingButton);
+            });
+
+            //保存并继续
+            $("#FormSubmitContinue").click(function () {
+                var doAudit = false;
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+				loadingButton.start();
+                submitRemoteServer(null, doAudit,function () { window.location.href = "/CostContract/Create"; },loadingButton);
+            });
+
+
+            //审核
+			$(document).on('click', "#btn_auditing", function () {
+	            //防止重复保存
+	            var loadingButton = Ladda.create(this);
+	            loadingButton.start();
+				$(this).remoteSubmit("post", "/CostContract/Auditing?id=@(Model.Id)", null, $("#CostContractItems"), function () {
+						window.location.href = "/CostContract/List";
+					}, null,loadingButton);
+			});
+
+            //驳回
+			$(document).on('click', "#btn_rejected", function () {
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+                WinMsg.confirm({ message: "确认要驳回吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+	                loadingButton.start();
+					$(this).remoteSubmit("get", "/CostContract/Rejected", { id: "@Model.Id" }, null, function () { location.href = "/CostContract/List"; }, null,loadingButton);
+				});
+			});
+
+			//btn_abandoned
+			//终止
+			$(document).on('click', "#btn_abandoned", function () {
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+                WinMsg.confirm({ message: "确认要终止吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+	                loadingButton.start();
+					$(this).remoteSubmit("get", "/CostContract/Abandoned", { id: "@Model.Id" }, null, function () { location.href = "/CostContract/List"; }, null,loadingButton);
+				});
+			});
+
+            //按月兑付
+            $("#costCheckType1").change(function () {
+                if ($(this).is(':checked')) {
+                    $.each(monthly, function (i, row) {
+                        $("#CostContractItems").bootstrapTable('showColumn', row);
+                    });
+                    $("#costCheckType2_box").hide();
+                    $("#costLeader_box").hide();
+                    $("#costMonth_box").hide();
+
+                    $("#costCheckType2").prop("checked", false);
+                    $("#costYear_box").removeClass('hide').show();
+					var firstRow = $('#CostContractItems').bootstrapTable('getData')[0];
+					if (firstRow.Name == "现金") {
+						$("#CostContractItems").bootstrapTable('showRow', { index: 0 });
+					}
+                }
+                else
+                {
+                    $.each(monthly, function (i, row) {
+                        $("#CostContractItems").bootstrapTable('hideColumn', row);
+                    });
+                    $("#costCheckType2_box").removeClass('hide').show();
+                    $("#costLeader_box").removeClass('hide').show();
+					$("#costCheckType2").prop("checked", true);
+					$("#costYear_box").hide();
+                    $("#costMonth_box").removeClass('hide').show();
+
+                    var firstRow = $('#CostContractItems').bootstrapTable('getData')[0];
+                    if (firstRow.Name == "现金") {
+                         $("#CostContractItems").bootstrapTable('hideRow', { index: 0 });
+                    }
+
+                    //员工
+                    var employeeId = $("#EmployeeId").val();
+                    LoadDirLeader(employeeId);
+                }
+            });
+
+            //从主管赠品扣减
+            $("#costCheckType2").change(function () {
+                if ($(this).is(':checked'))
+                {
+                    $("#costYear_box").hide();
+					$("#costMonth_box").removeClass('hide').show();
+                    $("#costLeader_box").removeClass('hide').show();
+                    var firstRow = $('#CostContractItems').bootstrapTable('getData')[0];
+                    if (firstRow.Name == "现金") {
+                        $("#CostContractItems").bootstrapTable('hideRow', { index: 0 });
+                    }
+
+                    //员工
+                    var employeeId = $("#EmployeeId").val();
+                    LoadDirLeader(employeeId);
+                }
+                else
+                {
+                    $("#costLeader_box").hide();
+                    //$("#costYear_box").hide();
+                    $("#costYear_box").show();
+                    $("#costMonth_box").hide();
+                    var firstRow = $('#CostContractItems').bootstrapTable('getData')[0];
+                    if (firstRow.Name == "现金") {
+                        $("#CostContractItems").bootstrapTable('showRow', { index: 0 });
+                    }
+                }
+			});
+
+			//
+			$("#costCheckType2_box").removeClass('hide').show();
+			$("#costLeader_box").removeClass('hide').show();
+
+			$("#costCheckType1").prop("checked", false);
+			$("#costCheckType2").prop("checked", false);
+			//按月兑付
+			if ("@Model.ContractType" == "0") {
+				$("#costCheckType1").prop("checked", true);
+				$.each(monthly, function (i, row) {
+					$("#CostContractItems").bootstrapTable('showColumn', row);
+                });
+				$("#costCheckType2_box").hide();
+                $("#costLeader_box").hide();
+                $("#costMonth_box").hide();
+				$("#costCheckType2").prop("checked", false);
+			}
+			//按单位量总计兑付
+			if ("@Model.ContractType" == "1") {
+				$.each(monthly, function (i, row) {
+					$("#CostContractItems").bootstrapTable('hideColumn', row);
+				});
+				$("#costLeader_box").hide();
+				$("#costYear_box").hide();
+				$("#costMonth_box").hide();
+			}
+			//从主管赠品扣减
+			if ("@Model.ContractType" == "2") {
+				$("#costCheckType2").prop("checked", true);
+				$.each(monthly, function (i, row) {
+					$("#CostContractItems").bootstrapTable('hideColumn', row);
+				});
+				$("#costYear_box").hide();
+				$("#costMonth_box").removeClass('hide').show();
+			}
+
+			//加载主管赠品数据
+            $("#EmployeeId").change(function () {
+				//员工
+				var employeeId = $("#EmployeeId").val();
+				if (employeeId == "") {
+					return false;
+				}
+				
+                LoadDirLeader(employeeId);
+			});
+
+			//$("#Month").change(function () {
+
+			//	if ($("#costCheckType2").is(':checked')) {
+			//		//员工
+			//		var employeeId = $("#EmployeeId").val();
+			//		if (employeeId == "") {
+			//			return false;
+			//		}
+   //                 //年
+			//	    var year = $("select[name='Month'] option:selected").text();
+			//		if (year == "") {
+			//			return false;
+			//		}
+			//		else {
+			//			year = year.substring(0, 4);
+			//		}
+			//		//时间
+			//		var month = $("#Month").val();
+			//		if (month == "") {
+			//			return false;
+			//		}
+			//		//主管
+			//		var leaderId = $(this).val();
+			//		if (leaderId == "") {
+			//			return false;
+			//		}
+			//		LoadGiveQuotData(employeeId, year, month, leaderId);
+			//	}
+			//});
+
+			//加载主管数据
+			function LoadGiveQuotData(employeeId,year, month, leaderId) {
+				//清空数据
+				$('#CostContractItems').bootstrapTable('removeAll');
+				//留一行
+				$('#CostContractItems').bootstrapTable('copying', {});
+
+				$.ajax({
+					type: "get",
+					url: "/GiveQuota/LoadGiveQuotData",
+					data: {
+						employeeId: employeeId,
+                        year:year,
+						month: month,
+						leaderId: leaderId
+					},
+					contentType: "application/json",
+					dataType: "json",
+					success: function (result) {
+						if (result.Success) {
+							var datas = result.Data;
+							if (datas != null && datas.length > 0) {
+								datas.forEach(function (row, index) {
+									var rowNew =
+									{
+										GiveQuotaOptionId: row.Id,
+										UnitId: row.UnitId,
+										Units: row.Units,
+										ProductId: row.ProductId,
+										CType: 0,//0:商品，1：现金
+										Name: row.ProductName,
+										BarCode: row.BarCode,
+										UnitConversion: row.UnitConversion,
+										UnitName: row.UnitName,
+										Total: row.Total,
+										Remark: row.Remark
+									}
+									//当前页面行数不够，添加行
+									if (index > 0) {
+										$('#CostContractItems').bootstrapTable('insertNew', rowNew);
+									}
+									else {
+										$("#CostContractItems").bootstrapTable('updateRow', {
+											index: index, row: rowNew
+										});
+									}
+								});
+							}
+						}
+						else {
+							$(this).showToastr(result.Message);
+						}
+					},
+					error: function () {
+						$(this).showToastr('网络错误，请重新保存！');
+					}
+				});
+
+            };
+
+            function LoadDirLeader(employeeId) {
+
+                $.ajax({
+                    type: "get",
+                    url: "/CostContract/AsyncLoadDirLeader",
+                    data: {
+                        employeeId: employeeId
+                    },
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        if (result.Success) {
+                            var data = result.Data;
+                            $("#LeaderId").val(data.Id);
+                            $("#LeaderName").val(data.UserRealName);
+                        }
+                    },
+                    error: function () {
+                        $(this).showToastr('网络错误，请重新保存！');
+                    }
+                });
+
+            };
+        });
+    </script>

@@ -1,0 +1,564 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Sales;
+
+@model CarGoodBillListModel
+
+@{
+    var refURL = Context.Request.GetAbsoluteUri();
+}
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">销售</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">销售单据</a>
+                </li>
+                <li class="crumb-trail">车辆对货单</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger topAccountNews"></span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <form asp-action="List" asp-controller="CarGoodBill" method="post" id="formSearch">
+                    <div class="panel panel-default" id="panel0">
+                        <div class="panel-heading">
+                            <span class="glyphicon glyphicon-search"></span> 高级搜索
+                            <a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedSearch"><i class="fa fa-angle-double-right"></i></a>
+                        </div>
+                        <div class="panel-body p10">
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="DeliveryUserId" asp-items="@Model.DeliveryUsers" asp-default="送货员" />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="StartTime" placeholder="开始..." />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="EndTime" placeholder="结束..." />
+                                </div>
+                                <div class="col-sm-6">
+                                    <button id="btn_query" type="submit" class="btn btn-primary btn-block">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 车辆对货单列表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+
+
+                        <div class="col-md-8 pln pt40">
+
+                            <div class="bootstrap-table">
+
+                                <div class="fixed-table-container">
+                                    <div class="fixed-table-body">
+                                        <table class="table table-striped table-bordered table-hover" id="datatable">
+                                            <thead>
+                                                <tr class="datagrid-header-row">
+                                                    <th class="bs-checkbox "><div class="th-inner"><input name="btSelectAll" type="checkbox"></div></th>
+                                                    <th class="text-center w150"><div class="th-inner">单据编号</div></th>
+                                                    <th class="text-left"><div class="th-inner">单据类型</div></th>
+                                                    <th class="text-left"><div class="th-inner">客户</div></th>
+                                                    <th class="text-center"><div class="th-inner">转单时间</div></th>
+                                                    <th class="text-left"><div class="th-inner">出货仓库</div></th>
+                                                    <th class="text-left"><div class="th-inner">调拨车辆</div></th>
+                                                    <th class="text-left"><div class="th-inner">商品名称</div></th>
+                                                    <th class="text-right"><div class="th-inner">销售订数量</div></th>
+                                                    <th class="text-right"><div class="th-inner">销售数量</div></th>
+                                                    <th class="text-right"><div class="th-inner">退货订数量</div></th>
+                                                    <th class="text-right"><div class="th-inner">退货数量</div></th>
+                                                    <th class="text-left"><div class="th-inner">拒收</div></th>
+                                                    <th class="text-left"><div class="th-inner">退货</div></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    if (Model.Lists == null || Model.Lists.Count == 0)
+                                                    {
+                                                        <tr class="no-records-found"><td colspan="14">没有找到匹配的记录</td></tr>
+                                                    }
+                                                    else
+                                                    {
+                                                        foreach (var ca in Model.Lists)
+                                                        {
+                                                            <tr>
+                                                                <td class="bs-checkbox ">
+                                                                    @if (ca.RefuseQty > 0 || ca.ReturnRealQty > 0)
+                                                                    {
+                                                                        <input name="btSelectItem" class="btSelectItem" type="checkbox" value="@ca.ProductId">
+                                                                    }
+                                                                </td>
+                                                                <td class="text-left">
+                                                                    @if (ca.BillType == 11)
+                                                                    {
+                                                                        <a href="@Url.Action("Edit","SaleReservationBill",new { id= ca.BillId})">@ca.BillNumber</a>
+                                                                    }
+                                                                    else if (ca.BillType == 13)
+                                                                    {
+                                                                        <a href="@Url.Action("Edit","ReturnReservationBill",new { id= ca.BillId})">@ca.BillNumber</a>
+                                                                    }
+                                                                </td>
+                                                                <td class="text-left">@ca.BillTypeName </td>
+                                                                <td class="text-left">@ca.TerminalName</td>
+                                                                <td class="text-left">@ca.ChangeDate</td>
+                                                                <td class="text-left">@ca.WareHouseName</td>
+                                                                <td class="text-left">@ca.CarName</td>
+                                                                <td class="text-left">@ca.ProductName</td>
+                                                                <td class="text-right">@ca.SaleReservationBillQty</td>
+                                                                <td class="text-right">@ca.SaleBillQty</td>
+                                                                <td class="text-right">@ca.ReturnReservationBillQty</td>
+                                                                <td class="text-right">@ca.ReturnBillQty</td>
+                                                                <td class="text-left">@ca.RefuseQty</td>
+                                                                <td class="text-left">@ca.ReturnRealQty</td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                }
+
+
+                                            </tbody>
+
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="fixed-table-pagination" style="display: block;">
+
+                                </div>
+
+                                <div class="clearfix"></div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-4 pn">
+
+                            <div class="btn-group mb10">
+                                <button id="btn_refuse" type="button" class="btn btn-primary btn-sm mr5">
+                                    <span class="glyphicon glyphicon-remove mr5"></span>拒收调拨
+                                </button>
+                                <button id="btn_return" type="button" class="btn btn-system btn-sm mr5">
+                                    <span class="glyphicon glyphicon-backward mr5"></span>退货调拨
+                                </button>
+                                <button id="btn_all" type="button" class="btn btn-warning btn-sm mr5">
+                                    <span class="glyphicon glyphicon-align-justify mr5"></span>全部调拨
+                                </button>
+                                <button id="btn_print" type="button" class="btn btn-alert btn-sm mr5">
+                                    <span class="glyphicon glyphicon-print mr5"></span>打印
+                                </button>
+                            </div>
+
+                            <table class="table table-striped table-hover" id="products_datatable"></table>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+</section>
+
+@*打印区域*@
+<div id="printData">
+</div>
+
+@*template-user-events*@
+<script id="template-product-events" type="text/x-tmpl">
+    {% if(o.data!=null){ %}
+    <table class="table table-striped table-bordered table-hover">
+        <tr>
+            <th class="text-left">商品名称</th>
+            <th class="text-right">拒收</th>
+            <th class="text-right">退货</th>
+            <th class="text-right">合计</th>
+        </tr>
+
+        {% for (var i=0,details;details=o.data[i]; i++) { %}
+        <tr>
+            <td>{%=details.ProductName%}</td>
+            <td class="text-right">{%=details.RefuseQty%}</td>
+            <td class="text-right">{%=details.ReturnRealQty%}</td>
+            <td class="text-right">{%=details.TotalQty%}</td>
+        </tr>
+        {% } %}
+    </table>
+    {% } %}
+</script>
+
+@{
+
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+}
+
+
+
+@section CurPageScripts
+{
+
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            //全选
+            $("input[name='btSelectAll']").click(function () {
+                var selectStatus = $(this).is(':checked')
+                if (selectStatus) {
+                    $("input[name='btSelectItem']").each(function (i, n) {
+                        n.checked = true;
+                    });
+                } else {
+                    $("input[name='btSelectItem']").each(function (i, n) {
+                        n.checked = false;
+                    });
+                }
+                LoadPruduct();
+            });
+
+            //高级搜索
+            $("#panel0 #AdvancedSearch").click(function () {
+                var ico = $(this).find(".fa");
+                if (ico.hasClass('fa-angle-double-right'))
+                    ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+                else
+                    ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+                $("#panel0").find(".panel-body").toggleClass("hidden fadeIn");
+            });
+
+            var $formSection = $(".formSection");
+
+            //拒收调拨
+            $("#btn_refuse", $formSection).click(function () {
+                //获取用户选择数据
+                var selectDatas = GetSelectData();
+                //获取拒收调拨数据
+                var checkDatas = new Array();
+                if (selectDatas.length == 0) {
+                    $(this).showToastr("没有选择数据！");
+                    return false;
+                }
+                else {
+                    selectDatas.forEach(function (a, b) {
+                        if (a.RefuseQty > 0) {
+                            checkDatas.push(a);
+                        }
+                    });
+                }
+                if (checkDatas.length == 0) {
+                    $(this).showToastr("请选择拒收调拨数据！");
+                    return false;
+                }
+                //alert("拒收调拨" + selectDatas);
+                //window.location = '/SaleBill/Create';
+                //window.open("/Allocation/Create?data=" + "11|123,22|33", "_blank");
+                var data = "";
+                checkDatas.forEach(function (a, b) {
+                    data = data + (data == "" ? "" : ",") + (a.ProductId + "|" + a.RefuseQty);
+                })
+                window.open("/Allocation/Create?data=" + data, "_blank");
+
+            });
+
+            //退货调拨
+            $("#btn_return", $formSection).click(function () {
+                //获取用户选择数据
+                var selectDatas = GetSelectData();
+                //获取拒收调拨数据
+                var checkDatas = new Array();
+                if (selectDatas.length == 0) {
+                    $(this).showToastr("没有选择数据！");
+                    return false;
+                }
+                else {
+                    selectDatas.forEach(function (a, b) {
+                        if (a.ReturnRealQty > 0) {
+                            checkDatas.push(a);
+                        }
+                    });
+                }
+                if (checkDatas.length == 0) {
+                    $(this).showToastr("请选择退货调拨数据！");
+                    return false;
+                }
+                //alert("拒收调拨" + selectDatas);
+                //window.location = '/SaleBill/Create';
+                //window.open("/Allocation/Create?data=" + "11|123,22|33", "_blank");
+                var data = "";
+                checkDatas.forEach(function (a, b) {
+                    data = data + (data == "" ? "" : ",") + (a.ProductId + "|" + a.ReturnRealQty);
+                })
+                window.open("/Allocation/Create?data=" + data, "_blank");
+            });
+
+            //全部调拨
+            $("#btn_all", $formSection).click(function () {
+                //获取用户选择数据
+                var selectDatas = GetSelectData();
+                //获取拒收调拨数据
+                var checkDatas = new Array();
+                if (selectDatas.length == 0) {
+                    $(this).showToastr("没有选择数据！");
+                    return false;
+                }
+                else {
+                    selectDatas.forEach(function (a, b) {
+                        if (a.TotalQty > 0) {
+                            checkDatas.push(a);
+                        }
+                    });
+                }
+                if (checkDatas.length == 0) {
+                    $(this).showToastr("请选择全部调拨数据！");
+                    return false;
+                }
+                //alert("拒收调拨" + selectDatas);
+                //window.location = '/SaleBill/Create';
+                //window.open("/Allocation/Create?data=" + "11|123,22|33", "_blank");
+                var data = "";
+                checkDatas.forEach(function (a, b) {
+                    data = data + (data == "" ? "" : ",") + (a.ProductId + "|" + a.TotalQty);
+                })
+                window.open("/Allocation/Create?data=" + data, "_blank");
+            });
+
+            //打印
+            $("#btn_print").click(function () {
+                debugger;
+                var selectData = "";
+                var arrselections = $("#datatable").bootstrapTable('getSelections');
+                if (arrselections.length > 0) {
+                    $(arrselections).each(function (index, a) {
+                        var test = a.BillTypeName;
+                        selectData = selectData + (selectData == "" ? "" : ",") + (a.BillNumberReservation +
+                            "|" + a.BillNumber +
+                            "|" + a.BillTypeName.split(",")[0] +
+                            "|" + a.BillTypeName.split(",")[1] +
+                            "|" + a.TerminalName +
+                            "|" + a.ChangeDate +
+                            "|" + a.WareHouseName +
+                            "|" + a.ProductName +
+                            "|" + ((a.SaleReservationBillQty == undefined) ? "0" : a.SaleReservationBillQty) +
+                            "|" + ((a.ReturnReservationQty == undefined) ? "0" : a.ReturnReservationQty) +
+                            "|" + a.RefuseQty +
+                            "|" + a.ReturnRealQty);
+                    });
+                }
+
+                var $tb = $("#datatable");
+                WinMsg.confirm({ message: "打印选择的单据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    $.ajax({
+                        type: "get",
+                        url: "/CarGoodBill/Print",
+                        data: {
+                            selectData: selectData
+                        },
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (result) {
+                            if (result.Success) {
+                                var printDatas = result.Data;
+                                $("#printData").html(printDatas);
+                                $("#printData").printArea();
+                                //打印完成设置打印htm为空
+                                $("#printData").html("");
+                                toastr.success(result.Message);
+                                $tb.bootstrapTable('refresh');
+                            }
+                            else {
+                                $(this).showToastr(result.Message);
+                            }
+                        },
+                        error: function () {
+                            $(this).showToastr('网络错误，请重新保存！');
+                        }
+                    });
+                });
+
+            });
+
+            //查询
+            $("#btn_query", $formSection).click(function () {
+                m_pagerow = 0;
+                $("#datatable").bootstrapTable('refresh', { url: actionURL });
+            });
+
+            $("input[type='checkbox']").click(function () {
+                LoadPruduct();
+            });
+
+
+            //加载商品信息
+            function LoadPruduct() {
+                var selectDatas = GetSelectData();
+                showProductDetails(selectDatas, $("#products_datatable"));
+            }
+
+            //获取用户选择的数据
+            function GetSelectData() {
+
+                var selectArr = new Array();
+                var selectDatas = "";
+
+                var Check = $("table input[type=checkbox]:checked");
+                Check.each(function () {
+                    var selectData = {};
+
+                    var row = $(this).parent("td").parent("tr");
+                    selectData.ProductId = $(this).val();
+                    if (selectData.ProductId != undefined && selectData.ProductId != 'on') {
+                        selectData.ProductName = $(row).children('td').eq(7).html();
+                        selectData.RefuseQty = parseInt($(row).children('td').eq(12).html());
+                        selectData.ReturnRealQty = parseInt($(row).children('td').eq(13).html());
+                        selectData.TotalQty = parseInt(selectData.RefuseQty) + parseInt(selectData.ReturnRealQty);
+
+                        //判断商品是否已经添加到数组
+                        var contain = false;
+                        if (selectArr.length > 0) {
+                            selectArr.forEach(function (i, j, k) {
+                                //如有已经添加，则修改数量
+                                if (i.ProductId == selectData.ProductId) {
+                                    contain = true;
+                                    i.RefuseQty = parseInt(i.RefuseQty) + parseInt(selectData.RefuseQty);
+                                    i.ReturnRealQty = parseInt(i.ReturnRealQty) + parseInt(selectData.ReturnRealQty);
+                                }
+                            });
+                        }
+                        //如果数组没有添加，则添加
+                        if (contain == false) {
+                            selectArr.push(selectData);
+                        }
+                    }
+
+                });
+
+                return selectArr;
+            };
+
+            //解析数据
+            function showProductDetails(json, obj) {
+                var temps = tmpl("template-product-events");
+                var result = renderTemplate(temps, json, obj);
+            };
+
+            //解析模板
+            function renderTemplate(func, data, obj) {
+                if (!func) {
+                    return $();
+                }
+
+                var result = func({ data: data });
+                return obj.html(result).children();
+            };
+
+            /*
+                     <td>{%=details.RefuseQty%}</td>
+            <td>{%=details.ReturnRealQty%}</td>
+            <td>{%=details.TotalQty%}</td>
+             */
+            $("#products_datatable").bootstrapTable({
+                //length: 0,
+                method: '',
+                striped: true,
+                cache: false,
+                pagination: true,
+                queryParams: null,
+                sidePagination: "server",
+                idField: 'Id',
+                dataField: "rows",
+                totalField: "total",
+                pageNumber: 1,
+                pageSize: 10,
+                search: false,
+                strictSearch: true,
+                showRefresh: false,
+                clickToSelect: false,
+                uniqueId: "Id",
+                showToggle: false,
+                cardView: false,
+                detailView: false,
+                columns: [
+                    { checkbox: true },
+                    { field: 'ProductName', title: '商品名称', align: 'left' },
+                    { field: 'RefuseQty', title: '拒收', align: 'center' },
+                    { field: 'ReturnRealQty', title: '退货', align: 'center' },
+                    { field: 'TotalQty', title: '合计', align: 'center' }
+                ],
+                onLoadSuccess: function (data) {
+                    //alert($("#owecashbills_datatable").bootstrapTable('getData').length);
+                }
+            });
+
+
+        });
+
+    </script>
+}

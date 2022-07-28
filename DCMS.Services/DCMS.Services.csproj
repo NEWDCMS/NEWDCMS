@@ -1,0 +1,133 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+	  <Nullable>disable</Nullable>
+    <Copyright>Copyright © DCMS</Copyright>
+    <Company>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Company>
+    <Authors>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Authors>
+    <Version>3.0.0.1</Version>
+    <LangVersion>8.0</LangVersion>
+    <Description>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Description>
+    <PackageLicenseUrl>http://www.jsdcms.com/</PackageLicenseUrl>
+    <PackageProjectUrl>http://www.jsdcms.com/</PackageProjectUrl>
+    <RepositoryUrl></RepositoryUrl>
+    <RepositoryType></RepositoryType>
+    <AssemblyVersion>3.0.0.1</AssemblyVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Users\Authentication\**" />
+    <EmbeddedResource Remove="Users\Authentication\**" />
+    <None Remove="Users\Authentication\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Authentication\External\ExternalAuthenticationService.cs" />
+    <Compile Remove="Authentication\External\IExternalAuthenticationMethod.cs" />
+    <Compile Remove="Authentication\External\IExternalAuthenticationService.cs" />
+    <Compile Remove="Census\IRestaurantService.cs" />
+    <Compile Remove="Census\RestaurantService.cs" />
+    <Compile Remove="Census\TraditionService.cs" />
+    <Compile Remove="Common\IMaintenanceService.cs" />
+    <Compile Remove="Common\ISendEmailService.cs" />
+    <Compile Remove="Common\MaintenanceService.cs" />
+    <Compile Remove="Common\SendEmailService.cs" />
+    <Compile Remove="Configuration\DCMSConfigurationDefaults.cs" />
+    <Compile Remove="Media\RoxyFileman\BaseRoxyFilemanService.cs" />
+    <Compile Remove="Media\RoxyFileman\DatabaseRoxyFilemanService.cs" />
+    <Compile Remove="Media\RoxyFileman\DCMSRoxyFilemanDefaults.cs" />
+    <Compile Remove="Media\RoxyFileman\FileRoxyFilemanService.cs" />
+    <Compile Remove="Media\RoxyFileman\IRoxyFilemanService.cs" />
+    <Compile Remove="Media\RoxyFileman\RoxyFilemanFormFile.cs" />
+    <Compile Remove="Media\RoxyFileman\RoxyFilemanProvider.cs" />
+    <Compile Remove="Messages\IMessageTemplateService.cs" />
+    <Compile Remove="Messages\IMessageTokenProvider.cs" />
+    <Compile Remove="Messages\INewsLetterSubscriptionService.cs" />
+    <Compile Remove="Messages\IWorkflowMessageService.cs" />
+    <Compile Remove="Messages\MessageTemplateService.cs" />
+    <Compile Remove="Messages\MessageTokenProvider.cs" />
+    <Compile Remove="Messages\NewsLetterSubscriptionService.cs" />
+    <Compile Remove="Messages\WorkflowMessageService.cs" />
+    <Compile Remove="Sales\SaleReservationBillService - 副本.cs" />
+    <Compile Remove="Seo\IUrlRecordService.cs" />
+    <Compile Remove="Seo\UrlRecordService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--2.2-->
+    <!--
+    <PackageReference Include="DotNetCore.NPOI" Version="1.2.2" />
+    <PackageReference Include="EPPlus" Version="4.5.3.1" />
+    <PackageReference Include="iTextSharp.LGPLv2.Core" Version="1.5.0" />
+    <PackageReference Include="MathNet.Numerics" Version="4.9.0" />
+    <PackageReference Include="MaxMind.GeoIP2" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="2.2.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.0.15" />
+    <PackageReference Include="System.ServiceModel.Http" Version="4.5.3" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+    -->
+    <!--3.0-->
+    <PackageReference Include="DotNetCore.NPOI" Version="1.2.3" />
+    <PackageReference Include="MathNet.Numerics" Version="4.15.0" />
+    <PackageReference Include="EPPlus" Version="5.8.6" />
+    <PackageReference Include="iTextSharp.LGPLv2.Core" Version="1.7.5" />
+    <PackageReference Include="MailKit" Version="3.1.1" />
+    <PackageReference Include="MaxMind.GeoIP2" Version="5.1.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.1" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.15" />
+    <PackageReference Include="System.ServiceModel.Http" Version="4.9.0" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DCMS.Core\DCMS.Core.csproj" />
+    <ProjectReference Include="..\DCMS.Data\DCMS.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Media\RoxyFileman\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="InitData\AppPrintTemplete.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InitData\CompanySetting.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InitData\Manufacturer.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InitData\PCPrintSetting.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InitData\PercentagePlan.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InitData\ProductSetting.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InitData\FinanceSetting.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InitData\RemarkConfig.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InitData\AppPrintSetting.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InitData\SpecificationAttributeOptions.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InitData\SpecificationAttributes.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

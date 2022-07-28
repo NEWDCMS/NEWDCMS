@@ -1,0 +1,965 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+@model PaymentReceiptBillModel
+
+
+<script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+           if (("@Model.ReversedStatus").toLowerCase() == "true") {
+                $("#inkpadBox").hide();
+                $("#inkpadBox1").css('display', 'block');
+            }
+
+            //预付款余额
+            var advanceAmountBalance = 0;
+
+			$(document).on('click', "#btn_search_manufacturer", function () {
+				var actionUrl = "/Manufacturer/AsyncSearchSelectPopup";
+                $(this).showModalV2($("#ManufacturerSelectModalWindow"), actionUrl, { ids: "" }, "选择供应商", $("#ManufacturerSelectForm"), function (rows) { });
+			});
+
+			window.operateEventsPopManufacturer = {
+				'click .rowSelect': function (e, value, row, index) {
+                    try
+                    {
+						$("#ManufacturerId").val(row.Id);
+						$("#ManufacturerName").val(row.Name);
+                        $('#ManufacturerSelectModalWindow').modal('hide');
+
+                        //获取预付款余额
+                        $(this).remoteRequest('GET', '/Manufacturer/GetManufacturerBalance', { manufacturerId: row.Id }, function (data)
+                        {
+                            advanceAmountBalance = parseFloat(data.AdvanceAmountBalance);
+                        });
+					}
+					catch (err) {
+						console.log(err);
+						$(this).showToastr(err);
+						return;
+					}
+                }
+			};
+
+            //会计科目选择
+            $(document).on('click', "#Accounting_AsyncSearchSelectPopup", function () {
+                //1 库存现金, 2 银行存款, 4 预付账款, 75 其他账户(单选)
+                var billTypeId = $("#BillTypeEnumId").val();
+                var actionUrl = "/Accounting/AsyncSearchSelectPopup?Multi=0&billTypeId=" + billTypeId;
+
+                var accounts = $("#PaymentReceiptItems_Partial_Form").find("input[name='CollectionAmount']");
+                if (accounts.length == 0) {
+                    $(this).showToastr("默认科目未指定！");
+                    return false;
+                }
+                $(this).accountingSearchSelectPopup($("#AccountingModalWindow"), actionUrl, null, "选择科目", $("#AccountingForm"), $("#CollectionAccount"), $("#CollectionAccountBox"));
+            });
+
+            //加载欠款
+            $("#loadOweCashBills").click(function () {
+                var manufacturerId = $("#ManufacturerId").val();
+                if (manufacturerId == "" || manufacturerId == 0) {
+                    $(this).showToastr("请先选择供应商！");
+                    return false;
+                }
+                var actionUrl = "/paymentReceipt/asyncloadowecashbillspopup";
+                $(this).showModalV2($("#OweCashBillsWindows"), actionUrl, { manufacturerId: manufacturerId }, "选择单据", $("#OweCashBillsForm"),
+                    function (rows) {
+
+                    });
+            });
+            //加载欠款选择
+            window.operateEventsPoploadOweCashBills = {
+                'click .rowSelect': function (e, value, row, index) {
+                    var exists = false;
+                    var allTableData = $('#PaymentReceiptItems').bootstrapTable('getData');
+                    if (allTableData.length > 0) {
+                        $.each(allTableData, function (i, target) {
+                            if (row.BillNumber == target.BillNumber) {
+                                exists = true;
+                                return;
+                            }
+                        });
+
+                        if (exists) {
+                            $("#OweCashBillsWindows").modal('hide');
+                            $(this).showToastr("单据已经添加！");
+                            return false;
+                        }
+                    }
+
+                    if (!exists)
+                        $("#OweCashBillsWindows").modal('hide');
+
+                    try {
+                        console.log(row);
+
+                        var row =
+                        {
+                            BillNumber: row.BillNumber,//单据编号
+                            BillTypeName: row.BillTypeName,//单据类型
+                            BillTypeId: row.BillTypeId,//单据类型
+                            BillLink: row.BillLink,
+                            MakeBillDate: row.MakeBillDate,//开单时间
+
+                            Amount: row.Amount,//单据金额
+                            DiscountAmount: row.DiscountAmount,//优惠金额
+                            PaymentedAmount: row.PaymentedAmount,//已付金额
+                            ArrearsAmount: row.ArrearsAmount,//尚欠金额
+
+                            DiscountAmountOnce: 0,//本次优惠金额
+                            ReceivableAmountOnce: 0,//本次付款金额
+                            AmountOwedAfterReceipt: row.ArrearsAmount,//付款后尚欠金额
+
+                            Remark: row.Remark,//备注
+                            BillId: row.BillId,//单据Id
+                        };
+
+                        $('#PaymentReceiptItems').bootstrapTable('insertNew', row);
+
+
+                        //添加刷新剩余金额
+                        refreshData();
+                    }
+                    catch (err) {
+                        console.log(err);
+                        $(this).showToastr(err);
+                        return;
+                    }
+                }
+            };
+
+            // //付款单查询
+            //function btn_query() {
+            //    if ($("#ManufacturerId").val() == "" || $("#ManufacturerId").val() == "0") {
+            //        $(this).showToastr("请先选择供应商！");
+            //        return false;
+            //    }
+
+            //    //查询汇总单
+            //    var actionUrl = "/PaymentReceipt/AsyncGetAllBillTypeList";
+            //    var param = {
+            //        manufacturerId: $("#ManufacturerId").val(),
+            //        draweer: $("#Draweer").val(),
+            //        remark: $("#Remark").val(),
+            //        pageIndex: 0,
+            //        receipted: false,
+            //        pageSize: 30
+            //    };
+            //    $('#PaymentReceiptItems').bootstrapTable('removeAll');
+            //    $(this).remoteSubmit("get", actionUrl, param, null, function (result)
+            //    {
+            //        //console.log(result);
+            //        if (result != null) {
+            //            $.each(result.rows, function (index, row) {
+            //                var row = {
+            //                    BillNumber: row.BillNumber,//单据编号
+            //                    BillTypeName: row.BillTypeName,//单据类型
+            //                    BillTypeId: row.BillTypeId,//单据类型
+            //                    BillLink: row.BillLink,
+            //                    MakeBillDate: row.MakeBillDate,//开单时间
+            //                    Amount: row.Amount,//单据金额
+            //                    DiscountAmount: row.DiscountAmount,//优惠金额
+            //                    PaymentedAmount: row.PaymentedAmount,//已付金额
+            //                    ArrearsAmount: row.ArrearsAmount,//尚欠金额
+            //                    DiscountAmountOnce: 0,//本次优惠金额
+            //                    ReceivableAmountOnce: 0,//本次付款金额
+            //                    AmountOwedAfterReceipt: row.ArrearsAmount,//付款后尚欠金额
+            //                    Remark: row.Remark,//备注
+            //                    BillId: row.BillId,//单据Id
+            //                };
+            //                console.log(row);
+            //                $('#PaymentReceiptItems').bootstrapTable('insertNew', row);
+            //            });
+            //        }
+            //    });
+            //}
+
+            //付款项目
+            $("#PaymentReceiptItems").bootstrapTable({
+                url: '/PaymentReceipt/AsyncPaymentReceiptItems?paymentReceiptBillId=@Model.Id',
+                //length:0,
+                striped: true,
+                cache: false,
+                pagination: true,
+                showPagination: false,
+                sidePagination: "server",
+                sortable: false,
+                sortOrder: "asc",
+                search: false,
+                queryParams: function (params) {
+                    var temp =
+                        {
+                            cumtomerName: "",
+                            productName: "",
+                            pagenumber: (params.offset / params.limit)  //页码
+                        };
+                    return temp;
+                },
+                strictSearch: false,
+                showColumns: false,
+                showRefresh: false,
+                clickToSelect: false,
+                uniqueId: "id",
+                showToggle: false,
+                editable: true,
+                cardView: false,
+                detailView: false,
+                showFooter: true,
+                onLoadSuccess: function (data) {
+                    $(".fixed-table-pagination").hide();
+                },
+                columns: [
+                    {
+                        title: '<i class="fa fa-gear fs18"></i>',
+                        align: 'center',
+                        formatter: function (value, row, index) {
+                            return m_pagerow + index + 1;
+                        },
+                        footerFormatter: function (value) {
+                            return '总计';
+                        }
+                    },
+                    {
+                        field: 'BillNumber',
+                          width:'150',
+                        title: '单据编号',
+                        formatter: function (value, row, index) {
+                            return '<a href="' + row.BillLink + '" >' + row.BillNumber + '</a>';
+                        }
+                    },
+                    {
+                        field: 'BillTypeName',
+                        title: '单据类型',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'MakeBillDate',
+                        title: '开单时间'
+                    },
+                    {
+                        field: 'Amount',
+                        title: '单据金额',
+                        align: 'right',
+                        formatter: $(this).formatFixed,
+                        footerFormatter: function (value) {
+                            var count = 0;
+                            var datas = $('#PaymentReceiptItems').bootstrapTable('getData');
+                            var len = datas.length,
+                                i, row;
+                            //console.log(len);
+                            if (len > 1) {
+                                for (i = len - 1; i >= 0; i--) {
+                                    row = datas[i];
+                                    count += parseFloat((typeof (row.Amount) == 'undefined' || row.Amount == "") ? '0' : row.Amount);
+                                }
+                            }
+                            else {
+                                for (var i in value) {
+                                    count += parseFloat((typeof (value[i].Amount) == 'undefined' || value[i].Amount == "") ? '0' : value[i].Amount);
+                                }
+                            }
+                            var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+                            //总单据金额 = 单据金额项总和
+                            $("#TotalAmount").val(total);
+                            //初始剩余金额 = 单据金额项总和
+                            $("#TotalAmountOwedAfterReceipt").val(total);
+                            return total;
+                        }
+                    },
+                    {
+                        field: 'DiscountAmount',
+                        title: '优惠金额',
+                        align: 'right',
+                        formatter: $(this).formatFixed,
+                        footerFormatter: function (value) {
+                            var count = 0;
+                            var datas = $('#PaymentReceiptItems').bootstrapTable('getData');
+                            var len = datas.length,
+                                i, row;
+                            //console.log(len);
+                            if (len > 1) {
+                                for (i = len - 1; i >= 0; i--) {
+                                    row = datas[i];
+                                    count += parseFloat((typeof (row.DiscountAmount) == 'undefined' || row.DiscountAmount == "") ? '0' : row.DiscountAmount);
+                                }
+                            }
+                            else {
+                                for (var i in value) {
+                                    count += parseFloat((typeof (value[i].DiscountAmount) == 'undefined' || value[i].DiscountAmount == "") ? '0' : value[i].DiscountAmount);
+                                }
+                            }
+                            var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+                            $("#TotalDiscountAmount").val(total);
+                            return total;
+                        }
+                    },
+                    {
+                        field: 'PaymentedAmount',
+                        title: '已付金额	',
+                        align: 'right',
+                        formatter: $(this).formatFixed,
+                        footerFormatter: function (value) {
+                            var count = 0;
+                            var datas = $('#PaymentReceiptItems').bootstrapTable('getData');
+                            var len = datas.length,
+                                i, row;
+                            //console.log(len);
+                            if (len > 1) {
+                                for (i = len - 1; i >= 0; i--) {
+                                    row = datas[i];
+                                    count += parseFloat((typeof (row.PaymentedAmount) == 'undefined' || row.PaymentedAmount == "") ? '0' : row.PaymentedAmount);
+                                }
+                            }
+                            else {
+                                for (var i in value) {
+                                    count += parseFloat((typeof (value[i].PaymentedAmount) == 'undefined' || value[i].PaymentedAmount == "") ? '0' : value[i].PaymentedAmount);
+                                }
+                            }
+                            var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+                            $("#TotalPaymentedAmount").val(total);
+                            return total;
+                        }
+                    },
+                    {
+                        field: 'ArrearsAmount',
+                        title: '尚欠金额',
+                        align: 'right',
+                        formatter: $(this).formatFixed,
+                        footerFormatter: function (value) {
+                            var count = 0;
+                            var datas = $('#PaymentReceiptItems').bootstrapTable('getData');
+                            var len = datas.length,
+                                i, row;
+                            //console.log(len);
+                            if (len > 1) {
+                                for (i = len - 1; i >= 0; i--) {
+                                    row = datas[i];
+                                    count += parseFloat((typeof (row.ArrearsAmount) == 'undefined' || row.ArrearsAmount == "") ? '0' : row.ArrearsAmount);
+                                }
+                            }
+                            else {
+                                for (var i in value) {
+                                    count += parseFloat((typeof (value[i].ArrearsAmount) == 'undefined' || value[i].ArrearsAmount == "") ? '0' : value[i].ArrearsAmount);
+                                }
+                            }
+                            var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+                            $("#TotalArrearsAmount").val(total);
+                            return total;
+                        }
+                    },
+                    {
+                        field: 'DiscountAmountOnce',
+                        width:'100',
+                        title: '本次优惠金额',
+                        align: 'right',
+                        formatter: $(this).formatFixed,
+                        footerFormatter: function (value) {
+                            var count = 0;
+                            var datas = $('#PaymentReceiptItems').bootstrapTable('getData');
+                            var len = datas.length,
+                                i, row;
+                            //console.log(len);
+                            if (len > 1) {
+                                for (i = len - 1; i >= 0; i--) {
+                                    row = datas[i];
+                                    count += parseFloat((typeof (row.DiscountAmountOnce) == 'undefined' || row.DiscountAmountOnce == "") ? '0' : row.DiscountAmountOnce);
+                                }
+                            }
+                            else {
+                                for (var i in value) {
+                                    count += parseFloat((typeof (value[i].DiscountAmountOnce) == 'undefined' || value[i].DiscountAmountOnce == "") ? '0' : value[i].DiscountAmountOnce);
+                                }
+                            }
+                            var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+                            $("#TotalDiscountAmount").val(total);
+                            $("#TotalDiscountAmountOnce").val(total);
+                            $("#DiscountAmount").val(total);
+                            return total;
+                        }
+                    },
+                    {
+                        field: 'ReceivableAmountOnce',
+                        width:'100',
+                        title: '本次付款金额',
+                        align: 'right',
+                        formatter: $(this).formatFixed,
+                        footerFormatter: function (value) {
+                            var count = 0;
+                            var datas = $('#PaymentReceiptItems').bootstrapTable('getData');
+                            var len = datas.length,
+                                i, row;
+                            //console.log(len);
+                            if (len > 1) {
+                                for (i = len - 1; i >= 0; i--) {
+                                    row = datas[i];
+                                    count += parseFloat((typeof (row.ReceivableAmountOnce) == 'undefined' || row.ReceivableAmountOnce == "") ? '0' : row.ReceivableAmountOnce);
+                                }
+                            }
+                            else {
+                                for (var i in value) {
+                                    count += parseFloat((typeof (value[i].ReceivableAmountOnce) == 'undefined' || value[i].ReceivableAmountOnce == "") ? '0' : value[i].ReceivableAmountOnce);
+                                }
+                            }
+                            var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+                            var otherAmount = 0;
+                            var accounts = $("#PaymentReceiptItems_Partial_Form").find("input[name='CollectionAmount']");
+                            $.each(accounts, function (i, input)
+                            {
+                                $(input).val(total)
+                            });
+                            $("#TotalReceivableAmountOnce").val(total);
+                            return total;
+                        }
+                    },
+                    {
+                        field: 'AmountOwedAfterReceipt',
+                        title: '付款后尚欠金额',
+                        align: 'right',
+                        formatter: $(this).formatFixed,
+                        footerFormatter: function (value) {
+                            var count = 0;
+                            var datas = $('#PaymentReceiptItems').bootstrapTable('getData');
+                            var len = datas.length,
+                                i, row;
+                            //console.log(len);
+                            if (len > 1) {
+                                for (i = len - 1; i >= 0; i--) {
+                                    row = datas[i];
+                                    count += parseFloat((typeof (row.AmountOwedAfterReceipt) == 'undefined' || row.AmountOwedAfterReceipt == "") ? '0' : row.AmountOwedAfterReceipt);
+                                }
+                            }
+                            else {
+                                for (var i in value) {
+                                    count += parseFloat((typeof (value[i].AmountOwedAfterReceipt) == 'undefined' || value[i].AmountOwedAfterReceipt == "") ? '0' : value[i].AmountOwedAfterReceipt);
+                                }
+                            }
+                            var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+
+                            //剩余金额 = 收款后尚欠金额总和
+                            $("#AmountOwedAfterReceipt").val(total);
+                            $("#TotalAmountOwedAfterReceipt").val(total);
+                            return total;
+                        }
+                    },
+                    {
+                        field: 'Remark',
+                        title: '备注',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'Operate',
+                        title: '操作',
+                        align: 'center',
+                        width: '100',
+                        events: {
+							'click .rowDel': function (e, value, row, index) {// 删除
+
+								//审核、红冲后不能修改
+								if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+									return false;
+								}
+
+								//修改新增单据时，不能删除明细。
+								$("#PaymentReceiptItems").bootstrapTable('remove', { field: "BillNumber", values: [row.BillNumber] });
+                            }
+                        },
+                        formatter: function (value, row, index) {
+                            return [
+                                '<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+                            ].join('');
+                        }
+                    }
+                ],
+				onClickCell: function (field, value, row, $element) {
+
+					if (field == "Operate") {
+						return false;
+					}
+
+                    var input = $($element).find("input");
+                    var select = $($element).find("select");
+                    if (input.length > 0 || select.length > 0)
+                        return false;
+                    //当前列所在行的索引
+					var index = $element.parent().attr("data-index");
+
+					//审核、红冲后不能修改
+					if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+						return false;
+					}
+
+                    if (["DiscountAmountOnce", "ReceivableAmountOnce"].indexOf(field) >= 0) {
+                        var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+                        $($element).html(html);
+                        var inputObj = $("#" + $(html).attr("id"));
+                        inputObj.focus();
+                        inputObj.select();
+                        inputObj.bind("focusout", function ()
+                        {
+                            row[field] = $(this).val();
+                            if (parseFloat(row.ReceivableAmountOnce) == parseFloat($("#TotalAmount").val())) {
+                                row.DiscountAmountOnce = 0;
+                            }
+                            $("#PaymentReceiptItems").bootstrapTable('updateRow', { index: index, row: row });
+                            $($element).html("" + value + "");
+
+                        });
+
+                        //本次优惠金额
+                        if (field == "DiscountAmountOnce") {
+                            inputObj.bind("change", function ()
+                            {
+                                if (!isNaN($(this).val())) {
+                                    if ($(this).val() == "") {
+                                        $(this).val("0.00");
+                                    }
+
+                                    if (parseFloat(row.ReceivableAmountOnce) == parseFloat($("#TotalAmount").val())) {
+                                        $(this).showToastr("已经全部收款！");
+                                        return false;
+                                    }
+
+                                    //收款后尚欠金额 = 尚欠金额-本次优惠金额-本次收款金额
+                                    row.AmountOwedAfterReceipt = (parseFloat(row.ArrearsAmount) - parseFloat($(this).val()) - parseFloat(row.ReceivableAmountOnce)).toFixed(2);
+                                }
+								else {
+									$(this).val("0.00");
+                                    $(this).showToastr("只能输入数字！");
+                                }
+
+                            });
+                        }
+                        //本次收款金额
+                        else if (field == "ReceivableAmountOnce") {
+                            inputObj.bind("change", function () {
+								if (!isNaN($(this).val())) {
+
+									if ($(this).val() == "") {
+										$(this).val("0.00");
+									}
+
+                                    //收款后尚欠金额 = 尚欠金额-本次优惠金额-本次收款金额
+                                    row.AmountOwedAfterReceipt = (parseFloat(row.ArrearsAmount) - parseFloat(row.DiscountAmountOnce) - parseFloat($(this).val())).toFixed(2);
+                                }
+								else {
+									$(this).val("0.00");
+                                    $(this).showToastr("只能输入数字!");
+                                }
+
+                            });
+                        }
+                    }
+                    else if (field == "Remark")
+                    {
+                        var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+                        $($element).html(html);
+                        var inputObj = $("#" + $(html).attr("id"));
+                        inputObj.focus();
+                        inputObj.select();
+                        inputObj.bind("focusout", function () {
+                            $("#PaymentReceiptItems").bootstrapTable('updateRow', { index: index, row: { Remark: $(this).val() } });
+                            $($element).html("" + value + "");
+                        });
+                    }
+                }
+            });
+
+            //获取预付金额
+            function SumAdvancePaymentAmount() {
+                var sumAdvancePaymentAmount = 0;
+                var colls = $("input[name='CollectionAmount']");
+                for (var i = 0; i < colls.length; i++) {
+                    if ($(colls[i]).attr("data-codetype") == 14) {
+                        if (isNaN($(colls[i]).val()) || $(colls[i]).val() == "") {
+                            $(colls[i]).val("0.00")
+                        }
+                        sumAdvancePaymentAmount = parseFloat(sumAdvancePaymentAmount) + parseFloat(colls[i].value);
+                    }
+                }
+                return sumAdvancePaymentAmount;
+            }
+
+            //表单检查
+		   var formValidator = function () {
+              var isVaild = true;
+
+               var allTableData = $('#PaymentReceiptItems').bootstrapTable('getData');
+               var accounts = $("#PaymentReceiptItems_Partial_Form").find("input[name='CollectionAmount']");
+               var flag = 0;
+               var accFlag = 0;
+               $.each(allTableData, function (i, row)
+               {
+                   if ((isNaN(row.DiscountAmountOnce) || row.DiscountAmountOnce == 0) && (isNaN(row.ReceivableAmountOnce) || row.ReceivableAmountOnce == 0))
+                       flag++;
+               });
+
+                $.each(accounts, function (i, input)
+                {
+                    if (isNaN($(input).val()))
+                        accFlag++;
+                });
+
+               if ($("#ManufacturerId").val() == "" || $("#ManufacturerId").val() == "0") {
+                   $("#ManufacturerId").focus();
+                   $(this).showToastr("请先选择经销商！");
+                   return false;
+               }
+               else if ($("#Draweer").val() == "") {
+                   $("#Draweer").focus();
+                   $(this).showToastr("请先选择付款人！");
+                   return false;
+               }
+               else if (allTableData.length == 0) {
+                   $(this).showToastr("该经销商对应的付款人没有业务往来，请选择查询！");
+                   return false;
+               }
+               else if (flag > 0) {
+                   $(this).showToastr("请检查单据明细!");
+                   return false;
+               }
+               else if (accFlag > 0) {
+                   $(this).showToastr("收款账户信息中数据格式不正确!");
+                   return false;
+                }
+               else if (parseFloat(SumAdvancePaymentAmount()) > 0 && parseFloat(advanceAmountBalance) < parseFloat(SumAdvancePaymentAmount()))
+                {
+                   $("input[name='CollectionAmount']")[0].focus();
+                   $(this).showToastr("预付款余额不足,请更换科目！");
+                   isVaild = false;
+               }
+
+               var tot = 0;
+               $.each(allTableData, function (index, row) {
+                   tot += row.ArrearsAmount;
+               });
+               var DiscountAmount = $("#PaymentReceiptItems_Partial_Form input[name='CollectionAmount']").val();
+               if (Math.abs(tot) < Math.abs(parseFloat(DiscountAmount))) {
+                   $(this).showToastr("付款金额大于欠款金额!");
+                   return false;
+               }
+
+			return isVaild;
+		}
+
+            //保存服务器
+            var submitRemoteServer = function (showMessage, doAudit, callback, loadingButton)
+            {
+                if (!formValidator()) {
+	                if(loadingButton != undefined){
+				       loadingButton.stop();
+			        }
+                    return false;
+                };
+
+                 //获取表格的所有内容行
+                var allTableData = $('#PaymentReceiptItems').bootstrapTable('getData');
+                var serializeData = [];
+                var accountings = [];
+                $.each(allTableData, function (i, row)
+                {
+                    var tmpObj = {
+                        Id: typeof (row.Id) == 'undefined' ? "0" : row.Id,
+                        BillId:typeof (row.BillId) == 'undefined' ? "0" : row.BillId,
+                        BillNumber: typeof (row.BillNumber) == 'undefined' ? "" : row.BillNumber,//单据编号
+                        BillTypeId: typeof (row.BillTypeId) == 'undefined' ? "" : row.BillTypeId,//单据类型
+                        MakeBillDate: typeof (row.MakeBillDate) == 'undefined' ? "" : row.MakeBillDate,//开单时间
+                        Amount: typeof (row.Amount) == 'undefined' ? "0" : row.Amount,//单据金额
+                        DiscountAmount: typeof (row.DiscountAmount) == 'undefined' ? "0" : row.DiscountAmount,//优惠金额
+                        PaymentedAmount: typeof (row.PaymentedAmount) == 'undefined' ? "0" : row.PaymentedAmount,//已付金额
+                        ArrearsAmount: typeof (row.ArrearsAmount) == 'undefined' ? "0" : row.ArrearsAmount,//尚欠金额
+                        DiscountAmountOnce: typeof (row.DiscountAmountOnce) == 'undefined' ? "0" : row.DiscountAmountOnce,//本次优惠金额
+                        ReceivableAmountOnce: typeof (row.ReceivableAmountOnce) == 'undefined' ? "0" : row.ReceivableAmountOnce,//本次付款金额
+                        AmountOwedAfterReceipt: typeof (row.AmountOwedAfterReceipt) == 'undefined' ? "0" : row.AmountOwedAfterReceipt,//付款后尚欠金额
+                        Remark: typeof (row.Remark) == 'undefined' ? "" : row.Remark,//备注
+                    };
+                    serializeData.push(tmpObj);
+                });
+
+
+                //获取收款账户
+                var accounts = $("#PaymentReceiptItems_Partial_Form").find("input[name='CollectionAmount']");
+                $.each(accounts, function (i, input)
+                {
+                    var option = $(input).attr("data-account");
+                    var amount = $(input).val();
+                    accountings.push({ AccountingOptionId: option, CollectionAmount: $(input).val() });
+                });
+
+                //保存的数据
+                var postData = {
+                    //供应商
+                    ManufacturerId: $("#ManufacturerId").val(),
+                    //付款人
+                    Draweer: $("#Draweer").val(),
+                    //备注
+                    Remark: $("#Remark").val(),
+                    //本次优惠金额
+                    DiscountAmount: $("#DiscountAmount").val(),
+                    //剩余金额
+                    AmountOwedAfterReceipt:parseFloat($("#PaymentReceiptItems_Partial_Form input[name='CollectionAmount']").val())+parseFloat($("#PaymentReceiptItems_Partial_Form input[name='DiscountAmount']").val()),
+                    //单据项目
+                    Items: serializeData,
+                    //收款账户
+                    Accounting: accountings,
+                    //预付金额
+                    AdvanceAmount: SumAdvancePaymentAmount(),
+                    //预付款余额
+                    AdvanceAmountBalance: advanceAmountBalance
+                };
+
+                //debug
+                //console.log(postData);
+                //return false;
+
+                //保存服务器
+                $(this).remoteSubmit("post", "/PaymentReceipt/CreateOrUpdate?billId=@(Model.Id)&doAudit=" + doAudit, postData, $("#PaymentReceiptItems"), callback, showMessage,loadingButton);
+
+            };
+
+           //保存单据项目
+            $("#FormSubmit").click(function () {
+                var doAudit = true;
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+				loadingButton.start();
+                submitRemoteServer(null, doAudit, function (data) {
+                    if (data.Success) {
+                        window.location.href = "/PaymentReceipt/List";
+                    }
+                }, loadingButton);
+            });
+
+            //保存并继续
+            $("#FormSubmitContinue").click(function () {
+                var doAudit = false;
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+				loadingButton.start();
+                submitRemoteServer(null, doAudit, null, loadingButton);
+            });
+
+            //审核
+			$(document).on('click', "#btn_auditing", function () {
+	            //防止重复保存
+	            var loadingButton = Ladda.create(this);
+                loadingButton.start();
+                var returnUrl = "@Context.Request.Query["returnURL"]";
+                if (returnUrl.indexOf("AuditedStatus=") == -1) {
+                    if (returnUrl.indexOf("?") == -1) {
+                        returnUrl += "?";
+                    } else {
+                        returnUrl += "&";
+                    }
+                    returnUrl += "AuditedStatus=False";
+                } else {
+                    if (returnUrl.indexOf("AuditedStatus=False") == -1) {
+                        returnUrl = returnUrl.replace("AuditedStatus=", "AuditedStatus=False");
+                    }
+                }
+                returnUrl = returnUrl.replace(/amp;/g, "");
+                $(this).remoteSubmit("post", "/PaymentReceipt/Auditing?id=@(Model.Id)", null, $("#PaymentReceiptItems"), function () {
+                    window.location.href = returnUrl;
+					}, null,loadingButton);
+			});
+
+            //红冲
+			$(document).on('click', "#btn_red", function () {
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+
+                WinMsg.confirm({ message: "确认要红冲吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+	                loadingButton.start();
+					$(this).remoteSubmit("get", "/PaymentReceipt/Reverse", { id: "@Model.Id" }, null, function () { location.href = "/PaymentReceipt/List"; }, null,loadingButton);
+				});
+			});
+
+            //金额设置
+            $(document).on('click', "#PaymentReceiptItems_Partial_Form input[name='CollectionAmount']", function () {
+                $(this).focus();$(this).select();
+            });
+
+            $(document).on('change', "#PaymentReceiptItems_Partial_Form input[name='CollectionAmount']", function ()
+            {
+                if (isNaN($(this).val())) {
+                    $(this).showToastr("只能输入数字!");
+                    $(this).val('0.0');
+                    return false;
+                }
+
+                if ($(this).val() == "")
+                    $(this).val('0.0');
+
+                //获取表格的所有内容行
+                var allTableData = $('#PaymentReceiptItems').bootstrapTable('getData');
+                console.log(allTableData.length);
+                if (allTableData.length == 0) {
+                    $(this).showToastr("请先获取单据!");
+                    return false;
+                }
+
+                //当前输入金额，即本次付款金额
+                var curInputAmount = parseFloat($(this).val());
+
+                var tmpReceivableAmountOnce = curInputAmount;
+                var count = allTableData.length;
+                var last = 0;
+
+                //重置
+                $.each(allTableData, function (index, row) {
+                    row.ReceivableAmountOnce = 0;
+                    row.AmountOwedAfterReceipt = row.ArrearsAmount - row.DiscountAmountOnce;
+                    $("#PaymentReceiptItems").bootstrapTable('updateRow', { index: index, row: row });
+                });
+
+                //计算
+                $.each(allTableData, function (index, row) {
+                    last++;
+                    if (tmpReceivableAmountOnce != 0) {
+
+                        if (Math.abs(tmpReceivableAmountOnce) >= Math.abs(row.AmountOwedAfterReceipt)) {
+                            //本次付款金额
+                            row.ReceivableAmountOnce = row.AmountOwedAfterReceipt;
+                            tmpReceivableAmountOnce = tmpReceivableAmountOnce - row.AmountOwedAfterReceipt;
+                            //付款后尚欠金额
+                            row.AmountOwedAfterReceipt = 0;
+                            if (last == count && tmpReceivableAmountOnce > 0) {
+                                row.AmountOwedAfterReceipt = -tmpReceivableAmountOnce;
+                            }
+                            $("#PaymentReceiptItems").bootstrapTable('updateRow', { index: index, row: row });
+                        }
+                        else {
+                            //本次付款金额
+                            row.ReceivableAmountOnce = tmpReceivableAmountOnce;
+                            tmpReceivableAmountOnce = row.AmountOwedAfterReceipt - tmpReceivableAmountOnce;
+                            //付款后尚欠金额
+                            row.AmountOwedAfterReceipt = tmpReceivableAmountOnce;
+                            $("#PaymentReceiptItems").bootstrapTable('updateRow', { index: index, row: row });
+                            return false;
+                        }
+                    }
+                });
+
+            });
+
+            //本次优惠金额
+            $(document).on('click', "#DiscountAmount", function () {
+                $(this).focus();$(this).select();
+            });
+            $(document).on('change', "#DiscountAmount", function () {
+				if (isNaN($(this).val())) {
+					$(this).val("0.00");
+                    $(this).showToastr("只能输入数字!");
+                    return false;
+                }
+
+                if ($(this).val() == "")
+                    $(this).val('0.0');
+
+                //获取表格的所有内容行
+                var allTableData = $('#PaymentReceiptItems').bootstrapTable('getData');
+                if (allTableData.length == 0) {
+                    $(this).showToastr("请先获取单据!");
+                    return false;
+                }
+
+                //当前输入金额
+                var curInputAmount = parseFloat($(this).val());
+
+                var count = allTableData.length;
+                var last = 0;
+                //计算
+                $.each(allTableData, function (index, row) {
+                    last++;
+                    if (last == count) {
+                        row.DiscountAmountOnce = curInputAmount;
+                        //收款后尚欠金额 = 尚欠金额-本次优惠金额-本次收款金额
+                        row.AmountOwedAfterReceipt = (parseFloat(row.ArrearsAmount) - parseFloat(row.DiscountAmountOnce) - parseFloat(row.ReceivableAmountOnce)).toFixed(2);
+                        $("#PaymentReceiptItems").bootstrapTable('updateRow', { index: index, row: row });
+                    }
+                });
+            });
+
+            //打印
+			$("#btn_print").click(function () {
+				//防止重复保存
+				var loadingButton = Ladda.create(this);
+                WinMsg.confirm({ message: "确认要打印吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+                    loadingButton.start();
+                    var setting = {}
+                    var LODOP = null;
+                    var rs = $(this).getSyncData("/PaymentReceipt/PrintSetting", null, "get");
+                    if (rs.Success) {
+                        setting = rs.Data;
+                        loadCLodop(document, setting.PrintPort, () => {
+                            //判断页面是否已加载LODOP
+                            if (LODOP == null || LODOP == undefined) {
+                                LODOP = getLodopFirst(document);
+                                LODOP = getLodopSecond(document);
+                            }
+                            if (LODOP == null || LODOP == undefined) {
+                                loadingButton.stop();
+                                return;
+                            } else {
+                                $("#printData").html("");
+                            }
+                            $(this).remoteSubmit("get", "/PaymentReceipt/Print", { selectData: "@Model.Id" }, null, function (result) {
+                                if (result.Success) {
+                                    var html = result.Data;
+                                    LODOP.PRINT_INIT("付款单");
+                                    if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+                                        LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+                                    }
+                                    if (setting.IsPrintPageNumber) {
+                                        LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+                                    }
+                                    if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+                                        LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+                                    }
+                                    LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+                                    LODOP.PREVIEW(true);
+                                }
+                                else {
+                                    $(this).showToastr(result.Message);
+                                }
+                            }, null, loadingButton);
+                        });
+                    }
+
+				});
+			});
+
+            //--辅助方法
+            var refreshData = function () {
+                var count = 0;
+                var datas = $('#PaymentReceiptItems').bootstrapTable('getData');
+                var len = datas.length,
+                    i, row;
+                if (len > 1) {
+                    for (i = len - 1; i >= 0; i--) {
+                        row = datas[i];
+                        count += parseFloat((typeof (row.AmountOwedAfterReceipt) == 'undefined' || row.AmountOwedAfterReceipt == "") ? '0' : row.AmountOwedAfterReceipt);
+                    }
+                }
+                var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+            };
+
+        });
+</script>

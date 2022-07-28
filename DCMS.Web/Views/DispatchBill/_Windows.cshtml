@@ -1,0 +1,8 @@
+﻿@{
+    //客户选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+    //设置仓库
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "SetWareHouseForm" }, { "modalWindow", "SetWareHouseWindow" }, { "showSave", "true" } });
+    //调度
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "DispatchBillForm" }, { "modalWindow", "DispatchBillWindows" }, { "windowWidth", "650px" } , { "showSave", false }});
+}

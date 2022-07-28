@@ -1,0 +1,259 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Sales;
+
+@model DispatchBillModel
+
+<section id="content_wrapper">
+
+	<!-- Start: Topbar-Dropdown -->
+	<div id="topbar-dropmenu">
+		<div id="topbar-dropmenu">
+			@await Html.PartialAsync("_ToolBox")
+		</div>
+	</div>
+	<!-- End: Topbar-Dropdown -->
+	<!-- Start: Topbar -->
+	<header id="topbar">
+		<div class="topbar-left">
+			<ol class="breadcrumb">
+				<li class="crumb-active">
+					<a href="@Url.RouteUrl("HomePage")">首页</a>
+				</li>
+				<li class="crumb-icon">
+					<a href="dashboard.html">
+						<span class="glyphicon glyphicon-home"></span>
+					</a>
+				</li>
+				<li class="crumb-link">
+					<a href="#">销售管理</a>
+				</li>
+				<li class="crumb-trail">装车调度</li>
+			</ol>
+		</div>
+		<div class="topbar-right">
+			<div class="ml15 ib va-m" id="toggle_sidemenu_r">
+				<a href="#" class="pl5">
+					<i class="fa fa-sign-in fs22 text-primary"></i>
+					<span class="badge badge-hero badge-danger">3</span>
+				</a>
+			</div>
+		</div>
+	</header>
+	<!-- End: Topbar -->
+	<!-- Begin: Content -->
+	<section id="content" class="formSection">
+
+		<div class="row">
+			<div class="col-md-12">
+
+				<div class="panel">
+					<div class="panel-heading">
+						<div class="panel-title">
+							<span class="glyphicon glyphicon-tasks"></span> 创建装车调度单
+						</div>
+					</div>
+					<div class="panel-body p10">
+						<form asp-action="Create" asp-controller="DispatchBill" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="DispatchForm">
+							@await Html.PartialAsync("_CreateDispatch", Model)
+						</form>
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+	</section>
+
+	<!-- End: Content -->
+	<input id="hid_DispatchBillId" type="hidden" value="" />
+	<input id="hid_CategoryId" type="hidden" value="" />
+	<input id="hid_CategoryPId" type="hidden" value="" />
+</section>
+
+
+@*打印区域*@
+<div id="printData">
+</div>
+
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" } }); }
+
+
+@{
+//Html.AddCssFileParts(ResourceLocation.Head, "~/assets/skin/default_skin/css/theme.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Toastr/toastr.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Tables/bootstrap-table.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Content/Site.css");
+}
+
+
+@section CurPageScripts
+{
+
+	@{
+
+		Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.unobtrusive.js");
+		//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/jquery.treegrid.min.js");
+
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery-ui-1.10.4.custom.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.PrintArea.js");
+
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/locale/bootstrap-table-zh-CN.min.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table-treeview.js");
+
+
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/globalize.min.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/moment.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/moment-with-locales.js");
+
+		//Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/daterange/daterangepicker.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/datepicker/js/bootstrap-datetimepicker.js");
+
+		Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/jquerymask/jquery.maskedinput.min.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/tagmanager/tagmanager.js");
+
+		Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/fancytree/jquery.fancytree-all.min.js");
+
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.ztree.all-3.5.min.js");
+
+		Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+		Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+
+	}
+	<script type="text/javascript">
+		jQuery(document).ready(function () {
+			"use strict";
+
+			// Init Theme Core
+			Core.init({
+				sbm: "sb-l-c",
+			});
+
+			// Init Demo JS
+			Demo.init();
+
+			//禁用打印
+			$("#DispatchBillPrint").attr('disabled', true);
+
+			//调度
+			$("#DispatchCreate").click(function () {
+
+				var deliveryId = $("#DeliveryUserId").val();
+
+				if (deliveryId == "") {
+					$(this).showToastr('请选择送货员');
+					return;
+				}
+
+				var carId = $("#CarId").val();
+				if (carId == "") {
+					$(this).showToastr('请选择车辆');
+					return;
+				}
+
+				var autoAllocationBill = $("input[name='DispatchBillAutoAllocationBill']:checked").val();
+
+                WinMsg.confirm({ message: "确定调度吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+					$.ajax({
+						type: "get",
+						url: "/DispatchBill/CreateBill",
+						data: {
+							deliveryId: deliveryId,
+							carId: carId,
+							selectDatas: "@Model.SelectDatas",
+							autoAllocationBill: autoAllocationBill
+						},
+						contentType: "application/json",
+						dataType: "json",
+						success: function (result) {
+                            if (result.Success)
+                            {
+								toastr.success(result.Message);
+								$("#hid_DispatchBillId").val(result.billId);
+								$("#DispatchBillPrint").attr('disabled', false);
+							}
+                            else
+                            {
+								$(this).showToastr(result.Message);
+							}
+						},
+						error: function () {
+							$(this).showToastr('网络错误，请重新保存！');
+						}
+					});
+				});
+
+			});
+
+			//打印btn_print
+			$("#DispatchBillPrint").click(function () {
+				var ids = "";
+				var dispatchBillId = $("#hid_DispatchBillId").val();
+
+				var printTypes = "";
+				$("input[name='DispatchBillCreatePrint']:checked").each(function (a, b) {
+					printTypes = printTypes + (printTypes == "" ? "" : ",") + $(this).val();
+				});
+				var selectData = "@Model.SelectDatas";
+
+				if (printTypes == "") {
+					$(this).showToastr('请选择打印类型');
+					return;
+				}
+				if (dispatchBillId == "" || dispatchBillId==0) {
+					$(this).showToastr('请先调度单据');
+					return;
+				}
+
+                WinMsg.confirm({ message: "确定打印所选单据吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+					$.ajax({
+						type: "get",
+						url: "/DispatchBill/BillPrint",
+						data: {
+							printTypes: printTypes,
+							dispatchBillId: dispatchBillId
+						},
+						contentType: "application/json",
+						dataType: "json",
+						success: function (result) {
+							if (result.Success) {
+								var printDatas = result.Data;
+								$("#printData").html(printDatas);
+								$("#printData").printArea();
+								//打印完成设置打印htm为空
+								$("#printData").html("");
+								toastr.success(result.Message);
+								//$tb.bootstrapTable('refresh');
+							}
+							else {
+								$(this).showToastr(result.Message);
+							}
+						},
+						error: function () {
+							$(this).showToastr('网络错误，请重新保存！');
+						}
+					});
+				});
+
+
+
+			});
+
+
+
+		});
+	</script>
+}

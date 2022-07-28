@@ -1,0 +1,68 @@
+﻿@using DCMS.ViewModel.Models.Configuration;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@model AccountingOptionModel
+
+@Html.HiddenFor(model => model.Id)
+
+
+<div class="form-group">
+    <label asp-for="Name" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-8">
+        <input asp-for="Name" placeholder="科目名称..." class="form-control" />
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="Code" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-8">
+        <input asp-for="Code" class="form-control" readonly="readonly" />
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="ParentId" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-8">
+        <dcms-select asp-for="ParentId" asp-items="@Model.PartentAccounts" asp-default="请选择父级科目" class="form-control" />
+    </div>
+</div>
+
+@if (Model.IsEndPoint == true)
+{
+    <div class="form-group">
+        <label asp-for="AccountCodeTypeId" asp-postfix=":" class="col-lg-3 control-label" />
+        <div class="col-lg-8">
+            @*@Html.DropDownListFor(model => model.AccountCodeTypeId, Model.AccountCodeTypes, "-科目类型-"" class = "form-control"/>*@
+            <dcms-select asp-for="AccountCodeTypeId" asp-items="@Model.AccountCodeTypes" asp-default="-科目类型-" class="form-control" />
+        </div>
+    </div>
+}
+<div class="form-group">
+    <label asp-for="DisplayOrder" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-8">
+        <input asp-for="DisplayOrder" class="form-control" placeholder="排序..." />
+    </div>
+</div>
+<div class="form-group">
+    <label asp-for="InitBalance" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-8">
+        <input asp-for="InitBalance" class="form-control" placeholder="初始余额..." />
+    </div>
+</div>
+<div class="form-group">
+    <label asp-for="IsDefault" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-sm-8">
+        <label class="checkbox-inline">
+            @Html.CheckBoxFor(model => model.IsDefault, new { @class = "mt15" })
+        </label>
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="Enabled" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-sm-8">
+        <label class="checkbox-inline">
+            @Html.CheckBoxFor(model => model.Enabled, new { @class = "mt15" })
+        </label>
+    </div>
+</div>

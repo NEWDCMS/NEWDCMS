@@ -1,0 +1,38 @@
+﻿
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model CompanySettingModel
+
+<div class="form-group">
+    <label asp-for="EnableTaxRate" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.EnableTaxRate, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="TaxRate" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <div class="input-group">
+            <input asp-for="TaxRate" class="form-control" />
+            <span class="input-group-addon">%</span>
+        </div>
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="PhotographedWater" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="PhotographedWater" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+
+    </div>
+</div>

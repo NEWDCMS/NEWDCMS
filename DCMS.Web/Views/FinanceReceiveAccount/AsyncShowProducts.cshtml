@@ -1,0 +1,89 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Sales;
+
+@model FinanceReceiveAccountBillListModel
+
+<input asp-for="EmployeeId" type="hidden" />
+<input asp-for="StartTime" type="hidden" />
+<input asp-for="EndTime" type="hidden" />
+<input asp-for="BillType" type="hidden" />
+<input asp-for="Gift" type="hidden" />
+
+<div id="toolbar" class="btn-group">
+    <div class="btn-group mr5">
+        <button type="button" id="btn_export" class="btn btn-info btn-sm dropdown-toggle ladda-button" data-toggle="dropdown" aria-expanded="false">
+            <span class="glyphicon glyphicon-print"></span>
+            导出
+            <span class="caret ml5"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li>
+                <a id="export_select" href="#">导出选择</a>
+            </li>
+            <li>
+                <a id="export_all" href="#">导出全部</a>
+            </li>
+        </ul>
+    </div>
+</div>
+<table class="table table-striped table-hover" id="productGridViewDatatable"></table>
+
+<script type="text/javascript">
+
+    $(function () {
+        //商品列表
+        $("#productGridViewDatatable").bootstrapTable({
+            url: "/FinanceReceiveAccount/AsyncShowProducts",
+            method: 'get',
+            striped: true,
+            toolbar: '#toolbar',
+            cache: false,
+            pagination: true,
+            queryParams: function (params) {
+                var temp =
+                {
+                    gift: $("#ProductsModalWindow #Gift").val(),
+                    userId: $("#ProductsModalWindow #EmployeeId").val(),
+                    start: $("#ProductsModalWindow #StartTime").val(),
+                    end: $("#ProductsModalWindow #EndTime").val(),
+                    billType: $("#ProductsModalWindow #BillType").val(),
+                    pageSize: params.limit,
+                    pageIndex: (params.offset / params.limit)
+                };
+                return temp;
+            },
+            sidePagination: "server",
+            idField: 'Id',
+            pageNumber: 1,
+            pageSize: 10,
+            search: false,
+            strictSearch: true,
+            showRefresh: false,
+            clickToSelect: false,
+            uniqueId: "Id",
+            showToggle: false,
+            cardView: false,
+            detailView: false,
+            columns: [
+                { checkbox: true },
+                { field: 'CategoryName', title: '商品类别' },
+                { field: 'Name', title: '商品名称' },
+                { field: 'ProductCode', title: '条形码' },
+                { field: 'UnitConversion', title: '单位换算' },
+                { field: 'Quantity', title: '数量(含赠)',align: 'right' },
+                { field: 'Amount', title: '金额',align: 'right',formatter: function (value, row, index) {
+                        return $(this).currencyFormat(value, 2);
+                    }  }
+            ],
+            onPageChange: function (number, size) {
+                m_pagerow = (number - 1) * size;
+            },
+            onLoadSuccess: function (data) {
+                //console.log('load');
+            }
+        });
+
+    });
+</script>

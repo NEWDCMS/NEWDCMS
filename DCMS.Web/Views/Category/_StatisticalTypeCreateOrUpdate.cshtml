@@ -1,0 +1,24 @@
+﻿@using DCMS.ViewModel.Models.Products;
+@model StatisticalTypeModel
+
+@Html.HiddenFor(model => model.Id)
+
+<div class="form-group">
+	<label asp-for="Name" asp-postfix=":" class="col-lg-3 control-label"/>
+	<div class="col-lg-4">
+		<input asp-for="Name" class = "form-control" placeholder = "名称..."/>
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.Name)
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="Value" asp-postfix=":" class="col-lg-3 control-label"/>
+	<div class="col-lg-4">
+		<input asp-for="Value" class = "form-control" placeholder = "Value..."/>
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.Value)
+	</div>
+</div>

@@ -1,0 +1,73 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+@model RecordingVoucherModel
+
+<input asp-for="Id" type="hidden" />
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-warning alert-dismissable mt10 mb10">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+<div class="row mtn mb10">
+    <div class="col-md-2">
+        <div class="input-group date">
+            <span class="input-group-addon cursor">凭证字</span>
+            <input asp-for="RecordName" class="form-control" placeholder="凭证字..." readonly="readonly" />
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="input-group date">
+            <span class="input-group-addon cursor">记号</span>
+            <input asp-for="RecordNumber" class="form-control" placeholder="号..." readonly="readonly" />
+        </div>
+    </div>
+    <div class="col-md-2">
+        <dcms-editor asp-for="RecordTime" placeholder="交易日期..." asp-disabled="@(Model.AuditedStatus)" />
+    </div>
+</div>
+
+
+
+
+@if (Model.Id != 0)
+{
+    <div class="row mtn mb10">
+        <div class="col-md-3 pt20">
+            <div class="form-group mbn">
+                <lable class="col-lg-3 control-label">单据编号：</lable>
+                <div class="col-lg-9">
+                    <input asp-for="BillNumber" class="form-control-bb input-sm pbn pln prn" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 pt20">
+            <div class="form-group mbn">
+                <lable class="col-lg-3 control-label">制单：</lable>
+                <div class="col-lg-9">
+                    <input asp-for="MakeUserName" class="form-control-bb input-sm pbn pln prn" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 pt20">
+            <div class="form-group mbn">
+                <lable class="col-lg-3 control-label">审核：</lable>
+                <div class="col-lg-9">
+                    <input asp-for="AuditedUserName" class="form-control-bb input-sm pbn pln prn" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row mt10 mb10">
+    <div class="col-md-12">
+        <table id="VoucherItems" class="table table-striped table-bordered table-hover"></table>
+    </div>
+</div>
+

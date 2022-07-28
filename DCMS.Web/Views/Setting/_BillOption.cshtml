@@ -1,0 +1,209 @@
+﻿
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model CompanySettingModel
+
+
+<div class="form-group">
+    <label asp-for="DefaultPricePlan" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <dcms-select asp-for="DefaultPricePlan" asp-items="@Model.DefaultPricePlans" class="form-control" />
+    </div>
+    <div class="col-lg-7">
+        1、默认成本价：销售订单、销售单、退货订单、退货单在开单时，默认显示的价格为默认成本价<br />
+    </div>
+</div>
+
+ @*<div class="form-group">
+    <label asp-for="DefaultPolicyPrice" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <dcms-select asp-for="DefaultPolicyPrice" asp-items="@Model.DefaultPolicyPrices" class="form-control" />
+    </div>
+    <div class="col-lg-7">
+        1、默认销售价：销售订单、销售单、退货订单、退货单在开单时选择政策商品，默认显示的价格为默认销售价<br />
+    </div>
+</div>*@ 
+
+<div class="form-group">
+    <label asp-for="DefaultPurchasePrice" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <dcms-select asp-for="DefaultPurchasePrice" asp-items="@Model.DefaultPurchasePrices" class="form-control" />
+    </div>
+    <div class="col-lg-7">
+        1、上次进价：采购订单、采购单在开单时，默认显示的价格为上一次开单时使用的价格。<br />
+        2、预设进价：开单时取商品档案中设定的进价。
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="VariablePriceCommodity" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <dcms-select asp-for="VariablePriceCommodity" asp-items="@Model.VariablePriceCommodities" class="form-control" />
+    </div>
+    <div class="col-lg-7">
+        销售，退货商品价格与设置的参考价格不一致时，发生颜色变化，并提示变价字样。
+    </div>
+</div>
+
+<div class="form-group" style="display:none;">
+    <label asp-for="AccuracyRounding" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <dcms-select asp-for="AccuracyRounding" asp-items="@Model.AccuracyRoundings" class="form-control" />
+    </div>
+    <div class="col-lg-7">
+        销售单，退货单，订货单在合计金额时，只精确到所设定的单位，超过设定部分的金额会舍去。例：实际金额为（1152.85）<br />
+        1、元：显示为 1152<br />
+        2、角：显示为 1152.8<br />
+        3、分：显示为 1152.85
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="MakeBillDisplayBarCode" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <dcms-select asp-for="MakeBillDisplayBarCode" asp-items="@Model.MakeBillDisplayBarCodes" class="form-control" />
+    </div>
+    <div class="col-lg-7">
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="AllowSelectionDateRange" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <div class="input-group">
+            <input asp-for="AllowSelectionDateRange" class="form-control" />
+            <span class="input-group-addon">天</span>
+        </div>
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="DockingTicketPassSystem" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.DockingTicketPassSystem, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        可将销售单，销售订单上传至票证通系统
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="AllowReturnInSalesAndOrders" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.AllowReturnInSalesAndOrders, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        简化销售和退货操作，便于合计金额
+    </div>
+</div>
+<div class="form-group">
+    <label asp-for="SubmitExchangeBillAutoAudits" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.SubmitExchangeBillAutoAudits, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7"></div>
+</div>
+
+<div class="form-group">
+    <label asp-for="AppMaybeDeliveryPersonnel" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.AppMaybeDeliveryPersonnel, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        可以为销售单、退货单指定送货员
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="AppSubmitOrderAutoAudits" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.AppSubmitOrderAutoAudits, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="AppSubmitTransferAutoAudits" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.AppSubmitTransferAutoAudits, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="AppSubmitExpenseAutoAudits" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.AppSubmitExpenseAutoAudits, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="AppSubmitBillReturnAutoAudits" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.AppSubmitBillReturnAutoAudits, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="AppAllowWriteBack" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.AppAllowWriteBack, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="AllowAdvancePaymentsNegative" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.AllowAdvancePaymentsNegative, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        销售订单、退货订单、销售单、退货单、收款单，使用预收款支付时，支持预收款可以被支付成负数
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="ShowOnlyPrepaidAccountsWithPrepaidReceipts" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.ShowOnlyPrepaidAccountsWithPrepaidReceipts, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="AutoApproveConsumerPaidBill" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.AutoApproveConsumerPaidBill, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        APP提交收款单后，系统自动审核
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="TasteByTasteAccountingOnlyPrintMainProduct" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.TasteByTasteAccountingOnlyPrintMainProduct, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        可以指定销售单，销售订单，退货单，退货订单中的分口味商品，只打印主商品
+    </div>
+</div>
+

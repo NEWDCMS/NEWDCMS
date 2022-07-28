@@ -1,0 +1,117 @@
+﻿
+@using DCMS.ViewModel.Models.Campaigns;
+@model CampaignModel
+
+@if (!ViewData.ModelState.IsValid)
+{
+	<div class="alert alert-warning alert-dismissable mt10 mb10">
+		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+		<div asp-validation-summary="All"></div>
+	</div>
+}
+
+@Html.HiddenFor(model => model.Id)
+
+<div class="form-group">
+	<label asp-for="Name" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<input asp-for="Name" class="form-control" placeholder="名称..." />
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.Name)
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="StartTime" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<dcms-editor asp-for="StartTime" placeholder="开始..." />
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.StartTime)
+	</div>
+</div>
+
+
+<div class="form-group">
+	<label asp-for="EndTime" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<dcms-editor asp-for="EndTime" placeholder="结束..." />
+	</div>
+	<div class="col-lg-4">
+		@Html.DCMSValidationMessageFor(model => model.EndTime)
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="Channels" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+
+		@if (Model.Channels != null && Model.Channels.Count > 0)
+		{
+			foreach (var channel in Model.Channels)
+			{
+				<label class="mt10 mr10">
+					<input type="checkbox" name="SelectedChannelIds" value="@channel.Id"
+						   @if (Model.SelectedChannelIds != null && Model.SelectedChannelIds.Contains(channel.Id)) { <text> checked="checked" </text> 					
+						   } />
+					@channel.Name
+				</label>
+			}
+		}
+		else
+		{
+			<div class="alert alert-warning alert-micro">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+				<i class="fa fa-warning pr10"></i>
+				<strong>警告!</strong> 渠道信息不存在或者系统没有指定初始值.
+			</div>
+		}
+	</div>
+	<div class="col-lg-4"></div>
+</div>
+
+<div class="form-group">
+	<label asp-for="Enabled" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<label class="checkbox-inline">
+			@Html.CheckBoxFor(model => model.Enabled, new { @class = "mt15" })
+		</label>
+	</div>
+	<div class="col-lg-4"></div>
+</div>
+
+
+
+<div class="form-group">
+	<label asp-for="BillNumber" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<input asp-for="BillNumber" class="form-control" readonly="readonly" />
+	</div>
+	<div class="col-lg-4">
+	</div>
+</div>
+<div class="form-group">
+    <label asp-for="ProtocolNum" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="ProtocolNum" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>
+<div class="form-group">
+	<label asp-for="MakeUserId" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<input asp-for="MakeUserName" class="form-control" readonly="readonly" />
+	</div>
+	<div class="col-lg-4">
+	</div>
+</div>
+<div class="form-group">
+	<label asp-for="CreatedOnUtc" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-4">
+		<input asp-for="CreatedOnUtc" class="form-control" readonly="readonly" />
+	</div>
+	<div class="col-lg-4">
+	</div>
+</div>

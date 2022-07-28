@@ -1,0 +1,137 @@
+﻿
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model CompanySettingModel
+
+<div class="form-group">
+    <label asp-for="OnStoreStopSeconds" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <div class="input-group">
+            <input asp-for="OnStoreStopSeconds" class="form-control" />
+            <span class="input-group-addon">分钟</span>
+        </div>
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="SalesmanDeliveryDistance" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <div class="input-group">
+            <input asp-for="SalesmanDeliveryDistance" class="form-control" />
+            <span class="input-group-addon">米</span>
+        </div>
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="EnableSalesmanTrack" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-1">
+        @Html.CheckBoxFor(model => model.EnableSalesmanTrack, new { @class = "mt15" })
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="col-lg-3">
+    </div>
+    <div class="col-lg-2">
+        <input type="text" class="form-control" id="Start" name="Start" value="@(Model.Start)" />
+    </div>
+    <div class="col-lg-2">
+        <input type="text" class="form-control" id="End" name="End" value="@(Model.End)" />
+    </div>
+    <div class="col-lg-3">
+        App打开后，会自动根据所设定的频率上报位置。
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="FrequencyTimer" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <div class="input-group">
+            <input asp-for="FrequencyTimer" class="form-control" />
+            <span class="input-group-addon">秒</span>
+        </div>
+    </div>
+</div>
+
+<div class="form-group" style="display:none;">
+    <label asp-for="SalesmanOnlySeeHisCustomer" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.SalesmanOnlySeeHisCustomer, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        开单选客户，查看应收款等操作时，只能看到自己片区的客户
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="SalesmanVisitStoreBefore" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.SalesmanVisitStoreBefore, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        该功能可以帮业务员养成拜访门店的习惯
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="SalesmanVisitMustPhotographed" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.CheckBoxFor(model => model.SalesmanVisitMustPhotographed, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="DoorheadPhotoNum" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.TextBoxFor(model => model.DoorheadPhotoNum, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        默认门头照片拍照数量
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="DisplayPhotoNum" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        @Html.TextBoxFor(model => model.DisplayPhotoNum, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        默认陈列照片拍照数量
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="EnableBusinessTime" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-1">
+        @Html.CheckBoxFor(model => model.EnableBusinessTime, new { @class = "mt15" })
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="col-lg-3">
+    </div>
+    <div class="col-lg-2">
+        <input type="text" class="form-control" id="BusinessStart" name="BusinessStart" value="@(Model.BusinessStart)" />
+    </div>
+    <div class="col-lg-2">
+        <input type="text" class="form-control" id="BusinessEnd" name="BusinessEnd" value="@(Model.BusinessEnd)" />
+    </div>
+    <div class="col-lg-3">
+        打开后,移动端只能在时间范围内开展业务
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="EnableBusinessVisitLine" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-1">
+        @Html.CheckBoxFor(model => model.EnableBusinessVisitLine, new { @class = "mt15" })
+    </div>
+</div>

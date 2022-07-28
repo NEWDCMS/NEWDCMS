@@ -1,0 +1,141 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Terminals;
+
+@model TerminalListModel
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="input-group mb5">
+			<input type="text" id="txt_SearchTerminalStr" class="form-control" placeholder="终端关键字..." onkeydown="if(event.keyCode==13){event.keyCode=0;event.returnValue=false;}">
+			<span class="input-group-btn">
+				<button id="btn_PopTerminalQuery" type="button" class="btn btn-primary" style="border:1px solid #dddddd;"><span class="glyphicon glyphicon-search"></span> 搜索</button>
+			</span>
+		</div>
+		<table class="table table-striped table-hover" id="terminals_datatable"></table>
+	</div>
+</div>
+
+<script type="text/javascript">
+	$(function () {
+
+        $('body').on('hide.bs.modal', function () {
+            document.onkeydown = undefined;
+        });
+
+		//终端列表
+		$("#terminals_datatable").bootstrapTable({
+			url: "/Terminal/AsyncList",
+			method: 'get',
+			striped: true,
+			cache: false,
+			pagination: true,
+			queryParams: function (params) {
+				var temp =
+				{
+					key: $("#txt_SearchTerminalStr").val(),
+					pageSize: params.limit,
+					pageIndex: (params.offset / params.limit),
+					status: true
+				};
+				return temp;
+			},
+			sidePagination: "server",
+			idField: 'Id',
+			pageNumber: 1,
+			pageSize: 10,
+			search: false,
+			strictSearch: true,
+			showRefresh: false,
+			clickToSelect: false,
+			uniqueId: "Id",
+			showToggle: false,
+			cardView: false,
+			detailView: false,
+			columns: [
+				{ checkbox: true,visible: true },
+                { field: 'id', visible: false },
+                { field: 'HasGives', visible: false },
+                { field: 'ChannelId', visible: false },//MaxAmountOwed
+				{ field: 'Name', title: '名称',align: 'left' },
+                { field: 'BossName', title: '老板名称',align: 'left' },
+				{ field: 'BossCall', title: '联系方式',align: 'center' },
+				{
+                    field: 'MaxAmountOwed',
+                    title: '最大欠款额度',
+					align: 'right',
+                    formatter: function (value, row, index)
+                    {
+	                    return '￥'+parseFloat(value).toFixed(2);
+                    }
+                },
+				{
+					field: 'operate', title: '操作', align: 'center', width: '100',
+					events: operateEventsPopTerminal,
+                    formatter: function (value, row, index)
+                    {
+	                    return [
+                                '<button type="button" class="btn btn-sm btn-info rowSelect" data-id="@Model.RowIndex" data-target="@Model.Target"><i class="fa fa-pencil-square-o"></i>&nbsp;选择</button>'
+                            ].join('');
+					}
+				}
+			],
+			onPageChange: function (number, size) {
+				m_pagerow = (number - 1) * size;
+			},
+			onLoadSuccess: function (data) {
+				//console.log('load');
+			},
+			onLoadError: function (a, b) {  //加载失败时执行
+				console.log('加载数据失败');
+			}
+		});
+
+
+        var searchTerminal = function () {
+            var keys = $("#txt_SearchTerminalStr").val();
+            if (keys == "") {
+                $(this).showToastr('请输入关键字！');
+                return false;
+            }
+            $("#terminals_datatable").bootstrapTable('refresh');
+		}
+
+		//查询
+        $("#btn_PopTerminalQuery").on('click', function ()
+        {
+			searchTerminal();
+		});
+
+        //保存选择
+        $("#btnSave_TerminalSelectModalWindow").click(function () {
+            var arrselections = $.map($("#products_datatable").bootstrapTable('getSelections'), function (row) {
+                return row.Id
+            });
+            if (arrselections.length <= 0) {
+                $(this).showToastr('请选择有效数据');
+                return;
+            }
+		});
+
+        $("#btn_PopTerminalQuery").keypress(function (even) {
+            if (even.which == 13) {
+                searchTerminal();
+            }
+        });
+
+        document.onkeydown = function (event) {
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if (e && e.keyCode == 27) { // 按 Esc
+
+            }
+            if (e && e.keyCode == 113) { // 按 F2
+
+            }
+            if (e && e.keyCode == 13) {
+                // enter 键
+                searchTerminal();
+            }
+        };
+	});
+</script>

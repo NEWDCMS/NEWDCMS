@@ -1,0 +1,680 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.ViewModel.Models.Users;
+
+@model UserListModel
+
+<input id="BranchId" type="hidden" />
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">档案</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">员工相关</a>
+                </li>
+                <li class="crumb-trail">员工档案</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <form asp-action="List" asp-controller="User" method="get" id="formSearch" novalidate="novalidate">
+                    <div class="panel panel-default" id="panel0">
+                        <div class="panel-heading">
+                            <span class="glyphicon glyphicon-search"></span> 高级搜索
+                            <a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedSearch"><i class="fa fa-angle-double-right"></i></a>
+                        </div>
+                        <div class="panel-body p10">
+                            <div class="row">
+
+                                <div class="col-sm-3">
+                                    <input asp-for="SearchUsername" class="form-control" placeholder="用户名称..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-editor asp-for="StartTime" placeholder="注册从...日" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-editor asp-for="EndTime" placeholder="到...日" />
+                                </div>
+                                <div class="col-sm-5">
+                                    <button id="btn_query" class="btn btn-primary btn-block">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-2">
+
+                @*Catagory Tree*@
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="pull-left">
+                            部门组织
+                        </div>
+                        <div class="pull-right">
+                            <a id="btn_add_branch" href="javascript:;" class="mr5"><span class="glyphicon glyphicon-plus"></span></a>
+                            <a id="btn_edit_branch" href="javascript:;" class="mr5"><span class="glyphicon glyphicon-pencil"></span></a>
+                            <a id="btn_del_branch" href="javascript:;" class="mr5"><span class="glyphicon glyphicon-trash"></span></a>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <input type="hidden" name="BranchsId" id="BranchsId" value="0" />
+                        <div id="BranchsTreeData"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-10">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 用户列表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+
+
+                        <div class="bootstrap-table-">
+
+                            <div id="toolbar" class="btn-group mb10">
+                                <a href="@Url.Action("Create","User")" target="_blank" class="btn btn-primary btn-sm mr5">
+                                    <span class="glyphicon glyphicon-plus mr5"></span>快速添加
+                                </a>
+                                <button class="btn btn-sm btn-default" type="button" id="btn_refresh" name="refresh" aria-label="refresh" title="刷新"><i class="glyphicon glyphicon-refresh icon-refresh"></i></button>
+                            </div>
+
+                            <table class="table table-striped table-bordered table-hover" id="datatable" />
+
+                        </div>
+
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+
+    <!-- End: Content -->
+</section>
+@{
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "UserForm" }, { "modalWindow", "UserWindow" }, { "showSave", "true" } });
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "BranchForm" }, { "modalWindow", "BranchWindow" }, { "showSave", "true" } });
+    await Html.RenderPartialAsync("_SettingModal", new ViewDataDictionary(ViewData) { { "showSave", "true" } });
+}
+
+
+@section CurPageScripts
+{
+    <script src="@LayoutExtensions.ResourceServerUrl("/vendor/plugins/fancytree/jquery.fancytree-all.min.js?v=3.0.0.1")"></script>
+    <script type="text/javascript">
+
+        function numberFormatter(value, row, index) {
+            return m_pagerow + index + 1;
+        }
+
+        function strEnabledFormatter(value, row, index) {
+            if (value === 'false') {
+                return "否";
+            } else {
+                return "是";
+            }
+        }
+
+        function nameFormatter(value, row) {
+            var icon = row.Id % 2 === 0 ? 'glyphicon-star' : 'glyphicon-star-empty'
+            return '<i class="glyphicon ' + icon + '"></i> ' + value;
+        }
+
+        function priceFormatter(value) {
+            // 16777215 == ffffff in decimal
+            var color = '#' + Math.floor(Math.random() * 6777215).toString(16);
+            return '<div  style="color: ' + color + '">' +
+                '<i class="glyphicon glyphicon-usd"></i>' +
+                value.substring(1) +
+                '</div>';
+        }
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+			//权限提示
+			if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+				$('#alert-demo-2').fadeToggle();
+				setTimeout(function () {
+					$('#alert-demo-2').fadeToggle();
+				}, 3000);
+			}
+
+			//全选
+			$("input[name='btSelectAll']").click(function () {
+				var selectStatus = $(this).is(':checked')
+				if (selectStatus) {
+					$("input[name='btSelectItem']").each(function (i, n) {
+						n.checked = true;
+					});
+				} else {
+					$("input[name='btSelectItem']").each(function (i, n) {
+						n.checked = false;
+					});
+				}
+			});
+
+			//高级搜索
+			$("#panel0 #AdvancedSearch").click(function () {
+				var ico = $(this).find(".fa");
+				if (ico.hasClass('fa-angle-double-right'))
+					ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+				else
+					ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+				$("#panel0").find(".panel-body").toggleClass("hidden fadeIn");
+			});
+
+            // daterange plugin options
+            var rangeOptions = {
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
+                    'Last 7 Days': [moment().subtract('days', 6), moment()],
+                    'Last 30 Days': [moment().subtract('days', 29), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
+                },
+                startDate: moment().subtract('days', 29),
+                endDate: moment()
+            }
+
+            var $formSection = $(".formSection");
+
+            //刷新
+            $("#btn_refresh", $formSection).click(function ()
+            {
+                //location.href = "@Url.Action("List")";
+                $("#datatable").bootstrapTable('refresh');
+            });
+
+             //查询
+            $("#btn_query").click(function () {
+                $("#datatable").bootstrapTable('refresh',
+                    { url: "/User/UserSimplifiedList?searchUsername=" + $("#SearchUsername").val()+"&startTime="+ $("#StartTime").val()+"&endTime="+ $("#EndTime").val() });
+            });
+
+             /*商品组织机构树*/
+            $("#BranchsTreeData").fancytree({
+                extensions: ["dnd", "edit"],
+                source: {
+                    url: "/Branch/GetFancyTree"
+                },
+                dnd: {
+                    autoExpandMS: 400,
+                    focusOnClick: true,
+                    preventVoidMoves: true,
+                    preventRecursiveMoves: true,
+                    dragStart: function (node, data) {
+                        return true;
+                    },
+                    dragEnter: function (node, data) {
+                        return true;
+                    },
+                    dragDrop: function (node, data) {
+                        data.otherNode.moveTo(node, data.hitMode);
+                    }
+                },
+                activate: function (event, data) {
+                },
+                lazyLoad: function (event, data) {
+                    data.result = $.ajax({
+                        url: "/Branch/GetFancyTree",
+                        dataType: "json"
+                    });
+                },
+                click: function (event, data)
+                {
+                    $("#BranchsId").val(data.node.data.id);
+                    $("#datatable").bootstrapTable('refresh');
+
+                },
+            });
+
+            $("#btnSelect").click(function (event) {
+                var node = $("#BranchsTreeData").fancytree("getActiveNode");
+                node.setSelected(!node.isSelected());
+            });
+            $("#btnRemove").click(function (event) {
+                var node = $("#BranchsTreeData").fancytree("getActiveNode");
+                node.remove();
+            });
+            //获取Id为tree的Fancytree对象
+            var $fancytree = $("#BranchsTreeData").fancytree("getTree");
+            //获取tree的根节点
+            $("#BranchsTreeData").fancytree("getRootNode");
+
+            //添加机构
+            $("#btn_add_branch").click(function () {
+                var actionUrl = "/Branch/Create";
+                $(this).showModalAndSubmit($("#BranchWindow"), actionUrl, null, "添加机构", $("#BranchForm"), function () {
+                    //表单验证
+                    jQuery.validator.addMethod("notZero", function (value, element, param) {
+                        return this.optional(element) || (value != 0);
+                    }, "请确保输入的值不为零");
+                    var validator = $("#BranchForm").validate({
+                        /* @@validation states + elements
+                        ------------------------------------------- */
+                        errorClass: "text-danger",
+                        validClass: "text-success",
+                        errorElement: "em",
+                        /* @@validation rules
+                        ------------------------------------------ */
+                        rules: {
+                            ParentId: {
+                                required: true
+                            },
+                            DeptName: {
+                                required: true
+                            }
+                        },
+                        messages: {
+                            ParentId: {
+                                required: '请选择父类'
+                            },
+                            DeptName: {
+                                required: '请输入部门名称'
+                            }
+                        },
+                        /* @@validation highlighting + error placement
+                        ---------------------------------------------------- */
+                        highlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                        },
+                        unhighlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                        },
+                        errorPlacement: function (error, element) {
+                            if (element.is(":radio") || element.is(":checkbox")) {
+                                element.closest('.option-group').after(error);
+                            } else {
+                                //error.insertAfter(element.parent());
+                                element.parent().append(error);
+                            }
+                        },
+                        submitHandler: function (form) {
+                            //alert("submitted");
+                            form.submit();
+                        }
+                    });
+                    $(this).saveModalV2($("#BranchWindow"), $("#datatable"), $("#BranchForm"));
+                    //$("#BranchsTreeData").fancytree();
+                    window.location.href = "/User/List";
+                });
+
+             });
+
+            //编辑机构
+            $("#btn_edit_branch").click(function () {
+                var actionUrl = "/Branch/Edit";
+                var node = $("#BranchsTreeData").fancytree("getActiveNode");
+                if (node == null) {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                var param = { id: node.data.id };
+                $(this).showModalAndSubmit($("#BranchWindow"), actionUrl, param, "编辑机构", $("#BranchForm"), function () {
+                    //表单验证
+                    jQuery.validator.addMethod("notZero", function (value, element, param) {
+                        return this.optional(element) || (value != 0);
+                    }, "请确保输入的值不为零");
+                    var validator = $("#BranchForm").validate({
+                        /* @@validation states + elements
+                        ------------------------------------------- */
+                        errorClass: "text-danger",
+                        validClass: "text-success",
+                        errorElement: "em",
+                        /* @@validation rules
+                        ------------------------------------------ */
+                        rules: {
+                            ParentId: {
+                                required: true
+                            },
+                            DeptName: {
+                                required: true
+                            }
+                        },
+                        messages: {
+                            ParentId: {
+                                required: '请选择父类'
+                            },
+                            DeptName: {
+                                required: '请输入部门名称'
+                            }
+                        },
+                        /* @@validation highlighting + error placement
+                        ---------------------------------------------------- */
+                        highlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                        },
+                        unhighlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                        },
+                        errorPlacement: function (error, element) {
+                            if (element.is(":radio") || element.is(":checkbox")) {
+                                element.closest('.option-group').after(error);
+                            } else {
+                                //error.insertAfter(element.parent());
+                                element.parent().append(error);
+                            }
+                        },
+                        submitHandler: function (form) {
+                            //alert("submitted");
+                            form.submit();
+                        }
+                    });
+                    $(this).saveModalV2($("#BranchWindow"), $("#datatable"), $("#BranchForm"));
+                    $("#BranchsTreeData").fancytree();
+                });
+            });
+            $("#btn_del_branch").click(function () {
+                var node = $("#BranchsTreeData").fancytree("getActiveNode");
+                if (node == null) {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    $(this).remoteSubmit("post", "/Branch/Delete", { id: node.data.id }, null, function () {
+                       $("#BranchsTreeData").fancytree();
+                    });
+                });
+            });
+
+             //员工列表
+            $("#datatable").bootstrapTable({
+                    url: "/User/UserSimplifiedList",         //请求后台的URL（*）
+                    method: 'get',                      //请求方式（*）
+                    striped: true,                      //是否显示行间隔色
+                    cache: false,
+                    //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    pagination: true,
+                    showPagination: true,
+                    queryParams: function (params) {
+                        var temp =
+                        {
+                            SearchUsername: $("#SearchUsername").val(),
+                            Branchid: $("#BranchsId").val(),
+                            pagesize: params.limit,   //页面显示行数
+                            pagenumber: (params.offset / params.limit)  //页码
+                        };
+                        return temp;
+                    },
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    idField: 'Id',
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 30,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    search: false,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+                    strictSearch: true,
+                    showRefresh: false,                  //是否显示刷新按钮
+                    clickToSelect: false,                //是否启用点击选中行
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    showToggle: false,                    //是否显示详细视图和列表视图的切换按钮
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    columns: [
+                        {
+                            title: '<i class="fa fa-gear fs18"></i>',
+                            width: '52',
+                            align: 'center',
+                            formatter: function (value, row, index) {
+                                return m_pagerow + index + 1;
+                            }
+                        },
+                        { field: 'Username', title: '用户名',align: 'left' },
+                        { field: 'UserRealName', title: '真实姓名',align: 'left' },
+                        { field: 'MobileNumber', title: '手机号',align: 'center' },
+                        {
+                            field: 'UserRoleNames', title: '账户类型', align: 'center',
+                            formatter: function (value, row, index)
+                            {
+                                return value + '<br/> <b>最后活动:</b>'+ row.LastActivityDate;
+                            }
+                        },
+                    //{
+                    //    field: 'CreatedOn', title: '注册时间', align: 'center', formatter: function (value, row, index) {
+                    //        return changeDateFormat(value)
+                    //    }
+                    //},
+       /*             { field: 'UnitName', title: '是否激活', align: 'center', formatter: statusFormatter },*/
+                    { field: 'operate', title: '操作', align: 'center', width: '500', events: operateEvents, formatter: operateFormatter }
+                ],
+
+                onPageChange: function (number, size) {
+                    m_pagerow = (number - 1) * size;
+                },
+                onLoadSuccess: function (data) {
+                    //console.log('load');
+                }
+                });
+
+            // 是否激活
+            function statusFormatter(value, row, index) {
+                    if (value) {
+                        return '<div class="switch switch-primary"><input  type="radio"  checked=true><label  class="mbn" /></div>';
+                    } else {
+                        return  '<div class="switch switch-primary"><input  type="radio"  checked=false><label  class="mbn" /></div>'
+                    }
+                }
+
+             // 格式化按钮
+            function operateFormatter(value, row, index)
+            {
+                if (row.UseACLMobile == false)
+                {
+                    return [
+                        '<button type="button" class="btn btn-sm btn-info rowedit"><i class="fa fa-pencil-square-o mr5" ></i>编辑</button>',
+                        '<button type="button" class="btn btn-sm btn-primary AddRole"><i class="fa fa-user mr5" ></i>设置角色</button>',
+                        '<button type="button" class="btn btn-sm btn-info Subordinates"><i class="fa fa-users mr5" ></i>直属下级</button>',
+                        '<button type="button" class="btn btn-sm btn-info resetPassword"><i class="fa fa-refresh mr5" ></i>重置密码</button>',
+                        '<button type="button" class="btn btn-sm btn-danger rowdel"><i class="fa fa-trash-o mr5" ></i>删除</button>'
+                    ].join('');
+                }
+                else
+                {
+                    return [
+                        '<button type="button" class="btn btn-sm btn-info rowedit"><i class="fa fa-pencil-square-o mr5" ></i>编辑</button>',
+                        '<button type="button" class="btn btn-sm btn-primary AddRole"><i class="fa fa-user mr5" ></i>设置角色</button>',
+                        '<button type="button" class="btn btn-sm btn-info Subordinates"><i class="fa fa-users mr5" ></i>直属下级</button>',
+                        '<button type="button" class="btn btn-sm btn-warning appModuleAcl"><i class="fa fa-refresh mr5" ></i>APP访问</button>',
+                        '<button type="button" class="btn btn-sm btn-info resetPassword"><i class="fa fa-refresh mr5" ></i>重置密码</button>',
+                        '<button type="button" class="btn btn-sm btn-danger rowdel"><i class="fa fa-trash-o mr5" ></i>删除</button>'
+                    ].join('');
+                }
+            }
+
+            function changeDateFormat(cellval) {
+               var d = new Date(cellval)
+              var a= d.getFullYear() + '-' + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : d.getMonth() + 1) + '-' + (d.getDate()<10 ? "0" +d.getDate():d.getDate())+ ' ' + (d.getHours()<10 ?"0"+d.getDate():d.getDate()) + ':' + (d.getMinutes()<10 ? "0" + d.getMinutes(): d.getMinutes()) + ':' + (d.getSeconds()<10 ? "0" + d.getSeconds() : d.getSeconds() );
+              return a
+            };
+        });
+        var passwordStrength = function (password) {
+            var ChpsResult = { RSL: false, MSG: "" };
+            if (password.length < 8 || password.length > 16) {
+                ChpsResult.RSL = false;
+                ChpsResult.MSG = "密码长度不符合，密码长度：8-16";
+                return ChpsResult;
+            }
+            if (!password.match(/[0-9a-zA-Z\x21-\x7e]{8,16}/g)) {
+                ChpsResult.RSL = false;
+                ChpsResult.MSG = "密码只能包含数字，字母和字符";
+                return ChpsResult;
+            }
+            //字符统计
+            var iNum = 0;
+            var iLtt = 0;
+            var iSym = 0;
+            for (var i = 0; i < password.length; i++) {
+                var c = password.charAt(i).toLowerCase();
+                if (c >= '0' && c <= '9') iNum++;
+                else if (c >= 'a' && c <= 'z') iLtt++;
+                else if (c >= 'A' && c <= 'Z') iLtt++;
+                else iSym++;
+            }
+            if (iLtt == 0 && iSym == 0) {
+                ChpsResult.RSL = false;
+                ChpsResult.MSG = "纯数字密码，请加入字符和字母";
+                return ChpsResult;
+            }
+            if (iNum == 0 && iLtt == 0) {
+                ChpsResult.RSL = false;
+                ChpsResult.MSG = "纯符号密码，请加入数字和字母";
+                return ChpsResult;
+            }
+            if (iNum == 0 && iSym == 0) {
+                ChpsResult.RSL = false;
+                ChpsResult.MSG = "纯字母密码，请加入数字和字母";
+                return ChpsResult;
+            }
+            if (iLtt == 0) {
+                ChpsResult.RSL = false;
+                ChpsResult.MSG = "数字和符号构成的密码，请加入字母";
+                return ChpsResult;
+            }
+            if (iSym == 0) {
+                ChpsResult.RSL = false;
+                ChpsResult.MSG = "数字和字母构成的密码，请加入字符";
+                return ChpsResult;
+            }
+            if (iNum == 0) {
+                ChpsResult.RSL = false;
+                ChpsResult.MSG = "字母和符号构成的密码，请加入数字";
+                return ChpsResult;
+            }
+            ChpsResult.RSL = true;
+            ChpsResult.MSG = "密码符合";
+            return ChpsResult;
+        };
+        //初始化操作按钮的方法
+        window.operateEvents =
+        {
+            'click .AddRole': function (e, value, row, index)
+            {
+                    var actionUrl = "/UserRole/AddRole";
+				    var param = { id: row.Id };
+				    $(this).showModalAndSubmit($("#UserWindow"), actionUrl, param, "授予角色", $("#UserForm"), function () {
+					    $(this).saveModalV2($("#UserWindow"), $("#datatable"), $("#UserForm"));
+				    });
+            },
+            'click .resetPassword': function (e, value, row, index)
+            {
+                //var actionUrl = "/User/ResetPassword?id=" + row.Id;
+                var actionUrl = "/User/ResetPassword";
+                var param = { id: row.Id };
+                $(this).showModalAndSubmit($("#UserWindow"), actionUrl, param, "重置密码", $("#UserForm"), function () {
+                    debugger;
+                    var chpsResult = passwordStrength($("#Password").val());
+                    if (!chpsResult.RSL) {
+                        var html = "<div class='alert alert-border-left alert-danger light alert-micro field-validation-alert'><button aria-hidden='false' class='close' data-dismiss='data-dismiss' type='button'></button><i class='fa fa-warning pr10'></i><span class='field-validation-valid' data-valmsg-for='Password' data-valmsg-replace='true'>" + chpsResult.MSG + "</span></div>";
+                        $("#msg").html(html);
+                        return false;
+                    }
+                    else {
+                        $("#msg").html("");
+                    }
+                    debugger;
+                    $(this).saveModalV2($("#UserWindow"), $("#datatable"), $("#UserForm"));
+                });
+            },
+            //APP模块访问控制
+            'click .appModuleAcl': function (e, value, row, index) {
+                var actionUrl = "/Permission/AppModuleAcl";
+                var param = { id: row.Id };
+                $(this).showModalAndSubmit($("#UserWindow"), actionUrl, param, "APP模块访问控制", $("#UserForm"), function () {
+                    $(this).saveModalV2($("#UserWindow"), $("#datatable"), $("#UserForm"));
+                });
+            },
+            //直属下级
+            'click .Subordinates': function (e, value, row, index) {
+                var actionUrl = "/Permission/Subordinates";
+                var param = { id: row.Id };
+                $(this).showModalAndSubmit($("#UserWindow"), actionUrl, param, "直属下级指定", $("#UserForm"), function () {
+                    $(this).saveModalV2($("#UserWindow"), $("#datatable"), $("#UserForm"));
+                });
+            },
+            'click .rowedit': function (e, value, row, index)
+            {
+                var actionUrl = "/User/Edit?id=" + row.Id;
+                window.location.href = actionUrl;
+                //window.open(actionUrl,"_blank");
+            },
+            'click .rowdel': function (e, value, row, index)
+            {
+                 var arrselections = [];
+                     arrselections.push(row.Id);
+                if (arrselections.length <= 0) {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    $(this).remoteSubmit("post", "/User/Delete", { ids: arrselections.join(",") }, $("#datatable"), null);
+                });
+            },
+        };
+    </script>
+}

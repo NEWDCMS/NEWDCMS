@@ -1,0 +1,41 @@
+﻿@using DCMS.ViewModel.Models.Configuration;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+
+@model RemarkConfigModel
+
+<input asp-for="Id" type="hidden" />
+
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-primary alert-dismissable mt10 mb10">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+
+
+<div class="form-group">
+    <label asp-for="Name" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="Name" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Name)
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="RemberPrice" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.DCMSBoolDropDownListFor(model => model.RemberPrice, "参与价格记忆", "是", "否", new { @class = "form-control" })
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.RemberPrice)
+    </div>
+</div>

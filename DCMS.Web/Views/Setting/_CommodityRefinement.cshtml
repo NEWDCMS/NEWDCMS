@@ -1,0 +1,44 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model CompanySettingModel
+
+
+<div class="form-group">
+    <label asp-for="OpenBillMakeDate" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <dcms-select asp-for="OpenBillMakeDate" asp-items="@Model.OpenBillMakeDates" />
+    </div>
+    <div class="col-lg-7">
+        1、关闭生产日期：将清除所有商品库存中的生产日期信息。<br />
+        2、虚拟生产日期：仅在开销售单时录入生产日期,一般用于打印生产日期。<br />
+        3、全面开启生产日期：开启后，商品档案中可启用生产日期。启用生产日期的商品在所有影响库存的单据中都必须指定生产日期。
+    </div>
+</div>
+
+
+
+<div class="form-group">
+    <label asp-for="MulProductPriceUnit" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-2">
+        <dcms-select asp-for="MulProductPriceUnit" asp-items="@Model.MulProductPriceUnits" />
+    </div>
+    <div class="col-lg-7">
+        1、各价格不严格按照单位换算率计算。<br />
+        2、价格严格按照单位换算率计算。
+    </div>
+</div>
+
+
+
+<div class="form-group">
+    <label asp-for="AllowCreateMulSameBarcode" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.AllowCreateMulSameBarcode, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>

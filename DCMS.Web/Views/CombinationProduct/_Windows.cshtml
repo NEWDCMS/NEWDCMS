@@ -1,0 +1,10 @@
+﻿@{
+    //客户选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+    //科目选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "AccountingForm" }, { "modalWindow", "AccountingModalWindow" } });
+    //商品选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ProductModalForm" }, { "modalWindow", "ModalProductWindows" }, { "windowWidth", "1000px" }, { "showSave", "true" }, { "showSave", "true" } });
+    //快速调拨
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "QuickAllocationForm" }, { "modalWindow", "QuickAllocationWindow" }, { "showSave", "true" } });
+}

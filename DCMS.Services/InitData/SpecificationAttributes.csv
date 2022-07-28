@@ -1,0 +1,32 @@
+[
+	{
+		"Id" : 1,
+		"StoreId" : 0,
+		"Name" : "包装",
+		"DisplayOrder" : 0
+	},
+	{
+		"Id" : 2,
+		"StoreId" : 0,
+		"Name" : "小单位",
+		"DisplayOrder" : 0
+	},
+	{
+		"Id" : 2,
+		"StoreId" : 0,
+		"Name" : "大单位",
+		"DisplayOrder" : 0
+	},
+	{
+		"Id" : 2,
+		"StoreId" : 0,
+		"Name" : "中单位",
+		"DisplayOrder" : 0
+	},
+	{
+		"Id" : 2,
+		"StoreId" : 0,
+		"Name" : "金额",
+		"DisplayOrder" : 0
+	}
+]

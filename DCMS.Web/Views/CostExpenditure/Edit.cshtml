@@ -1,0 +1,169 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+
+@model CostExpenditureBillModel
+
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">财务</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">财务单据</a>
+                </li>
+                <li class="crumb-trail">费用支出</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <form asp-action="Edit" asp-controller="CostExpenditure" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="CostExpenditureForm">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <div class="panel-title">
+                                <span class="glyphicon glyphicon-tasks"></span> 编辑费用支出
+                            </div>
+                        </div>
+                        <div class="panel-body p10 pt10">
+                            <div class="tab-block">
+                                <ul class="nav nav-tabs tabs-bg" id="CostExpenditureFormTab">
+                                    <li class="active">
+                                        <a href="#tab10_1" data-toggle="tab" data-id="0" aria-expanded="true"><i class="fa fa-align-justify text-purple"></i> 单据信息</a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div id="tab10_1" class="tab-pane active">
+                                        @await Html.PartialAsync("_CreateOrUpdate", Model)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="form-group mbn">
+                                <div class="col-lg-12">
+                                    <button id="FormSubmit" type="button" class="btn btn-primary ladda-button" data-style="zoom-out" value="保存" @(Model.AuditedStatus ? "disabled" : "")><i class="fa fa-floppy-o mr5"></i>保存</button>
+                                    <button id="FormSubmitContinue" type="button" class="btn btn-success ladda-button" data-style="zoom-out" name="save-continue" value="保存并继续" @(Model.AuditedStatus ? "disabled" : "")><i class="fa fa-clipboard mr5"></i>保存并继续</button>
+                                    <button id="btn_auditing" data-id="@Model.Id" type="button" class="btn btn-info ladda-button" data-style="zoom-out" @(Model.AuditedStatus ? "disabled" : "")><span class="glyphicon glyphicon-check mr5" aria-hidden="true"></span>审核</button>
+                                    <button id="btn_red" data-id="@Model.Id" type="button" class="btn btn-danger ladda-button" data-style="zoom-out" @((Model.AuditedStatus && !Model.ReversedStatus) ? "" : "disabled")><span class="glyphicon glyphicon-transfer mr5" aria-hidden="true"></span>红冲</button>
+                                    <button id="btn_print" type="button" class="btn btn-alert ladda-button" data-style="zoom-out" value="打印" @((Model.Id > 0) ? "" : "disabled")>
+                                        <i class="fa fa-floppy-o mr5"></i>打印
+                                    </button>
+                                    <button id="btn_cancel" type="button" class="btn btn-info ladda-button" data-style="zoom-out" @((Model.AuditedStatus || Model.ReversedStatus) ? "disabled" : "")><span class="glyphicon glyphicon-remove mr5" aria-hidden="true"></span>作废</button>
+                                    <a class="btn btn-warning" href="@Context.Request.Query["returnURL"]"><i class="fa fa-undo mr5"></i> 返回</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- End: Content -->
+</section>
+
+
+@await Html.PartialAsync("_Windows", Model)
+
+
+
+@{
+//Html.AddCssFileParts(ResourceLocation.Head, "~/assets/skin/default_skin/css/theme.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Toastr/toastr.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Tables/bootstrap-table.css");
+
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/datepicker/css/bootstrap-datetimepicker.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/daterange/daterangepicker.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/tagmanager/tagmanager.css");
+
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/fancytree/skin-win8/ui.fancytree.min.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Content/zTree.theme.metro.min.css");
+
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/spin/spin.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/ladda/ladda.min.css");
+}
+
+@section NewDefinFrameWorkScripts
+{
+    @{
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery-1.11.1.min.js", order: 999);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery_ui/jquery-ui.min.js", order: 999);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/bootstrap.min.js", order: 999);
+    }
+}
+
+
+
+
+@section CurPageScripts
+{
+    @{
+        @*Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.unobtrusive.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/jquery.treegrid.min.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery-ui-1.10.4.custom.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.PrintArea.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/locale/bootstrap-table-zh-CN.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table-treeview.js");
+
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/globalize.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/moment.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/moment-with-locales.js");
+
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/daterange/daterangepicker.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/datepicker/js/bootstrap-datetimepicker.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/jquerymask/jquery.maskedinput.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/tagmanager/tagmanager.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/fancytree/jquery.fancytree-all.min.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.ztree.all-3.5.min.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/spin/spin.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/ladda/ladda.min.js");*@
+    }
+
+    @await Html.PartialAsync("_Scripts", Model)
+}
+

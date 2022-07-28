@@ -1,0 +1,394 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.WareHouses;
+
+@model ScrapProductBillListModel
+@{
+    var refURL = Context.Request.GetAbsoluteUri();
+}
+
+<section id="content_wrapper">
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">仓库</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">仓库单据</a>
+                </li>
+                <li class="crumb-trail">报损单</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">  <span class="glyphicon glyphicon-search"></span> 查询条件</div>
+                    <div class="panel-body p10">
+                        @*打印区域*@
+                        <div id="printData"></div>
+                        <form asp-action="List" asp-controller="ScrapProduct" method="get" id="formSearch" novalidate="novalidate">
+
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="ChargePerson" asp-items="@Model.ChargePersons" asp-default="操作人" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="WareHouseId" asp-items="@Model.WareHouses" asp-default="仓库" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <input asp-for="BillNumber" class="form-control" placeholder="单据号..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select-bool asp-for="AuditedStatus" asp-items="@(new string[] {  "已审核", "未审核"})" asp-default="审核状态" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-editor asp-for="StartTime" placeholder="开始..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-editor asp-for="EndTime" placeholder="结束..." />
+                                </div>
+                            </div>
+                            <div class="row mt10">
+                                <div class="col-sm-2">
+                                    <dcms-select-bool asp-for="ShowReverse" asp-items="@(new string[] {  "是", "否"})" asp-default="显示红冲" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select-bool asp-for="SortByAuditedTime" asp-items="@(new string[] {  "是", "否"})" asp-default="按审核时间" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <input asp-for="Remark" class="form-control" placeholder="备注..." />
+                                </div>
+                                <div class="col-sm-6">
+                                    <button id="btn_query" type="submit" class="btn btn-primary btn-block">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 单据列表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+
+                        <!--Begin _Toolbar-->
+                        @await Html.PartialAsync("_Toolbar", Model)
+                        <!--End _Toolbar-->
+
+                        <div class="bootstrap-table">
+
+                            <div class="fixed-table-container">
+                                <div class="fixed-table-body">
+
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th class="bs-checkbox " style="text-align: center; vertical-align: middle; width: 36px; ">
+                                                    <div class="th-inner "><input name="btSelectAll" type="checkbox"></div>
+                                                </th>
+                                                <th class="text-center w150"><div class="th-inner">报损单编号</div></th>
+                                                <th class="text-center"><div class="th-inner">制单时间</div></th>
+                                                <th class="text-left"><div class="th-inner">操作员</div></th>
+                                                <th class="text-left"><div class="th-inner">仓库</div></th>
+                                                <th class="text-center"><div class="th-inner">状态</div></th>
+                                                <th class="text-center"><div class="th-inner">审核时间</div></th>
+                                                <th class="text-center"><div class="th-inner">销售来源</div></th>
+                                                <th class="text-center"><div class="th-inner">备注</div></th>
+                                                <th class="text-right  w50"><div class="th-inner">打印数</div></th>
+                                                <th class="text-center"><div class="th-inner">操作</div></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                int index = 0;
+                                                if (Model.Items == null || Model.Items.Count == 0)
+                                                {
+                                                    <tr class="no-records-found"><td colspan="11"> 没有找到匹配的记录 </td></tr>
+                                                }
+                                                else
+                                                {
+                                                    foreach (var item in Model.Items)
+                                                    {
+                                                        <tr>
+                                                            <td class="bs-checkbox ">
+                                                                <input data-index="@index" name="btSelectItem" class="btSelectItem" type="checkbox" value="@item.Id">
+                                                            </td>
+                                                            <td class="text-center"><a href="@Url.Action("Edit",new { id=item.Id ,returnURL= refURL})">@item.BillNumber</a></td>
+                                                            <td class="text-center">@(item.CreatedOnUtc.ToString("yyyy/MM/dd HH:mm:ss"))</td>
+                                                            <td class="text-left">@item.ChargePersonName</td>
+                                                            <td class="text-left">@item.WareHouseName</td>
+                                                            <td class="text-center">
+                                                                @Html.AuditedStatus(item.ReversedStatus, item.AuditedStatus)
+                                                            </td>
+                                                            <td class="text-center">@(item.AuditedDate.HasValue ? item.AuditedDate.Value.ToString("yyyy/MM/dd HH:mm:ss") : "")</td>
+                                                            <td class="text-center">
+                                                                @Html.Operation(item.Operation)
+                                                            </td>
+                                                            <td class="text-left">@item.Remark</td>
+                                                            <td class="text-right">@(item.PrintNum ?? 0)</td>
+                                                            <td class="text-center">
+                                                                <a class="btn btn-sm btn-primary" data-id="@item.Id" href="@Url.Action("Edit",new { id=item.Id })" target="_blank" title="编辑"><i class="glyphicon glyphicon-pencil mr5"></i> 编辑</a>
+                                                            </td>
+
+                                                        </tr>
+                                                        index++;
+                                                    }
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            @{
+                                var pager = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+                            }
+
+                            @if (!pager.IsEmpty())
+                            {
+                                <div class="fixed-table-pagination" style="display: block;">
+                                    @Html.Raw(pager.ToString())
+                                </div>
+                            }
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+
+    <!-- End: Content -->
+</section>
+
+< !--在这里创建你的模拟窗口-- >
+@{
+    //客户选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+    //科目选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "AccountingForm" }, { "modalWindow", "AccountingModalWindow" }, { "showSave", "true" } });
+    //商品选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ProductModalForm" }, { "modalWindow", "ModalProductWindows" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+}
+
+
+@section CurPageScripts
+{
+
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            //全选
+            $("input[name='btSelectAll']").click(function () {
+                var selectStatus = $(this).is(':checked')
+                if (selectStatus) {
+                    $("input[name='btSelectItem']").each(function (i, n) {
+                        n.checked = true;
+                    });
+                } else {
+                    $("input[name='btSelectItem']").each(function (i, n) {
+                        n.checked = false;
+                    });
+                }
+            });
+
+            //导出选择
+            $("#export_select").click(function () {
+                Export(1);
+            });
+            //导出全部
+            $("#export_all").click(function () {
+                Export(2);
+            });
+            var Export = function (t) {
+                var queryParams = {};
+                queryParams.type = t;
+                queryParams.selectData = "";
+                if (t == 1) {
+                    var selectData = "";
+                    //获取用户选择的单据
+                    var arrselections = $("input[name='btSelectItem']:checked").each(function (i, j) {//把所有被选中的复选框的值存入数组
+                        selectData += (selectData != "" ? "," : "") + $(this).val();
+                    });
+
+                    if (selectData == "") {
+                        $(this).showToastr("没有选择数据");
+                        return false;
+                    }
+                    queryParams.selectData = selectData;
+
+                }
+                BindQueryParams(queryParams);
+                window.location.href = "/ScrapProduct/Export?type=" + queryParams.type + "&selectData=" + queryParams.selectData + "&chargePerson=" + queryParams.ChargePerson + "&wareHouseId=" + queryParams.WareHouseId + "&billNumber=" + queryParams.BillNumber + "&auditedStatus=" + queryParams.AuditedStatus + "&startTime=" + queryParams.StartTime + "&endTime=" + queryParams.EndTime + "&showReverse=" + queryParams.ShowReverse + "&sortByAuditedTime=" + queryParams.SortByAuditedTime + "&remark=" + queryParams.Remark;
+
+            }
+
+            //打印选择
+            $("#print_select").click(function () {
+                Print(1);
+            });
+            //打印全部
+            $("#print_all").click(function () {
+                Print(2);
+            });
+            var Print = function (t) {
+                var loadingButton = Ladda.create($("#btn_print")[0]);
+                var queryParams = {};
+                queryParams.type = t;
+                queryParams.selectData = "";
+                if (t == 1) {
+                    var selectData = "";
+                    //获取用户选择的单据
+                    var arrselections = $("input[name='btSelectItem']:checked").each(function (i, j) {//把所有被选中的复选框的值存入数组
+                        selectData += (selectData != "" ? "," : "") + $(this).val();
+                    });
+
+                    if (selectData == "") {
+                        $(this).showToastr("没有选择数据");
+                        return false;
+                    }
+                    queryParams.selectData = selectData;
+
+                }
+                BindQueryParams(queryParams);
+                WinMsg.confirm({ message: "打印单据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    loadingButton.start();
+                    var setting = {}
+                    var LODOP = null;
+                    var rs = $(this).getSyncData("/ScrapProduct/PrintSetting", null, "get");
+                    if (rs.Success) {
+                        setting = rs.Data;
+                        loadCLodop(document, setting.PrintPort, function () {
+                            //判断页面是否已加载LODOP
+                            if (LODOP == null || LODOP == undefined) {
+                                LODOP = getLodopFirst(document);
+                                LODOP = getLodopSecond(document);
+                            }
+                            if (LODOP == null || LODOP == undefined) {
+                                loadingButton.stop();
+                                return;
+                            } else {
+                                $("#printData").html("");
+                            }
+                            $(this).remoteRequest('GET', '/ScrapProduct/Print', queryParams, function (result) {
+                                if (result.Success) {
+                                    var htmls = result.Data;
+                                    LODOP.PRINT_INIT("报损单");
+                                    if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+                                        LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+                                    }
+                                    htmls.forEach(function (html, index) {
+                                        if (setting.IsPrintPageNumber) {
+                                            LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+                                        }
+                                        if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+                                            LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+                                        }
+                                        LODOP.NewPageA();
+                                    });
+                                    LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+                                    LODOP.PREVIEW(true);
+                                    loadingButton.stop();
+                                }
+                                else {
+                                    $(this).showToastr(result.Message);
+                                    loadingButton.stop();
+                                }
+                            });
+                        });
+                    }
+
+                });
+            }
+
+            //绑定查询参数
+            var BindQueryParams = function (queryParams) {
+                queryParams.ChargePerson = $("#ChargePerson").val();
+                queryParams.WareHouseId = $("#WareHouseId").val();
+                queryParams.BillNumber = $("#BillNumber").val();
+                queryParams.AuditedStatus = $("#AuditedStatus").val();
+                //queryParams.StartTime = $("#datetimepicker_StartTime").val();
+                //queryParams.EndTime = $("#datetimepicker_EndTime").val();
+                queryParams.StartTime = $("#StartTime").val();
+                queryParams.EndTime = $("#EndTime").val();
+                queryParams.ShowReverse = $("#ShowReverse").val();
+                queryParams.SortByAuditedTime = $("#SortByAuditedTime").val();
+                queryParams.Remark = $("#Remark").val();
+            }
+
+            //防止重复查询
+            var queryNumber = 1;
+            $("#btn_query").click(function () {
+                if (queryNumber > 1) {
+                    return false;
+                }
+                queryNumber = queryNumber + 1;
+            });
+
+        });
+    </script>
+}

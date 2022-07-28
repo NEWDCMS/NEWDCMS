@@ -1,0 +1,324 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model CompanySettingModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">首页</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="dashboard.html">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">配置</a>
+                </li>
+                <li class="crumb-trail">公司设置</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <form asp-action="CompanySetting" asp-controller="Setting" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="CompanySettingForm">
+
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <div class="panel-title">
+                                <span class="glyphicon glyphicon-tasks"></span> 设置
+                            </div>
+                        </div>
+
+                        <div class="panel-body p10 pt10">
+
+                            <div class="panel">
+                                <div class="panel-heading">
+                                    <ul class="nav panel-tabs-border panel-tabs panel-tabs-left ">
+                                        <li class="active">
+                                            <a href="#tab10_1" data-toggle="tab" aria-expanded="true"><i class="fa fa-align-justify text-purple"></i> 商品精细化</a>
+                                        </li>
+                                        <li>
+                                            <a href="#tab10_2" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 开单选项</a>
+                                        </li>
+                                        <li>
+                                            <a href="#tab10_3" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 库存管理</a>
+                                        </li>
+                                        <li>
+                                            <a href="#tab10_4" data-toggle="tab" style="color:#ddd"><i class="fa fa-align-justify text-purple"></i> 业务员管理(已弃用)</a>
+                                        </li>
+                                        <li>
+                                            <a href="#tab10_5" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 财务管理</a>
+                                        </li>
+                                        <li>
+                                            <a href="#tab10_6" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 其他设置</a>
+                                        </li>
+                                        <li>
+                                            <a href="#tab10_7" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 清除数据</a>
+                                        </li>
+                                        <li>
+                                            <a href="#tab10_8" data-toggle="tab" style="color:#ff0000"><i class="fa fa-align-justify text-purple"></i> 业务员管理(新)</a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+
+                                <div class="panel-body">
+                                    <div class="tab-content">
+                                        <div id="tab10_1" class="tab-pane p10 active">
+                                            @await Html.PartialAsync("_CommodityRefinement", Model)
+                                        </div>
+                                        <div id="tab10_2" class="tab-pane p10">
+                                            @await Html.PartialAsync("_BillOption", Model)
+                                        </div>
+                                        <div id="tab10_3" class="tab-pane p10">
+                                            @await Html.PartialAsync("_StockManagement", Model)
+                                        </div>
+                                        <div id="tab10_4" class="tab-pane p10">
+                                            @await Html.PartialAsync("_SalesmanManagement", Model)
+                                        </div>
+                                        <div id="tab10_5" class="tab-pane p10">
+                                            @await Html.PartialAsync("_FinancialManagement", Model)
+                                        </div>
+                                        <div id="tab10_6" class="tab-pane p10">
+                                            @await Html.PartialAsync("_OtherSettings", Model)
+                                        </div>
+                                        <div id="tab10_7" class="tab-pane p10">
+                                            @await Html.PartialAsync("_ClearanceData", Model)
+                                        </div>
+                                        <div id="tab10_8" class="tab-pane">
+
+                                            <div class="ctab-block mb25">
+                                                <ul class="nav tabs-left tabs-border">
+                                                    @{
+                                                        var index = 0;
+                                                        foreach (var item in Model.SalesmanManagements)
+                                                        {
+                                                            <li class="@(index==0 ?"active":"")">
+                                                                <a href="#tab14_@item.UserId" data-toggle="tab">@item.UserName</a>
+                                                            </li>
+                                                            index++;
+                                                        }
+                                                    }
+                                                </ul>
+                                                <div class="tab-content">
+                                                    @{
+                                                        index = 0;
+                                                        foreach (var item in Model.SalesmanManagements)
+                                                        {
+                                                            <div id="tab14_@item.UserId" class="@(index==0 ?"tab-pane active":"tab-pane")">
+                                                                @await Html.PartialAsync("_SalesmanManagementV3", item)
+                                                            </div>
+                                                            index++;
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <div class="panel-footer">
+                            <div class="form-group mbn">
+                                <div class="col-lg-12">
+                                    <button class="btn btn-primary" type="submit" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </section>
+    <!-- End: Content -->
+</section>
+
+@{await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } }); }
+@section CurPageScripts
+{
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+
+            // Init Demo JS
+
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            };
+
+            $("#Start").on("dp.change", function (e) {
+                $("#Start").val(crtTimeFtt("hh:mm:00", e.date));
+            });
+
+            $("#End").on("dp.change", function (e) {
+                $("#End").val(crtTimeFtt("hh:mm:00", e.date));
+            });
+
+            $("#BusinessStart").on("dp.change", function (e) {
+                $("#BusinessStart").val(crtTimeFtt("hh:mm:00", e.date));
+            });
+
+            $("#BusinessEnd").on("dp.change", function (e) {
+                $("#BusinessEnd").val(crtTimeFtt("hh:mm:00", e.date));
+            });
+
+            function crtTimeFtt(format, value) {
+                var crtTime = new Date(value);
+                return $(this).dateFtt(format, crtTime);
+            }
+
+            $('#Start').datetimepicker({
+                format: 'LT',
+                pickDate: false
+            });
+            $('#End').datetimepicker({
+                format: 'LT',
+                pickDate: false
+            });
+
+            $('#BusinessStart').datetimepicker({
+                format: 'LT',
+                pickDate: false
+            });
+            $('#BusinessEnd').datetimepicker({
+                format: 'LT',
+                pickDate: false
+            });
+
+            $("#SendVerificationCode").click(function () {
+                $(document).remoteRequest('GET', '/Setting/SendVerificationCode', function (data) {
+                    if (data != null) {
+                        $(this).showToastr(data.Message);
+                    }
+                });
+            });
+
+            $("#ClearData").click(function () {
+                var code = $("#VerificationCode").val();
+                if (code == '' || code == '0' || code == null) {
+                    $(this).showToastr("验证码不能为空！");
+                    return false;
+                }
+                $(document).remoteRequest('POST', '/Setting/ClearData', { code: code }, function (data) {
+                    if (data != null) {
+                        $(this).showToastr(data.Message);
+                    }
+                });
+            });
+
+
+            var tabOptions = [];
+            var tabToggle = $(".toggle-tab-style .tab-style-option");
+            var tabCount = $(tabToggle).length;
+
+            $(tabToggle).each(function (index, element) {
+                var optionVal = $(element).attr('opt');
+
+                tabOptions.push(optionVal);
+
+                if (index == tabCount - 1) {
+                    jQuery.unique(tabOptions);
+                }
+            });
+
+            $(tabToggle).click(function () {
+                var tabStyle = $(this).data('opt');
+                var Options = tabOptions.join(" ");
+                if ($(this).parent().hasClass('tab-style-left')) {
+                    $(this).parents("div.tab-block").children("ul").removeClass(Options).addClass(tabStyle);
+                } else {
+                    $(this).parents("ul").removeClass(Options).addClass(tabStyle);
+                }
+
+                $(this).siblings().removeClass("active");
+                $(this).addClass("active");
+
+            });
+        });
+    </script>
+}
+
+<style>
+
+    .ctable {
+        margin-left: 100px;
+    }
+
+        .ctable tr {
+            margin: 0px;
+        }
+
+        .ctable td {
+            padding: 10px 10px 10px 0px;
+        }
+
+        .ctable .clabel {
+            text-align: right;
+            width: 300px;
+            color: #333;
+        }
+
+    .ctab-block .tab-content {
+        overflow: auto;
+        position: relative;
+        z-index: 10;
+        min-height: 125px;
+        padding: 16px 12px;
+        border: 1px solid #e7e7e7;
+        background-color: #FFF;
+    }
+</style>

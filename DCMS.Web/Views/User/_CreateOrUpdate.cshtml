@@ -1,0 +1,189 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+@using DCMS.ViewModel.Models.Users;
+
+@model UserModel
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-warning alert-dismissable mt10">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+
+<input asp-for="Id" type="hidden" />
+
+
+<div class="form-group">
+    <label asp-for="AccountType" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <dcms-select asp-for="AccountType" asp-items="@Model.AccountTypes" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.AccountType)
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="UserRoleNames" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-8">
+        @if (Model.AvailableUserRoles != null && Model.AvailableUserRoles.Count > 0)
+        {
+            foreach (var userRole in Model.AvailableUserRoles)
+            {
+
+                <label class="checkbox-inline mr10" @if (userRole.Name == "员工") { <text> style="display:none" </text> }>
+                    <input type="checkbox" name="SelectedUserRoleIds" value="@userRole.Id"
+                           @if (Model.SelectedUserRoleIds != null && Model.SelectedUserRoleIds.Contains(userRole.Id)) { <text> checked="checked" </text> }
+                           @if (!Model.AllowManagingUserRoles) { <text> disabled="disabled" </text> }
+                           @if (userRole.Name == "员工") { <text> style="display:none" </text> } />@userRole.Name
+                    </label>
+                }
+            }
+            else
+            {
+                <div class="alert alert-warning alert-micro">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <i class="fa fa-warning pr10"></i>
+                    <strong>警告!</strong> 角色信息不存在或者系统没有指定初始角色.
+                </div>
+            }
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="BranchId" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <dcms-select asp-for="BranchId" asp-items="@Model.ParentList" asp-default="所属部门" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.BranchId)
+    </div>
+</div>
+
+@*<div class="form-group">
+        <label asp-for="Dirtleader" asp-postfix=":" class="col-lg-3 control-label" />
+        <div class="col-lg-4">
+            <dcms-select asp-for="Dirtleader" asp-items="@Model.Dirtleaders" asp-default="直接上级" />
+        </div>
+        <div class="col-lg-4">
+            @Html.DCMSValidationMessageFor(model => model.Dirtleader)
+        </div>
+    </div>*@
+
+<div class="form-group">
+    <label asp-for="Username" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="Username" class="form-control" placeholder="用户名..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Username)
+    </div>
+</div>
+
+<div class="form-group" style="@(Model.Id==0 ? "": "display:none")">
+    <label asp-for="Password" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input type="password" asp-for="Password" class="form-control" placeholder="密码..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Password)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="Email" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="Email" class="form-control" placeholder="邮箱..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Email)
+    </div>
+</div>
+
+
+@*<div class="form-group">
+        <label asp-for="Gender" asp-postfix=":" class="col-lg-3 control-label" />
+        <div class="col-lg-4">
+            <dcms-select asp-for="Gender" asp-items="@Model.Genders" asp-default="性别" />
+        </div>
+        <div class="col-lg-4"></div>
+    </div>*@
+
+<div class="form-group">
+    <label asp-for="UserRealName" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="UserRealName" class="form-control" placeholder="真实姓名..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.UserRealName)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="MobileNumber" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="MobileNumber" class="form-control" placeholder="手机号..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.MobileNumber)
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="SalesmanExtractPlanId" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <dcms-select asp-for="SalesmanExtractPlanId" asp-items="@Model.SalesmanExtractPlans" asp-default="业务员提成方案" />
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+<div class="form-group">
+    <label asp-for="DeliverExtractPlanId" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <dcms-select asp-for="DeliverExtractPlanId" asp-items="@Model.DeliverExtractPlans" asp-default="送货员提成方案" />
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+<div class="form-group">
+    <label asp-for="MaxAmountOfArrears" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="MaxAmountOfArrears" class="form-control" placeholder="最大欠款额度..." />
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="Active" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <label class="checkbox-inline">
+            @*@Html.CheckBoxFor(model => model.Active, new { @class = "mt15" })*@
+            @Html.CheckBoxFor(model => model.Active)
+        </label>
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+<div class="form-group">
+    <label asp-for="UseACLPc" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.UseACLPc, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+<div class="form-group">
+    <label asp-for="UseACLMobile" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.UseACLMobile, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4"></div>
+</div>

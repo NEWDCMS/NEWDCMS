@@ -1,0 +1,198 @@
+﻿@using DCMS.Core;
+@using DCMS.Core.Configuration;
+@using DCMS.Core.Infrastructure;
+@inject IWorkContext workContext;
+
+@{
+    var config = EngineContext.Current.Resolve<DCMSConfig>();
+    var currentUser = workContext.CurrentUser;
+
+    var hostName = config.RabbitNode("host");
+    var virtualHost = config.RabbitNode("virtualHost");
+    var userName = config.RabbitNode("username");
+    var password = config.RabbitNode("password");
+}
+
+@if (currentUser != null && currentUser.Id > 0)
+{
+    @*template-user-events*@
+    <script id="template-news-events" type="text/x-tmpl">
+        {% if(o.data!=null){ %}
+        {% if(o.data[0].Count>0){ %}
+        <li class="bg-light p8">
+            <span class="fw600 pl5 lh30"> 系统通知</span>
+            <span class="label label-warning label-sm pull-right lh20 h-20 mt5 mr5">{%=o.data[0].Count%}</span>
+        </li>
+        {% for (var i=0,item;item=o.data[i]; i++) { %}
+        {% if(item.children[0]!=null){ %}
+        <li class="p10 br-t item-1">
+            <div class="media">
+                <a class="media-left" href="#" style="min-width:55px;">
+                    <i class="fa fa-bell fs30"></i>
+                    <span class="badge badge-hero badge-danger">{%=item.children[0].Count%}</span>
+                </a>
+                <div class="media-body va-m">
+                    <a href="javascript:;" data-index="{%=JSON.stringify(i)%}" class="showNews" style="text-decoration:none;">
+                        <h5 class="media-heading mv5">{%=item.children[0].Title%} <small class="text-muted">- {%=item.children[0].Date%}</small> </h5>
+                        <span class="hubspan" style="color:#999;">{%=item.children[0].Content%}</span>
+                    </a>
+                </div>
+            </div>
+        </li>
+        {% } %}
+        {% } %}
+        {% } else { %}
+        <li class="p10 br-t item-1">
+            <div class="media" style="text-align:center;">
+                <span class="hubspan">未接收到任何消息</span>
+            </div>
+        </li>
+        {% } %}
+        {% } %}
+    </script>
+
+
+    <script type="text/javascript">
+    //处理数据
+    var localMessageList = [];
+        jQuery(document).ready(function () {
+
+
+        @*//服务地址
+        var mqUrl = "ws://@hostName.Replace(":5672", ":15674")/ws";
+
+        //声明个Stomp客户端
+        var client = Stomp.client(mqUrl);
+
+        //var print_first = pipe('#first', function (data) {
+        //    client.send('/topic/@currentUser.MobileNumber', { "content-type": "text/plain" }, data);
+        //});
+
+        function Queue(array) {
+            if (array instanceof Array) {
+                this.dataStorage = array;
+            } else {
+                throw "'" + array + "' is not an Array";
+            }
+        }
+
+        Queue.prototype = {
+            enqueue: function (element) {//向队列中添加元素
+                this.dataStorage.push(element);
+            },
+            dequeue: function () {//删除队首元素
+                return this.dataStorage.shift();
+            },
+            front: function () {//返回队首元素
+                return this.dataStorage[0];
+            },
+            back: function () {//返回队尾元素
+                return this.dataStorage[this.dataStorage.length - 1];
+            },
+            toString: function () {//输出队列中所有元素
+                var result = "";
+                for (var i = 0; i < this.dataStorage.length; i++) {
+                    result += this.dataStorage[i] + "\t";
+                }
+                return result;
+            },
+            empty: function () {//判定队列是否为空
+                if (this.dataStorage.length == 0) {
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        var queue = new Queue([]);
+
+        //监听连接事件
+        var on_connect = function (x)
+        {
+            ///queue/stomp-subscription-nbKniIo3_jmISX_74zycPw
+            id = client.subscribe("/topic/@currentUser.MobileNumber", function (d)
+            {
+                //console.log(d.body);
+                var message = JSON.parse(d.body);
+                 queue.enqueue(message); //将消息存入队列
+            });
+
+        };
+        var on_error = function (e) {
+            console.log('error');
+        };
+
+        //连接MQ
+        client.connect('', '', on_connect, on_error, 'APPNotices');
+
+        //测试Dome
+        $(this).loadData(@currentUser.Id);
+
+        window.setInterval(function () {
+            var message = queue.front();
+
+            if (message) {
+                $(this).remoteRequest('post', '/message/save?userId=@currentUser.Id', message, function (result) {
+                    if (result.Success) {
+                        queue.dequeue();
+                    }
+                });
+
+                //展开消息下拉
+                $("#ddl_news").dropdown("toggle");
+                $(this).handleDataByType(message, localMessageList);
+                $(this).sunCount(localMessageList); //更新数量
+                //更新列表
+                $(this).refreshMessages(localMessageList);
+                $(this).refreshDetails(localMessageList);
+			    //5s下拉关闭方法（再次执行就行了，不需要 myrefresh()）
+			   //setTimeout('$(\"#ddl_news\").dropdown(\"toggle\");', 5000);
+            }
+
+        }, 5000); //指定5秒刷新一次*@
+
+        $("#newTemplate").delegate(".showNews", "click", function () {
+            if ($("body").hasClass("sb-r-c")) {
+                $("#toggle_sidemenu_r").click();
+            }
+        });
+
+        $("#sidebar-right-tab1").delegate(".hidenNews", "click", function () {
+            var id = parseInt($(this).attr("data-id"));
+            WinMsg.confirm({ message: "确认要删除这条消息吗？" }).on(function (e) {
+                if (!e) {
+                    return;
+                }
+                if (id != "0") {
+                     $(this).remoteRequest('GET', '/message/delete', { "userId":@currentUser.Id, "messageId": id }, function (result) {
+                        if(result.Success)
+                           $(this).loadData(@currentUser.Id);
+                     });
+                }
+
+            });
+        });
+
+        $("#sidebar-right-tab1").delegate("#hidenAllNews", "click", function () {
+            WinMsg.confirm({ message: "确认要删除全部消息吗？" }).on(function (e) {
+                if (!e) {
+                    return;
+                }
+
+                 $(this).remoteRequest('GET', '/message/delete', { "userId":@currentUser.Id, "messageId": 0  }, function (result) {
+                        if(result.Success)
+                           $(this).loadData(@currentUser.Id);
+                 });
+            });
+        });
+
+        $("li").delegate(".topMenuNewCopunt", "click", function () {
+            if ($("body").hasClass("sb-r-c")) {
+                $("#toggle_sidemenu_r").click();
+            }
+        });
+
+    });
+
+    </script>
+}

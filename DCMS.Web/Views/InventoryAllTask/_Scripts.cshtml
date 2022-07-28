@@ -1,0 +1,878 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.WareHouses;
+@model  InventoryAllTaskBillModel
+
+
+    <script type="text/javascript">
+
+	jQuery(document).ready(function () {
+
+		"use strict";
+
+		// Init Theme Core
+		Core.init();
+
+		// Init Demo JS
+		Demo.init();
+
+		//项目
+		$("#InventoryAllTaskItems").bootstrapTable({
+                @Html.Raw(Model.Items.Count > 0 ? "url: '/InventoryAllTask/AsyncInventoryAllTaskItems?billId=" + Model.Id + "'," : "length: 9,")
+			striped: true,
+			cache: false,
+			pagination: true,
+			showPagination: false,
+			sidePagination: "server",
+			sortable: false,
+			sortOrder: "asc",
+			search: false,
+			strictSearch: false,
+			showColumns: false,
+			showRefresh: false,
+			clickToSelect: false,
+			uniqueId: "id",
+			showToggle: false,
+			editable: true,
+			cardView: false,
+			detailView: false,
+			showFooter: true,
+			smartDisplay: false,
+			onLoadSuccess: function (data) {
+				$(".fixed-table-pagination").hide();
+			},
+            onPostBody: function (data) {
+                $("[data-toggle='popover']").popover();
+            },
+			columns: [
+				{
+					title: '<i class="fa fa-gear fs18"></i>',
+					width: '50',
+					align: 'center',
+					formatter: function (value, row, index) {
+						return m_pagerow + index + 1;
+					},
+					footerFormatter: function (value) {
+						return '总计';
+					}
+				},
+				{ field: 'UnitId', visible: false },
+				{ field: 'Units', visible: false },
+				{ field: 'Prices', visible: false },
+				{ field: 'ProductTierPrices', visible: false },  //价格体系
+				{ field: 'SmallUnitId', visible: false }, //小单位
+				{ field: 'StrokeUnitId', visible: false }, //中单位
+				{ field: 'BigUnitId', visible: false }, //大单位
+				{ field: 'StrokeQuantity', visible: false }, //中单位换算数
+				{ field: 'BigQuantity', visible: false }, //大单位换算数
+
+				{ field: 'ProductId', visible: false },
+				{
+					field: 'ProductSKU',
+                    title: '商品编号',
+                    formatter: $(this).formatIsNull
+				},
+				{
+					field: 'ProductName',
+					title: '商品名称',
+                    width: '400',
+                    formatter: function (value, row) {
+                        return (value == 0 || value == "" || value == undefined) ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.BarCode + "'>" + $(this).cutString(value, 50) + "</a>";
+                    }
+				},
+				//{
+				//	field: 'BarCode',
+    //                title: '条形码',
+    //                formatter: $(this).formatIsNull
+				//},
+				{
+					field: 'UnitConversion',
+                    title: '单位换算',
+                    formatter: $(this).formatIsNull
+				},
+				{
+					field: 'CurrentStock',
+					title: '当前库存数量',
+					align: 'center',
+                    visible:  @Model.InventoryStatus== 2 ? true : false,
+					//formatter: $(this).formatNumerical
+					formatter: function (value, row, index) {
+						if (value != "" && row.ProductId != "" && row.ProductId > 0) {
+
+							var bigUnitId = row.BigUnitId;
+							var bigUnitName = "";
+
+							var strokeUnitId = row.StrokeUnitId;
+							var strokeUnitName = "";
+
+							var smallUnitId = row.SmallUnitId;
+							var smallUnitName = "";
+
+							$.each(row.Units, function (key, unit) {
+								if (unit == bigUnitId) {
+									bigUnitName = key;
+								}
+								else if (unit == strokeUnitId) {
+									strokeUnitName = key;
+								}
+								else if (unit == smallUnitId) {
+									smallUnitName = key;
+								}
+							});
+
+							//计算结果数量
+							var resultQuantity = value;
+							//大单位计算结果
+							var big = parseInt(resultQuantity / row.BigQuantity);
+							resultQuantity = resultQuantity - big * row.BigQuantity;
+							//中单位计算结果
+							var stroke = 0;
+							if (strokeUnitId > 0 && row.StrokeQuantity > 0) {
+								stroke = parseInt(resultQuantity / row.StrokeQuantity);
+								resultQuantity = resultQuantity - stroke * row.StrokeQuantity;
+							}
+							//小单位计算结果
+							var small = resultQuantity;
+
+                            var content = big + "" + bigUnitName;
+
+                            if (stroke > 0)
+                                content += ((strokeUnitId > 0) ? (stroke + "" + strokeUnitName) : "");
+
+							 if (small > 0)
+                                content += small + "" + smallUnitName
+
+							return "<span alt=" + value + ">" + content + "</span>";
+
+						}
+						else {
+							return "";
+						}
+					}
+				},
+				{
+					field: 'BigUnitQuantity',
+					title: '大单位数量',
+					align: 'center',
+					width: '100',
+					formatter: $(this).formatNumerical,
+					footerFormatter: function (value) {
+						var count = 0;
+						var datas = $('#InventoryAllTaskItems').bootstrapTable('getData');
+						var len = datas.length,
+							i, row;
+						if (len > 1) {
+							for (i = len - 1; i >= 0; i--) {
+								row = datas[i];
+								count += parseInt((typeof (row.BigUnitQuantity) == 'undefined' || row.BigUnitQuantity == "") ? '0' : row.BigUnitQuantity);
+							}
+						}
+						else {
+							for (var i in value) {
+								count += parseInt((typeof (value[i].BigUnitQuantity) == 'undefined' || value[i].BigUnitQuantity == "") ? '0' : value[i].BigUnitQuantity);
+							}
+						}
+						var total = parseInt((typeof (count) == 'undefined' || count == "") ? '0' : count);
+						return total;
+					}
+				},
+				{
+					field: 'AmongUnitQuantity',
+					title: '中单位数量',
+					align: 'center',
+					width: '100',
+					formatter: $(this).formatNumerical,
+					footerFormatter: function (value) {
+						var count = 0;
+						var datas = $('#InventoryAllTaskItems').bootstrapTable('getData');
+						var len = datas.length,
+							i, row;
+						//console.log(len);
+						if (len > 1) {
+							for (i = len - 1; i >= 0; i--) {
+								row = datas[i];
+								count += parseInt((typeof (row.AmongUnitQuantity) == 'undefined' || row.AmongUnitQuantity == "") ? '0' : row.AmongUnitQuantity);
+							}
+						}
+						else {
+							for (var i in value) {
+								count += parseInt((typeof (value[i].AmongUnitQuantity) == 'undefined' || value[i].AmongUnitQuantity == "") ? '0' : value[i].AmongUnitQuantity);
+							}
+						}
+						var total = parseInt((typeof (count) == 'undefined' || count == "") ? '0' : count);
+						return total;
+					}
+				},
+				{
+					field: 'SmallUnitQuantity',
+					title: '小单位数量',
+					align: 'center',
+					width: '100',
+					formatter: $(this).formatNumerical,
+					footerFormatter: function (value) {
+						var count = 0;
+						var datas = $('#InventoryAllTaskItems').bootstrapTable('getData');
+						var len = datas.length,
+							i, row;
+						//console.log(len);
+						if (len > 1) {
+							for (i = len - 1; i >= 0; i--) {
+								row = datas[i];
+								count += parseInt((typeof (row.SmallUnitQuantity) == 'undefined' || row.SmallUnitQuantity == "") ? '0' : row.SmallUnitQuantity);
+							}
+						}
+						else {
+							for (var i in value) {
+								count += parseInt((typeof (value[i].SmallUnitQuantity) == 'undefined' || value[i].SmallUnitQuantity == "") ? '0' : value[i].SmallUnitQuantity);
+							}
+						}
+						var total = parseInt((typeof (count) == 'undefined' || count == "") ? '0' : count);
+						return total;
+					}
+				},
+				{
+					field: 'VolumeQuantity',
+					title: '盘盈数量',
+					align: 'center',
+                    visible:  @Model.InventoryStatus== 2 ? true : false,
+					formatter: $(this).formatNumerical,
+					footerFormatter: function (value) {
+						var count = 0;
+						var datas = $('#InventoryAllTaskItems').bootstrapTable('getData');
+						var len = datas.length,
+							i, row;
+						//console.log(len);
+						if (len > 1) {
+							for (i = len - 1; i >= 0; i--) {
+								row = datas[i];
+								count += parseInt((typeof (row.VolumeQuantity) == 'undefined' || row.VolumeQuantity == "") ? '0' : row.VolumeQuantity);
+							}
+						}
+						else {
+							for (var i in value) {
+								count += parseInt((typeof (value[i].VolumeQuantity) == 'undefined' || value[i].VolumeQuantity == "") ? '0' : value[i].VolumeQuantity);
+							}
+						}
+						var total = parseInt((typeof (count) == 'undefined' || count == "") ? '0' : count);
+						return total;
+					}
+				},
+				{
+					field: 'LossesQuantity',
+					title: '盘亏数量',
+					align: 'center',
+                    visible:  @Model.InventoryStatus== 2 ? true : false,
+					formatter: $(this).formatNumerical,
+					footerFormatter: function (value) {
+						var count = 0;
+						var datas = $('#InventoryAllTaskItems').bootstrapTable('getData');
+						var len = datas.length,
+							i, row;
+						//console.log(len);
+						if (len > 1) {
+							for (i = len - 1; i >= 0; i--) {
+								row = datas[i];
+								count += parseInt((typeof (row.LossesQuantity) == 'undefined' || row.LossesQuantity == "") ? '0' : row.LossesQuantity);
+							}
+						}
+						else {
+							for (var i in value) {
+								count += parseInt((typeof (value[i].LossesQuantity) == 'undefined' || value[i].LossesQuantity == "") ? '0' : value[i].LossesQuantity);
+							}
+						}
+						var total = parseInt((typeof (count) == 'undefined' || count == "") ? '0' : count);
+						return total;
+					}
+				},
+				{
+					field: 'VolumeWholesaleAmount',
+					title: '盘盈批发金额',
+					align: 'right',
+                    visible:  @Model.InventoryStatus== 2 ? true : false,
+					formatter: $(this).formatFixed,
+					footerFormatter: function (value) {
+						var count = 0;
+						var datas = $('#InventoryAllTaskItems').bootstrapTable('getData');
+						var len = datas.length,
+							i, row;
+						//console.log(len);
+						if (len > 1) {
+							for (i = len - 1; i >= 0; i--) {
+								row = datas[i];
+								count += parseFloat((typeof (row.VolumeWholesaleAmount) == 'undefined' || row.VolumeWholesaleAmount == "") ? '0' : row.VolumeWholesaleAmount);
+							}
+						}
+						else {
+							for (var i in value) {
+								count += parseFloat((typeof (value[i].VolumeWholesaleAmount) == 'undefined' || value[i].VolumeWholesaleAmount == "") ? '0' : value[i].VolumeWholesaleAmount);
+							}
+						}
+						var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+						return total;
+					}
+				},
+				{
+					field: 'LossesWholesaleAmount',
+					title: '盘亏批发金额',
+					align: 'right',
+                    visible:  @Model.InventoryStatus== 2 ? true : false,
+					formatter: $(this).formatFixed,
+					footerFormatter: function (value) {
+						var count = 0;
+						var datas = $('#InventoryAllTaskItems').bootstrapTable('getData');
+						var len = datas.length,
+							i, row;
+						//console.log(len);
+						if (len > 1) {
+							for (i = len - 1; i >= 0; i--) {
+								row = datas[i];
+								count += parseFloat((typeof (row.LossesWholesaleAmount) == 'undefined' || row.LossesWholesaleAmount == "") ? '0' : row.LossesWholesaleAmount);
+							}
+						}
+						else {
+							for (var i in value) {
+								count += parseFloat((typeof (value[i].LossesWholesaleAmount) == 'undefined' || value[i].LossesWholesaleAmount == "") ? '0' : value[i].LossesWholesaleAmount);
+							}
+						}
+						var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+						return total;
+					}
+				},
+				{
+					field: 'VolumeCostAmount',
+					title: '盘盈成本金额',
+					align: 'right',
+                    visible:  @Model.InventoryStatus== 2 ? true : false,
+					formatter: $(this).formatFixed,
+					footerFormatter: function (value) {
+						var count = 0;
+						var datas = $('#InventoryAllTaskItems').bootstrapTable('getData');
+						var len = datas.length,
+							i, row;
+						//console.log(len);
+						if (len > 1) {
+							for (i = len - 1; i >= 0; i--) {
+								row = datas[i];
+								count += parseFloat((typeof (row.VolumeCostAmount) == 'undefined' || row.VolumeCostAmount == "") ? '0' : row.VolumeCostAmount);
+							}
+						}
+						else {
+							for (var i in value) {
+								count += parseFloat((typeof (value[i].VolumeCostAmount) == 'undefined' || value[i].VolumeCostAmount == "") ? '0' : value[i].VolumeCostAmount);
+							}
+						}
+						var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+						return total;
+					}
+				},
+				{
+					field: 'LossesCostAmount',
+					title: '盘亏成本金额',
+					align: 'right',
+					visible: @Model.InventoryStatus== 2 ? true : false,
+					formatter: $(this).formatFixed,
+					footerFormatter: function (value) {
+						var count = 0;
+						var datas = $('#InventoryAllTaskItems').bootstrapTable('getData');
+						var len = datas.length,
+							i, row;
+						//console.log(len);
+						if (len > 1) {
+							for (i = len - 1; i >= 0; i--) {
+								row = datas[i];
+								count += parseFloat((typeof (row.LossesCostAmount) == 'undefined' || row.LossesCostAmount == "") ? '0' : row.LossesCostAmount);
+							}
+						}
+						else {
+							for (var i in value) {
+								count += parseFloat((typeof (value[i].LossesCostAmount) == 'undefined' || value[i].LossesCostAmount == "") ? '0' : value[i].LossesCostAmount);
+							}
+						}
+						var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(2);
+						return total;
+					}
+				},
+				{
+					field: 'Operate',
+					title: '操作',
+					align: 'center',
+					width: '80',
+					events: {
+						'click .rowAppend': function (e, value, row, index) {// 添加
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True") {
+								return false;
+							}
+							if ("@Model.InventoryStatus" == "2" || "@Model.InventoryStatus" == "3") {
+								return false;
+							}
+							$('#InventoryAllTaskItems').bootstrapTable('insert', row);
+						},
+						'click .rowCopy': function (e, value, row, index) {// 复制
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True") {
+								return false;
+							}
+							if ("@Model.InventoryStatus" == "2" || "@Model.InventoryStatus" == "3") {
+								return false;
+							}
+							$('#InventoryAllTaskItems').bootstrapTable('copying', row);
+							//修改最后一条数据uniqueid,防止复制时uniqueid相同，删除时都删除
+							var allTableData = $('#InventoryAllTaskItems').bootstrapTable('getData');
+							var maxuniqueid = 0;
+							$.each(allTableData, function (i, row) {
+								if (row.uniqueid > maxuniqueid) {
+									maxuniqueid = row.uniqueid;
+								}
+							});
+							allTableData[allTableData.length - 1].uniqueid = maxuniqueid + 1;
+						},
+						'click .rowDel': function (e, value, row, index) {// 删除
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True") {
+								return false;
+							}
+							if ("@Model.InventoryStatus" == "2" || "@Model.InventoryStatus" == "3") {
+								return false;
+							}
+							var datas = $('#InventoryAllTaskItems').bootstrapTable('getData');
+							var len = datas.length;
+							if (len == 1) {
+								$(this).showToastr('数据不能删除');
+								return;
+							}
+
+							if (row.uniqueid == undefined) {
+								$("#InventoryAllTaskItems").bootstrapTable('remove', { field: "id", values: [parseInt(row.Id)] });
+							}
+							else {
+								$("#InventoryAllTaskItems").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+							}
+						}
+					},
+					formatter: function (value, row, index) {
+						return [
+							'<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+							'<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+						].join('');
+					}
+				}
+			],
+			onClickCell: function (field, value, row, $element) {
+
+				if (field == "Operate") {
+					return false;
+				}
+
+				var input = $($element).find("input");
+				var select = $($element).find("select");
+				if (input.length > 0 || select.length > 0)
+					return false;
+				//当前列所在行的索引
+				var index = $element.parent().attr("data-index");
+
+				//审核、红冲后不能修改
+				if ("@Model.AuditedStatus" == "True") {
+					return false;
+				}
+
+				if (["BigUnitQuantity", "AmongUnitQuantity", "SmallUnitQuantity"].indexOf(field) >= 0) {
+
+					if (field == "BigUnitQuantity") {
+						if (row.BigUnitId == null || row.BigUnitId == 0) {
+							return false;
+						}
+					}
+					if (field == "AmongUnitQuantity") {
+						if (row.StrokeUnitId == null || row.StrokeUnitId == 0) {
+							return false;
+						}
+					}
+					if (field == "SmallUnitQuantity") {
+						if (row.SmallUnitId == null || row.SmallUnitId == 0) {
+							return false;
+						}
+					}
+
+					var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+					$($element).html(html);
+					var inputObj = $("#" + $(html).attr("id"));
+					inputObj.focus();
+					inputObj.select();
+					inputObj.bind("focusout", function () {
+						if (!isNaN($(this).val())) {
+							row[field] = $(this).val();
+							//var tradePrice = (row.TradePrice == null || row.TradePrice == "") ? 0 : row.TradePrice;
+							//var wholesaleAmount = parseFloat(tradePrice) * parseFloat($(this).val());
+							//wholesaleAmount = isNaN(wholesaleAmount) ? 0 : wholesaleAmount;
+							//$("#InventoryAllTaskItems").bootstrapTable('updateRow', { index: index, row: { WholesaleAmount: parseFloat(wholesaleAmount)} });
+							//库存数量
+							var stockQty = row.CurrentStock;
+							//大单位数量
+							var bigUnitQuantity = (row.BigUnitQuantity == "" ? 0 : parseInt(row.BigUnitQuantity));
+							var bigQuantity = row.BigQuantity;
+							//中单位数量
+							var amongUnitQuantity = (row.AmongUnitQuantity == "" ? 0 : parseInt(row.AmongUnitQuantity));
+							var strokeQuantity = row.StrokeQuantity;
+							//小单位数量
+							var smallUnitQuantity = (row.SmallUnitQuantity == "" ? 0 : parseInt(row.SmallUnitQuantity));
+							//用户输入数量
+							var thisQuantity = parseInt(bigUnitQuantity * bigQuantity) + parseInt(amongUnitQuantity * strokeQuantity) + parseInt(smallUnitQuantity);
+							//盘盈数量
+							row.VolumeQuantity = 0;
+							//盘亏数量
+							row.LossesQuantity = 0;
+							//盘盈批发金额
+							row.VolumeWholesaleAmount = 0.00;
+							//盘亏批发金额
+							row.LossesWholesaleAmount = 0.00;
+							//盘盈成本金额
+							row.VolumeCostAmount = 0.00;
+							//盘亏成本金额
+							row.LossesCostAmount = 0.00;
+
+							//批发金额
+							var smallTradePrice = 0;
+							//成本金额
+							var smallCostPrice = 0;
+							$.each(row.Prices, function (index, d) {
+								if (d.UnitId == row.SmallUnitId) {
+									smallTradePrice = d.ProductPrice.TradePrice;
+									smallCostPrice = d.ProductPrice.CostPrice;
+								}
+							});
+
+							//盘盈
+							if (thisQuantity > stockQty) {
+								row.VolumeQuantity = thisQuantity - stockQty;
+								row.VolumeWholesaleAmount = parseFloat(smallTradePrice) * parseFloat(thisQuantity - stockQty);
+								row.VolumeCostAmount = parseFloat(smallCostPrice) * parseFloat(thisQuantity - stockQty);
+							}
+							//盘亏
+							else if (thisQuantity < stockQty) {
+								row.LossesQuantity = stockQty - thisQuantity;
+								row.LossesWholesaleAmount = parseFloat(smallTradePrice) * parseFloat(stockQty - thisQuantity);
+								row.LossesCostAmount = parseFloat(smallCostPrice) * parseFloat(stockQty - thisQuantity);
+							}
+
+							$("#InventoryAllTaskItems").bootstrapTable('updateRow', { index: index, row: row });
+							$($element).html("" + value + "");
+						}
+					});
+				}
+
+				//debug
+				$.each($('#InventoryAllTaskItems').bootstrapTable('getData'), function (i, row) {
+					//console.log(row);
+				});
+			}
+		});
+
+		//表单检查
+		var formValidator = function () {
+			var isVaild = true;
+
+			var allTableData = $('#InventoryAllTaskItems').bootstrapTable('getData');
+
+			if ($("#InventoryPerson").val() == "" || $("#InventoryPerson").val() == "0") {
+				$("#InventoryPerson").focus();
+				$(this).showToastr("请选择盘点人员！");
+				return false;
+			}
+			else if ($("#WareHouseId").val() == "" || $("#WareHouseId").val() == "0") {
+				$("#WareHouseId").focus();
+				$(this).showToastr("请选择仓库！");
+				return false;
+			}
+			else if ($("#datetimepicker_InventoryDate").val() == "") {
+				$("#datetimepicker_InventoryDate").focus();
+				$(this).showToastr("请选择盘点时间！");
+				return false;
+			}
+			else if (allTableData.length == 0) {
+				$(this).showToastr("请先添加单据项目！");
+				return false;
+			}
+
+			return isVaild;
+		}
+
+		//保存服务器
+		var submitRemoteServer = function (showMessage, callback, loadingButton) {
+			if (!formValidator()) {
+				if (loadingButton != undefined) {
+					loadingButton.stop();
+				}
+				return false;
+			};
+
+			//获取表格的所有内容行
+			var allTableData = $('#InventoryAllTaskItems').bootstrapTable('getData');
+			var serializeData = [];
+			var accountings = [];
+			$.each(allTableData, function (i, row) {
+				var tmpObj = {
+					Id: (!row.Id || typeof (row.Id) == 'undefined' || row.Id == "") ? "0" : row.Id,
+					ProductId: (!row.ProductId || typeof (row.ProductId) == 'undefined' || row.ProductId == "") ? "0" : row.ProductId,
+					UnitId: (!row.UnitId || typeof (row.UnitId) == 'undefined' || row.UnitId == "") ? "0" : row.UnitId,
+					CurrentStock: (!row.CurrentStock || typeof (row.CurrentStock) == 'undefined' || row.CurrentStock == "") ? "0" : row.CurrentStock,
+					BigUnitQuantity: (!row.BigUnitQuantity || typeof (row.BigUnitQuantity) == 'undefined' || row.BigUnitQuantity == "") ? "0" : row.BigUnitQuantity,
+					AmongUnitQuantity: (!row.AmongUnitQuantity || typeof (row.AmongUnitQuantity) == 'undefined' || row.AmongUnitQuantity == "") ? "0" : row.AmongUnitQuantity,
+					SmallUnitQuantity: (!row.SmallUnitQuantity || typeof (row.SmallUnitQuantity) == 'undefined' || row.SmallUnitQuantity == "") ? "0" : row.SmallUnitQuantity,
+					VolumeQuantity: (!row.VolumeQuantity || typeof (row.VolumeQuantity) == 'undefined' || row.VolumeQuantity == "") ? "0" : row.VolumeQuantity,
+					LossesQuantity: (!row.LossesQuantity || typeof (row.LossesQuantity) == 'undefined' || row.LossesQuantity == "") ? "0" : row.LossesQuantity,
+					VolumeWholesaleAmount: (!row.VolumeWholesaleAmount || typeof (row.VolumeWholesaleAmount) == 'undefined' || row.VolumeWholesaleAmount == "") ? "0" : row.VolumeWholesaleAmount,
+					LossesWholesaleAmount: (!row.LossesWholesaleAmount || typeof (row.LossesWholesaleAmount) == 'undefined' || row.LossesWholesaleAmount == "") ? "0" : row.LossesWholesaleAmount,
+					VolumeCostAmount: (!row.VolumeCostAmount || typeof (row.VolumeCostAmount) == 'undefined' || row.VolumeCostAmount == "") ? "0" : row.VolumeCostAmount,
+					LossesCostAmount: (!row.LossesCostAmount || typeof (row.LossesCostAmount) == 'undefined' || row.LossesCostAmount == "") ? "0" : row.LossesCostAmount,
+				};
+				if (tmpObj.ProductId != 0)
+					serializeData.push(tmpObj);
+			});
+
+			if (serializeData.length == 0) {
+				$(this).showToastr("请添加单据项目!");
+				return false;
+			}
+
+			//保存的数据
+			var postData = {
+				InventoryPerson: $("#InventoryPerson").val(),
+				WareHouseId: $("#WareHouseId").val(),
+				InventoryDate: $("#datetimepicker_InventoryDate").val(),
+				Items: serializeData,
+			};
+
+			//debug
+			//console.log(postData);
+			//return false;
+			//保存服务器
+			$(this).remoteSubmit("post", "/InventoryAllTask/CreateOrUpdate?billId=@(Model.Id)", postData, $("#InventoryAllTaskItems"), callback, showMessage, loadingButton);
+
+		};
+
+		//保存单据项目
+		$("#FormSubmit").click(function () {
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+            submitRemoteServer(null, function (data) {
+                if (data.Success) {
+                    window.location.href = "/InventoryAllTask/List";
+                }
+            }, loadingButton);
+		});
+
+		//保存并继续
+		$("#FormSubmitContinue").click(function () {
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+			submitRemoteServer(null, null, loadingButton);
+		});
+
+		//开始盘点
+		$("#StartTakeInventory").click(function () {
+			if ($("#InventoryPerson").val() == "" || $("#InventoryPerson").val() == "0") {
+				$("#InventoryPerson").focus();
+				$(this).showToastr("请选择盘点人员！");
+				return false;
+			}
+
+			if ($("#WareHouseId").val() == "" || $("#WareHouseId").val() == "0") {
+				$("#WareHouseId").focus();
+				$(this).showToastr("请选择仓库！");
+				return false;
+			}
+
+			if ($("#datetimepicker_InventoryDate").val() == "") {
+				$("#datetimepicker_InventoryDate").focus();
+				$(this).showToastr("请选择盘点时间！");
+				return false;
+			}
+
+			$(this).html('<span class="glyphicon glyphicon-play mr5" aria-hidden="true"></span> 数据请求中，请稍等...');
+			//查询库存商品
+			//$(this).remoteSubmit("GET", "/Product/AsyncList", { pagenumber: 0,pageSize:1000 }, null, function (result) {
+			$(this).remoteSubmit("GET", "/InventoryAllTask/LoadProduct", { pageIndex: 0, pageSize: 1000, wareHouseId: $("#WareHouseId").val() }, null, function (result) {
+				console.log(result);
+				if (result.Success) {
+
+					$('#InventoryAllTaskItems').bootstrapTable('removeAll');
+
+					$.each(result.rows, function (index, row) {
+
+						var row = {
+							UnitId: 0,
+							Units: row.Units,
+							Prices: row.Prices,
+							//价格体系
+							ProductTierPrices: row.ProductTierPrices,
+							//小单位
+							SmallUnitId: row.SmallUnitId,
+							//中单位
+							StrokeUnitId: row.StrokeUnitId,
+							//大单位
+							BigUnitId: row.BigUnitId,
+
+							//大单位换算数
+							BigQuantity: row.BigQuantity,
+							//中单位换算数
+							StrokeQuantity: row.StrokeQuantity,
+
+							//商品Id
+							ProductId: row.Id,
+							//SKU
+							ProductSKU: row.Sku,
+							//商品名称
+							ProductName: row.Name,
+							//条码
+							BarCode: row.SmallBarCode,
+							//单位换算
+							UnitConversion: row.UnitConversion,
+
+							//当前库存数量
+							CurrentStock: row.CurrentStock,
+							//大单位数量
+							BigUnitQuantity: 0,
+							//中单位数量
+							AmongUnitQuantity: 0,
+							//小单位数量
+							SmallUnitQuantity: 0,
+							//盘盈数量
+							VolumeQuantity: 0,
+							//盘亏数量
+							LossesQuantity: 0,
+							//盘盈批发金额
+							VolumeWholesaleAmount: 0,
+							//盘亏批发金额
+							LossesWholesaleAmount: 0,
+							//盘盈成本金额
+							VolumeCostAmount: 0,
+							//盘亏成本金额
+							LossesCostAmount: 0
+						};
+						//console.log(row);
+						$('#InventoryAllTaskItems').bootstrapTable('insertNew', row);
+					});
+
+					//保存
+					submitRemoteServer(null, function (result) {
+						if (result.BillId > 0) {
+							window.location.href = "/InventoryAllTask/Edit/" + result.BillId;
+						}
+					});
+
+				} else { $(this).html('<span class="glyphicon glyphicon-play mr5" aria-hidden="true"></span>开始盘点'); }
+			});
+
+		});
+
+		//未填写库存的商品全部置零
+		$("#ResetZeroInventory").click(function () {
+			var allTableData = $('#InventoryAllTaskItems').bootstrapTable('getData');//获取表格的所有内容行
+			var i = 0;
+			for (i = 0; i < allTableData.length; i++) {
+
+				var row = allTableData[i];
+				if (row.BigUnitQuantity == 0 && row.AmongUnitQuantity == 0 && row.SmallUnitQuantity == 0) {
+					//盘亏数量 = 当前库存数量
+					row.LossesQuantity = row.CurrentStock;
+
+					//批发金额
+					var smallTradePrice = 0;
+					//成本金额
+					var smallCostPrice = 0;
+					$.each(row.Prices, function (index, d) {
+						if (d.UnitId == row.SmallUnitId) {
+							smallTradePrice = d.ProductPrice.TradePrice;
+							smallCostPrice = d.ProductPrice.CostPrice;
+						}
+					});
+					//盘盈批发金额
+					row.LossesWholesaleAmount = parseFloat(row.CurrentStock * smallTradePrice);
+					//盘盈成本金额
+					row.LossesCostAmount = parseFloat(row.CurrentStock * smallCostPrice);
+				}
+				$('#InventoryAllTaskItems').bootstrapTable('updateRow', { index: i, row });
+			}
+
+		});
+		//未填写商品设置为当前库存
+		$("#ResetThisInventory").click(function () {
+			var allTableData = $('#InventoryAllTaskItems').bootstrapTable('getData');//获取表格的所有内容行
+			var i = 0;
+			for (i = 0; i < allTableData.length; i++) {
+				var row = allTableData[i];
+				if (row.BigUnitQuantity == 0 && row.AmongUnitQuantity == 0 && row.SmallUnitQuantity == 0) {
+
+					//盘盈数量
+					row.VolumeQuantity = 0;
+					//盘亏数量
+					row.LossesQuantity = 0;
+					//盘盈批发金额
+					row.VolumeWholesaleAmount = 0;
+					//盘亏批发金额
+					row.LossesWholesaleAmount = 0;
+					//盘盈成本金额
+					row.VolumeCostAmount = 0;
+					//盘亏成本金额
+					row.LossesCostAmount = 0;
+
+					//当前商品有库存
+					if (row.CurrentStock > 0) {
+						var bigUnitId = row.BigUnitId;
+						var strokeUnitId = row.StrokeUnitId;
+						var smallUnitId = row.SmallUnitId;
+
+						//计算结果数量
+						var resultQuantity = row.CurrentStock;
+						//大单位计算结果
+						var big = parseInt(resultQuantity / row.BigQuantity);
+						resultQuantity = resultQuantity - big * row.BigQuantity;
+						//中单位计算结果
+						var stroke = 0;
+						if (strokeUnitId > 0 && row.StrokeQuantity > 0) {
+							stroke = parseInt(resultQuantity / row.StrokeQuantity);
+							resultQuantity = resultQuantity - stroke * row.StrokeQuantity;
+						}
+						//小单位计算结果
+						var small = resultQuantity;
+
+						row.BigUnitQuantity = big;
+						row.AmongUnitQuantity = stroke;
+						row.SmallUnitQuantity = small;
+					}
+				}
+				$('#InventoryAllTaskItems').bootstrapTable('updateRow', { index: i, row });
+			}
+
+		});
+
+		//取消盘点
+		$("#CancelTakeInventory").click(function () {
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+			$(this).remoteSubmit("post", "/InventoryAllTask/CancelTakeInventory?billId=@(Model.Id)", null, null, function (result) {
+				if (result.Success) {
+					window.location.href = "/InventoryAllTask/List";
+				}
+			}, null, loadingButton);
+		});
+
+		//完成盘点
+		$("#SetInventoryCompleted").click(function () {
+			//防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+			//1.保存页面数据
+			submitRemoteServer(null, function () {
+				//2.完成盘点
+				$(this).remoteSubmit("get", "/InventoryAllTask/SetInventoryCompleted", { id: "@Model.Id" }, null, function () { location.href = "/InventoryAllTask/List"; }, null, loadingButton);
+			}, loadingButton);
+		});
+
+	});
+    </script>

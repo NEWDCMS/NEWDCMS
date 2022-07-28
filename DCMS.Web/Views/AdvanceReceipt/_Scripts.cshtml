@@ -1,0 +1,344 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+@model AdvanceReceiptBillModel
+<script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+             if (("@Model.ReversedStatus").toLowerCase() == "true") {
+                $("#inkpadBox").hide();
+                $("#inkpadBox1").css('display', 'block');
+            }
+
+			//客户搜索
+			$(document).on('click', "#btn_search_customer", function () {
+				var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+				$(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { ids: "" }, "选择终端", $("#TerminalSelectForm"), function (rows) { });
+			});
+
+			window.operateEventsPopTerminal = {
+				'click .rowSelect': function (e, value, row, index) {
+					try {
+						$("#CustomerId").val(row.Id);
+						$("#CustomerName").val(row.Name);
+						$('#TerminalSelectModalWindow').modal('hide');
+					}
+					catch (err) {
+						console.log(err);
+						$(this).showToastr(err);
+						return;
+					}
+				}
+			};
+
+			//科目选择
+            $(document).on('click', "#AdvanceReceipt_Partial_Form input[name='CollectionAmount']", function () {
+                $(this).select();
+            });
+
+            //会计科目选择
+            $(document).on('click', "#Accounting_AsyncSearchSelectPopup", function () {
+                var billTypeId = $("#BillTypeEnumId").val();
+                var actionUrl = "/Accounting/AsyncSearchSelectPopup?multi=0&billTypeId=" + billTypeId;
+                var accounts = $("#AdvanceReceipt_Partial_Form").find("input[name='CollectionAmount']");
+                if (accounts.length == 0) {
+                    $(this).showToastr("默认科目未指定！");
+                    return false;
+                }
+                $(this).accountingSearchSelectPopup($("#AccountingModalWindow"), actionUrl, null, "选择科目", $("#AccountingForm"), $("#CollectionAccount"), $("#CollectionAccountBox"));
+            });
+
+            //表单检查
+		   var formValidator = function () {
+            var isVaild = true;
+            var flag = 0;
+             var accounts = $("#AdvanceReceipt_Partial_Form").find("input[name='CollectionAmount']");
+                $.each(accounts, function (i, input)
+                {
+                    if (isNaN($(input).val()))
+                        flag++;
+                    else if (parseFloat($(input).val()) < 0)
+                        flag++;
+                });
+
+            if ($("#CustomerId").val() == "" || $("#CustomerId").val() == "0") {
+                $("#CustomerId").focus();
+                $(this).showToastr("请先选择客户！");
+                return false;
+            }
+            else if ($("select[name='Payeer']").val() == "") {
+                $("select[name=Payeer]").focus();
+                $(this).showToastr("请先选择收款人！");
+                return false;
+            }
+            else if ($("select[name='AccountingOptionId']").val() == "") {
+                $("select[name=AccountingOptionId]").focus();
+                $(this).showToastr("请先选择预收款账户！");
+                return false;
+            }
+            else if ($("input[name='CollectionAmount']").val() == "" || $("input[name='CollectionAmount']").val() == "0.00") {
+                $("#AdvanceAmount").focus();
+                $(this).showToastr("请填写预收金额！");
+                return false;
+            }
+            else if (isNaN($("input[name='CollectionAmount']").val())) {
+                $("input[name='CollectionAmount']").focus();
+                $(this).showToastr("预收金额只能输入数字！");
+                return false;
+            }
+            else if (isNaN($("input[name='DiscountAmount']").val())) {
+                $("input[name='DiscountAmount']").focus();
+                $(this).showToastr("优惠金额只能输入数字！");
+                return false;
+            }
+            else if (flag > 0) {
+                $(this).showToastr("收款账户信息中数据格式不正确!");
+                return false;
+            }
+
+			return isVaild;
+		}
+
+
+            //保存服务器
+            var submitRemoteServer = function (showMessage, doAudit, callback,loadingButton)
+            {
+                if (!formValidator()) {
+	                if(loadingButton != undefined){
+				       loadingButton.stop();
+			        }
+                    return false;
+                };
+
+                var accountings = [];
+                //获取收款账户
+                var accounts = $("#AdvanceReceipt_Partial_Form").find("input[name='CollectionAmount']");
+                $.each(accounts, function (i, input)
+                {
+                    var option = $(input).attr("data-account");
+                    var amount = $(input).val();
+                    accountings.push({ AccountingOptionId: option, CollectionAmount: $(input).val() });
+                });
+
+                //追加预收款账户
+                accountings.push({
+                    AccountingOptionId: $("#AccountingOptionId").val(),
+                    CollectionAmount: $("input[name='AdvanceAmount']").val(),
+                    Copy: true
+                });
+
+                //保存的数据
+                var postData = {
+                    //客户
+                    CustomerId: $("#CustomerId").val(),
+                    //收款人
+                    Payeer: $("select[name='Payeer']").val(),
+                    //备注
+                    Remark: $("input[name='Remark']").val(),
+                    //预收款账户
+                    AccountingOptionId: $("select[name='AccountingOptionId']").val(),
+                    //预收款金额
+                    AdvanceAmount: $("input[name='AdvanceAmount']").val(),
+                    //优惠金额
+                    DiscountAmount: $("input[name='DiscountAmount']").val(),
+                    //欠款
+                    OweCash: $("input[name='OweCash']").val(),
+                    //收款账户
+                    Accounting: accountings
+                };
+
+                //debug
+                //console.log(postData);
+                //return false;
+
+                //保存服务器
+                $(this).remoteSubmit("post", "/AdvanceReceipt/CreateOrUpdate?billId=@(Model.Id)&doAudit=" + doAudit, postData, null, callback, showMessage,loadingButton);
+
+            };
+
+           //保存单据项目
+            $("#FormSubmit").click(function () {
+                var doAudit = true;
+	            //防止重复保存
+			    var loadingButton = Ladda.create(this);
+				loadingButton.start();
+                submitRemoteServer(null,doAudit,function (data) {
+                    if (data.Success) {
+                        window.location.href = "/AdvanceReceipt/List";
+                    }
+                }, loadingButton);
+            });
+
+            //保存并继续
+            $("#FormSubmitContinue").click(function () {
+                var doAudit = false;
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+				loadingButton.start();
+                submitRemoteServer(null,doAudit,function () { window.location.href = "/AdvanceReceipt/Create"; },loadingButton);
+            });
+
+
+            //审核
+			$(document).on('click', "#btn_auditing", function () {
+	            //防止重复保存
+	            var loadingButton = Ladda.create(this);
+                loadingButton.start();
+                var returnUrl = "@Context.Request.Query["returnURL"]";
+                if (returnUrl.indexOf("AuditedStatus=") == -1) {
+                    if (returnUrl.indexOf("?") == -1) {
+                        returnUrl += "?";
+                    } else {
+                        returnUrl += "&";
+                    }
+                    returnUrl += "AuditedStatus=False";
+                } else {
+                    if (returnUrl.indexOf("AuditedStatus=False") == -1) {
+                        returnUrl = returnUrl.replace("AuditedStatus=", "AuditedStatus=False");
+                    }
+                }
+                returnUrl = returnUrl.replace(/amp;/g, "");
+				$(this).remoteSubmit("post", "/AdvanceReceipt/AsyncAudited?billId=@(Model.Id)", null, null, function () {
+                    window.location.href = returnUrl;
+					}, null,loadingButton);
+			});
+
+            //红冲
+			$(document).on('click', "#btn_red", function () {
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+
+                WinMsg.confirm({ message: "确认要红冲吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+	                loadingButton.start();
+					$(this).remoteSubmit("get", "/AdvanceReceipt/Reverse", { id: "@Model.Id" }, null, function () { location.href = "/AdvanceReceipt/List"; }, null,loadingButton);
+				});
+			});
+
+			//打印
+			$("#btn_print").click(function () {
+				//防止重复保存
+				var loadingButton = Ladda.create(this);
+                WinMsg.confirm({ message: "确认要打印吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+                    loadingButton.start();
+                    var setting = {}
+                    var LODOP = null;
+                    var rs = $(this).getSyncData("/AdvanceReceipt/PrintSetting", null, "get");
+                    if (rs.Success) {
+                        setting = rs.Data;
+                        loadCLodop(document, setting.PrintPort, () => {
+                            //判断页面是否已加载LODOP
+                            if (LODOP == null || LODOP == undefined) {
+                                LODOP = getLodopFirst(document);
+                                LODOP = getLodopSecond(document);
+                            }
+                            if (LODOP == null || LODOP == undefined) {
+                                loadingButton.stop();
+                                return;
+                            } else {
+                                $("#printData").html("");
+                            }
+                            $(this).remoteSubmit("get", "/AdvanceReceipt/Print", { selectData: "@Model.Id" }, null, function (result) {
+                                if (result.Success) {
+                                    var html = result.Data;
+                                    LODOP.PRINT_INIT("预收款单");
+                                    if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+                                        LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+                                    }
+                                    if (setting.IsPrintPageNumber) {
+                                        LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+                                    }
+                                    if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+                                        LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+                                    }
+                                    LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+                                    LODOP.PREVIEW(true);
+                                    loadingButton.stop();
+                                }
+                                else {
+                                    $(this).showToastr(result.Message);
+                                }
+                            }, null, loadingButton);
+                        });
+                    }
+
+				});
+			});
+
+
+            //预收款金额
+            $(document).on('click', "#AdvanceAmount", function () {
+                $(this).focus();
+                $(this).select();
+            });
+
+            $(document).on('change', ".decimal", function ()
+            {
+                var value = $(this).val();
+                if (!isNaN(value) && value != "") {
+                    $(this).val(parseFloat(value).toFixed(2));
+                }
+                else
+                {
+                    $(this).val(parseFloat(0).toFixed(2));
+                }
+            });
+
+             $(document).on('change', "#AdvanceAmount", function ()
+            {
+                 var value = $(this).val();
+                 $("input[name='CollectionAmount']").val(value);
+            });
+
+
+            //本次优惠金额
+            $(document).on('click', "#DiscountAmount", function () {
+                $(this).focus();
+                $(this).select();
+            });
+            $(document).on('change', "#DiscountAmount", function ()
+            {
+                var value = $(this).val();
+                var advanceAmount = $("#AdvanceAmount").val();
+                var collectionAmount = parseFloat(advanceAmount) - parseFloat(value);
+                $("input[name='CollectionAmount']").val(parseFloat(collectionAmount).toFixed(2));
+
+                //refresh
+                var discountAmount = $("#DiscountAmount").val();
+                var oweCash = parseFloat(advanceAmount) - parseFloat(discountAmount) - parseFloat(value);
+                if ($("#OweCash").val() > 0) {
+                    $("#OweCash").val(parseFloat(oweCash).toFixed(2));
+                }
+
+            });
+
+            $(document).on('change', "input[name='CollectionAmount']", function () {
+                var value = $(this).val();
+                var advanceAmount = $("#AdvanceAmount").val();
+                var discountAmount = $("#DiscountAmount").val();
+                var oweCash = parseFloat(advanceAmount) - parseFloat(discountAmount) - parseFloat(value);
+                $("#OweCash").val(parseFloat(oweCash).toFixed(2));
+            });
+
+            //欠款金额
+            $(document).on('click', "#OweCash", function () {
+                $(this).focus();
+                $(this).select();
+            });
+        });
+</script>

@@ -1,0 +1,275 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.ViewModel.Models.Sales;
+
+@model DispatchBillModel
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="SelectDatas" type="hidden" />
+<input id="hid_DispatchBillId" type="hidden" />
+<input id="hid_CategoryId" type="hidden" />
+<input id="hid_CategoryPId" type="hidden" />
+
+<div class="form-group">
+    <label asp-for="DeliveryUserName" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-5">
+        <dcms-select asp-for="DeliveryUserId" asp-items="@Model.DeliveryUsers" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.DeliveryUserId)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="CarNO" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-5">
+        <dcms-select asp-for="CarId" asp-items="@Model.Cars" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.CarId)
+    </div>
+
+</div>
+<div class="form-group">
+    <label class="col-lg-3 control-label">调度数量：</label>
+    <div class="col-lg-5">
+        <input asp-for="OrderQuantityView" class="form-control" readonly="readonly" value="@Model.OrderQuantityView" />
+    </div>
+</div>
+<div class="form-group">
+    <label class="col-lg-3 control-label">调度金额：</label>
+    <div class="col-lg-5">
+        <input asp-for="OrderAmount" class="form-control" readonly="readonly" value="@Model.OrderAmount" />
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="DispatchBillAutoAllocationBill" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-5">
+        @*@Html.RadioButtonFor(model => model.DispatchBillAutoAllocationBill, Model.DispatchBillAutoAllocationBills)*@
+        @Html.RadioButtonFor(m => m.DispatchBillAutoAllocationBill, 2, new { @id = "DispatchBillAutoAllocationBill2", @name = "DispatchBillAutoAllocationBill", @class = "mt15" })自动生成调拨单
+        @Html.RadioButtonFor(m => m.DispatchBillAutoAllocationBill, 1, new { @id = "DispatchBillAutoAllocationBill1", @name = "DispatchBillAutoAllocationBill", @class = "mt15" })不自动生成调拨单
+
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.DispatchBillAutoAllocationBill)
+    </div>
+</div>
+
+<div class="form-group">
+    <lable class="col-lg-3 control-label"></lable>
+    <div class="col-lg-5">
+        <button class="btn btn-success btn-block" type="button" id="DispatchCreate" @(Model.BillStatus ? "disabled=\"disabled\"" : "")>
+            <i class="fa fa-floppy-o mr5"></i> 调度
+        </button>
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="DispatchBillCreatePrint" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-5">
+
+        @Html.CheckBox("DispatchBillCreatePrint", new { @id = "DispatchBillCreatePrint_1", @value = "1", @name = "DispatchBillCreatePrint" })打印整箱拆零合并单
+        @Html.CheckBox("DispatchBillCreatePrint", new { @id = "DispatchBillCreatePrint_2", @value = "2", @name = "DispatchBillCreatePrint" })打印整箱装车单
+        @Html.CheckBox("DispatchBillCreatePrint", new { @id = "DispatchBillCreatePrint_3", @value = "3", @name = "DispatchBillCreatePrint" })为每个客户打印拆零装车单
+        @Html.CheckBox("DispatchBillCreatePrint", new { @id = "DispatchBillCreatePrint_4", @value = "4", @name = "DispatchBillCreatePrint" })打印订单
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.DispatchBillCreatePrint)
+    </div>
+</div>
+
+<div class="form-group">
+    <lable class="col-lg-3 control-label"></lable>
+    <div class="col-lg-5">
+        <button class="btn btn-primary btn-block" type="button" id="BtnPrint" @(Model.BillStatus ? "" : "disabled=\"disabled\"")>
+		<i class="fa fa-print mr5"></i>打印</button>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+		$(function () {
+			"use strict";
+
+			//禁用打印
+            //$("#BtnPrint").attr('disabled', true);
+            //$("#BtnPrint").removeClass('btn-primary').addClass('btn-default');
+
+			//调度
+            $("#DispatchCreate").click(function ()
+            {
+                var deliveryId = $("#DispatchBillForm #DeliveryUserId").val();
+
+				if (deliveryId == "") {
+					$(this).showToastr('请选择送货员');
+					return;
+				}
+
+				var carId = $("#DispatchBillForm  #CarId").val();
+				if (carId == "") {
+					$(this).showToastr('请选择车辆');
+					return;
+				}
+
+				var autoAllocationBill = $("#DispatchBillForm input[name='DispatchBillAutoAllocationBill']:checked").val();
+                var datas = JSON.parse($("#SelectDatas").val());
+				var msg = "确定调度吗？";
+				var deliveryUserIds = datas.map((item) => {
+                    return item.DeliveryUserId
+                }).filter(function (item, index, arr) {
+                    return (arr.indexOf(item, 0) === index) && (item != 0);
+				});
+                if (deliveryUserIds.length > 1 || (deliveryUserIds.length == 1 && deliveryUserIds[0] != deliveryId)) {
+                    msg = "与指定送货人不一致，确定调度吗？";
+				}
+                WinMsg.confirm({ message: msg }).on(function (e)
+				{
+					if (!e) {
+						return;
+                    }
+					$.ajax({
+						type: "POST",
+						beforeSend: function ()
+						{
+                            $("#DispatchCreate").html("<img src='@LayoutExtensions.ResourceServerUrl("/content/images/loading.gif")' height='30px' width='30px'>");
+                            $("#DispatchCreate").attr({ disabled: "disabled" });
+                        },
+                        url: "/DispatchBill/CreateBill?deliveryId=" + deliveryId + "&carId=" + carId + "&autoAllocationBill=" + autoAllocationBill + "",
+                        data:
+                        {
+                            selectDatas: datas
+                        },
+						success: function (result)
+						{
+                            if (result.Success)
+							{
+								toastr.success(result.Message);
+								$("#hid_DispatchBillId").val(result.Data);
+                                $("#DispatchCreate").attr('disabled', true);
+                                $("#BtnPrint").attr('disabled', false);
+                                $("#BtnPrint").removeClass('btn-default').addClass('btn-primary');
+								//
+								$("#datatable1").bootstrapTable('refresh');
+                                $("#datatable2").bootstrapTable('refresh');
+							}
+                            else
+                            {
+								$(this).showToastr(result.Message);
+							}
+						},
+						complete: function ()
+						{
+                            //$("#DispatchCreate").removeAttr("disabled");
+                            $("#DispatchCreate").html("<i class=\"fa fa-floppy-o mr5\"></i>调度");
+                        },
+						error: function ()
+						{
+							$(this).showToastr('网络错误，请重新保存！');
+						}
+					});
+				});
+
+			});
+
+			//打印btn_print
+			$("#BtnPrint").click(function ()
+			{
+				var dispatchBillId = $("#hid_DispatchBillId").val();
+
+				var printTypes = "";
+				$("input[name='DispatchBillCreatePrint']:checked").each(function (a, b) {
+					printTypes = printTypes + (printTypes == "" ? "" : ",") + $(this).val();
+				});
+
+				if (printTypes == "") {
+					$(this).showToastr('请选择打印类型');
+					return;
+				}
+
+                if ($("#Id").val() > 0) {
+                    dispatchBillId = $("#Id").val();
+                }
+
+				if (dispatchBillId == "" || dispatchBillId == 0)
+				{
+
+					$(this).showToastr('请先调度单据');
+					return;
+				}
+
+                WinMsg.confirm({ message: "确定打印所选单据吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+                    var setting = {}
+                    var LODOP = null;
+                    var rs = $(this).getSyncData("/DispatchBill/PrintSetting", null, "get");
+                    if (rs.Success) {
+                        setting = rs.Data;
+                        loadCLodop(document, setting.PrintPort, function () {
+                            //判断页面是否已加载LODOP
+                            if (LODOP == null || LODOP == undefined) {
+                                LODOP = getLodopFirst(document);
+                                LODOP = getLodopSecond(document);
+                            }
+                            if (LODOP == null || LODOP == undefined) {
+                                loadingButton.stop();
+                                return;
+                            } else {
+                                $("#printData").html("");
+                            }
+                            $.ajax({
+                                type: "get",
+                                beforeSend: function () {
+                                    $("#BtnPrint").html("<img src='@LayoutExtensions.ResourceServerUrl("/content/images/loading.gif")' height='30px' width='30px'>");
+                                    $("#BtnPrint").attr({ disabled: "disabled" });
+                                },
+                                url: "/DispatchBill/BillPrint",
+                                data: {
+                                    printTypes: printTypes,
+                                    dispatchBillId: dispatchBillId
+                                },
+                                contentType: "application/json",
+                                dataType: "json",
+                                success: function (result) {
+                                    if (result.Success) {
+                                        $("#DispatchBillWindows").modal('hide');
+                                        var htmls = result.Data;
+                                        LODOP.PRINT_INIT("调度单据");
+                                        if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+                                            LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+                                        }
+                                        htmls.forEach(function (html, index) {
+                                            if (setting.IsPrintPageNumber) {
+                                                LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+                                            }
+                                            if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+                                                LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+                                            }
+                                            LODOP.NewPageA();
+                                        });
+                                        LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+                                        LODOP.PREVIEW(true);
+                                    }
+                                    else {
+                                        $(this).showToastr(result.Message);
+                                    }
+                                },
+                                complete: function () {
+                                    $("#BtnPrint").removeAttr("disabled");
+                                    $("#BtnPrint").html("<i class=\"fa fa-print mr5\"></i>打印");
+                                },
+                                error: function () {
+                                    $(this).showToastr('网络错误，请重新保存！');
+                                }
+                            });
+                        });
+                    }
+
+
+				});
+			});
+		});
+</script>

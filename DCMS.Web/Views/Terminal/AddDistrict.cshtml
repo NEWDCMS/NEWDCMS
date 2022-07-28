@@ -1,0 +1,42 @@
+﻿@model DCMS.ViewModel.Models.Terminals.DistrictModel
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="StoreId" type="hidden" />
+<input name="DistrictParentId" type="hidden" id="DistrictParentId" value="@Model.ParentId"/>
+
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        名称
+        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="片区名称"></i>
+    </lable>
+    <div class="col-lg-8">
+        <dcms-editor asp-for="Name" />
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        父类
+        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="父类代码"></i>
+    </lable>
+    <div class="col-lg-8">
+        <dcms-select asp-for="ParentId" asp-items="@Model.DistrictList" asp-default="上级片区" />
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        描述
+        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="描述"></i>
+    </lable>
+    <div class="col-lg-8">
+        <dcms-editor asp-for="Describe" />
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        序号
+        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="顺序号"></i>
+    </lable>
+    <div class="col-lg-8">
+        <dcms-editor asp-for="OrderNo" />
+    </div>
+</div>

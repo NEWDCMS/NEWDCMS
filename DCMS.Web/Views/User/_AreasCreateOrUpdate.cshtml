@@ -1,0 +1,39 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Users;
+
+@model UserModel
+
+
+<div class="form-group">
+    <label asp-for="SelectedUserDistricts" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-8">
+        @*@UserDistricts()*@
+        @if (Model.AvailableUserDistricts != null && Model.AvailableUserDistricts.Count > 0)
+        {
+            @*foreach (var userDistrict in Model.AvailableUserDistricts)
+            {
+                <label class="checkbox-inline mr10">
+                    <input type="checkbox" name="SelectedUserDistricts" value="@userDistrict.Id"
+                           @if (Model.SelectedUserDistricts != null && Model.SelectedUserDistricts.Contains(userDistrict.Id)) { <text> checked="checked" </text> } />
+                    @userDistrict.DistrictsName
+                </label>
+            }*@
+        }
+        else
+        {
+            <div class="alert alert-warning alert-micro">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-warning pr10"></i>
+                <strong>警告!</strong> 片区信息不存在或者系统没有指定初始片区。
+            </div>
+        }
+
+        <div class="menuContent" style="width: 95%; border: 1px solid rgb(170, 170, 170); z-index: 10;">
+            <ul id="TreeUserDistricts" class="ztree" style="margin-top: 0; width: 100%; height: auto;"></ul>
+        </div>
+        <button class="btn btn-primary btn-sm mt10" type="button" id="UserDistrictsSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+    </div>
+</div>

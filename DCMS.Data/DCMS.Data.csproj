@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+	  <Nullable>disable</Nullable>
+    <Copyright>Copyright © DCMS</Copyright>
+    <Company>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Company>
+    <Authors>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Authors>
+    <Version>3.0.0.1</Version>
+    <Description>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Description>
+    <PackageLicenseUrl>http://www.jsdcms.com/</PackageLicenseUrl>
+    <PackageProjectUrl>http://www.jsdcms.com/</PackageProjectUrl>
+    <RepositoryUrl></RepositoryUrl>
+    <RepositoryType></RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Mapping\Report\**" />
+    <EmbeddedResource Remove="Mapping\Report\**" />
+    <None Remove="Mapping\Report\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="EfDataProviderManager.cs" />
+    <Compile Remove="EfRepository.cs" />
+    <Compile Remove="IDbContext.cs" />
+    <Compile Remove="SqlServerDataProvider.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.AutoHistory" Version="5.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
+    <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.2.22" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.1" />
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="6.13.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DCMS.Core\DCMS.Core.csproj" />
+  </ItemGroup>
+
+</Project>

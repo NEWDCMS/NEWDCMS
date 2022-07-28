@@ -1,0 +1,372 @@
+﻿@using System.Linq;
+@using System.Collections.Generic;
+@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Visit;
+
+@model UserAssessmentModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">档案</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">员工相关</a>
+                </li>
+                <li class="crumb-trail">业绩考核</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                @*Toolbar*@
+                <div class="row mb10">
+                    <div class="col-md-2">
+                        <div class="input-group date pull-left">
+                            <input id="Year" Name="Year" class="form-control yearpicker" placeholder="年份..." value="@DateTime.Now.Year"  />
+                            <span class="input-group-addon cursor">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <input asp-for="Name" class="form-control" placeholder="名称..." />
+                    </div>
+                    <div class="col-md-1 pull-right">
+                        <button class="btn btn-primary btn-block" type="button" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                    </div>
+                </div>
+
+                @*GridView*@
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span>业绩设置
+                        </span>
+                    </div>
+                    <div class="panel-body p5">
+                        <table id="UserAssessmentItems" class="table table-striped table-bordered table-hover"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End: Content -->
+    <input id="hid_AssessmentId" type="hidden" value="@Model.Id" />
+</section>
+
+@{
+    
+}
+
+@section CurPageScripts
+{
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            $(".yearpicker").datetimepicker({
+                startView: 2,
+                maxViewMode: 2,
+                minViewMode: 2,
+                format: 'YYYY',
+                language: 'zh-CN',
+                autoclose: true
+            })
+
+
+            $("#Year").change(function () {
+                var rs = $(this).getSyncData("/Assessment/GetUserAssessmentByYear", { year: $("#Year").val() }, "get");
+                if (rs.Success) {
+                    $("#hid_AssessmentId").val(rs.Data.Id);
+                    $("#Name").val(rs.Data.Name);
+                    $('#UserAssessmentItems').bootstrapTable('destroy');
+                    load(rs.Data.Id);
+                }
+            });
+
+            var load = function (assessmentId) {
+                $("#UserAssessmentItems").bootstrapTable({
+                    url: "/Assessment/AsyncLists?AssessmentId=" + assessmentId,
+                    striped: true,
+                    cache: false,
+                    pagination: true,
+                    showPagination: false,
+                    sidePagination: "server",
+                    sortable: false,
+                    sortOrder: "asc",
+                    search: false,
+                    strictSearch: false,
+                    showColumns: false,
+                    showRefresh: false,
+                    clickToSelect: false,
+                    uniqueId: "id",
+                    showToggle: false,
+                    editable: true,
+                    cardView: false,
+                    detailView: false,
+                    onLoadSuccess: function (data) {
+                        $(".fixed-table-pagination").hide();
+                    },
+                    onPostBody: function (data) {
+                        $("[data-toggle='popover']").popover();
+                    },
+                    columns: [
+                        {
+                            title: '<i class="fa fa-gear fs18"></i>',
+                            align: 'center', formatter: function (value, row, index) {
+                                return m_pagerow + index + 1;
+                            }
+                        },
+                        { field: 'Id', visible: false },
+                        { field: 'AssessmentId', visible: false },
+                        { field: 'StoreId', visible: false },
+                        { field: 'UserId', visible: false },
+                        {
+                            field: 'UserName',
+                            title: '员工名称',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Jan',
+                            title: '一月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Feb',
+                            title: '二月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Mar',
+                            title: '三月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Apr',
+                            title: '四月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'May',
+                            title: '五月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Jun',
+                            title: '六月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Jul',
+                            title: '七月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Aug',
+                            title: '八月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Sep',
+                            title: '九月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Oct',
+                            title: '十月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Nov',
+                            title: '十一月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Dec',
+                            title: '十二月',
+                            width: '90',
+                            align: 'center'
+                        },
+                        {
+                            field: 'Remark',
+                            title: '备注',
+                            align: 'center',
+                            formatter: $(this).formatIsNull
+                        }
+                    ],
+                    onClickCell: function (field, value, row, $element) {
+                        if (field == "Operate") {
+                            return false;
+                        }
+
+                        var input = $($element).find("input");
+                        if (input.length > 0)
+                            return false;
+
+                        //当前列所在行的索引
+                        var index = $element.parent().attr("data-index");
+                        if (["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Remark"].indexOf(field) >= 0) {
+                            var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+
+                            if (field == "Jan" || field == "Feb" || field == "Mar" || field == "Apr" || field == "May" || field == "Jun" || field == "Jul" || field == "Aug" || field == "Sep" || field == "Oct" || field == "Nov" || field == "Dec") {
+                                {
+                                    $($element).html(html);
+                                    var inputObj = $("#" + $(html).attr("id"));
+
+                                    inputObj.focus();
+                                    inputObj.select();
+
+                                    inputObj.bind("focusout", function () {
+                                        if ($(this).val() == "") {
+                                            $(this).val(0);
+                                        }
+                                        row[field] = parseFloat($(this).val());
+                                        $("#UserAssessmentItems").bootstrapTable('updateRow', { index: index, row: row });
+                                        $($element).html("" + value + "");
+                                    });
+                                    inputObj.bind("change", function () {
+                                        if (!isNaN($(this).val())) {
+                                            if ($(this).val() == "") {
+                                                $(this).val(0);
+                                            }
+                                            row[field] = $(this).val();
+                                        }
+                                        else {
+                                            $(this).val(0);
+                                            $(this).showToastr("只能输入数字!");
+                                        }
+                                    });
+                                }
+                            }
+                            else if (field == "Remark") {
+                                $($element).html(html);
+                                var inputObj = $("#" + $(html).attr("id"));
+
+                                inputObj.focus();
+                                inputObj.select();
+
+                                inputObj.bind("focusout", function () {
+                                    row[field] = $(this).val();
+                                    $("#UserAssessmentItems").bootstrapTable('updateRow', { index: index, row: row });
+                                    $($element).html("" + value + "");
+                                });
+                            }
+
+                        }
+                    }
+                });
+            }
+            load($("#hid_AssessmentId").val());
+            //销售单项目
+            
+
+            //保存线路访问
+            $("#FormSubmit").click(function () {
+
+                //获取表格的所有内容行
+                var serializeData = [];
+                $.each($('#UserAssessmentItems').bootstrapTable('getData'), function (i, row) {
+                    var tmpObj = {
+                        "Id": typeof (row.Id) == 'undefined' ? "0" : row.Id,
+                        "AssessmentId": $("#hid_AssessmentId").val(),
+                        "UserId": typeof (row.UserId) == 'undefined' ? "0" : row.UserId,
+                        "UserName": row.UserName,
+                        "Jan": typeof (row.Jan) == 'undefined' ? "" : row.Jan,
+                        "Feb": typeof (row.Feb) == 'undefined' ? "" : row.Feb,
+                        "Mar": typeof (row.Mar) == 'undefined' ? "" : row.Mar,
+                        "Apr": typeof (row.Apr) == 'undefined' ? "" : row.Apr,
+                        "May": typeof (row.May) == 'undefined' ? "" : row.May,
+                        "Jun": typeof (row.Jun) == 'undefined' ? "" : row.Jun,
+                        "Jul": typeof (row.Jul) == 'undefined' ? "" : row.Jul,
+                        "Aug": typeof (row.Aug) == 'undefined' ? "" : row.Aug,
+                        "Sep": typeof (row.Sep) == 'undefined' ? "" : row.Sep,
+                        "Oct": typeof (row.Oct) == 'undefined' ? "" : row.Oct,
+                        "Nov": typeof (row.Nov) == 'undefined' ? "" : row.Nov,
+                        "Dec": typeof (row.Dec) == 'undefined' ? "" : row.Dec,
+                        "Remark": typeof (row.Remark) == 'undefined' ? "" : row.Remark,
+                        "StoreId": row.StoreId,
+                    }
+                    serializeData.push(tmpObj);
+                });
+
+                //保存的数据
+                var postData = {
+                    Id: $("#hid_AssessmentId").val(),
+                    Year: $("#Year").val(),
+                    Name: $("#Name").val(),
+                    //线路项目
+                    Items: serializeData
+
+                };
+
+                //console.log(JSON.stringify(serializeData));
+                $(this).remoteSubmit("post", "/Assessment/UpdateUserAssessment?UserAssessmentId=" + $("#hid_AssessmentId").val(), postData, null, function () {
+                    $("#UserAssessmentItems").bootstrapTable('refresh', { url: "/Assessment/List", silent: true, query: { AssessmentId: $("#hid_AssessmentId").val() } });
+                });
+            });
+        });
+    </script>
+}

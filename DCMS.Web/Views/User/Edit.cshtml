@@ -1,0 +1,280 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.ViewModel.Models.Users;
+
+@model UserModel
+
+<section id="content_wrapper">
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">档案管理</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">员工相关</a>
+                </li>
+                <li class="crumb-trail">用户管理</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <form asp-action="Edit" asp-controller="User" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="UserForm">
+            <div class="panel">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        <span class="glyphicon glyphicon-tasks"></span> 编辑用户
+                    </div>
+                </div>
+                <div class="panel-body p10 pt10">
+                    <div class="tab-block">
+                        <ul class="nav nav-tabs tabs-bg">
+                            <li class="active">
+                                <a href="#tab10_1" data-toggle="tab" aria-expanded="true"><i class="fa fa-align-justify text-purple"></i> 基本信息</a>
+                            </li>
+                            <li>
+                                <a href="#tab10_2" data-toggle="tab" aria-expanded="false"><i class="fa fa-th text-purple"></i> 片区</a>
+                            </li>
+                            <li>
+                                <a href="#tab10_3" data-toggle="tab" aria-expanded="false"><i class="fa fa-user text-purple"></i> 为已购买账户创建操作账号</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="tab10_1" class="tab-pane active">
+                                @await Html.PartialAsync("_CreateOrUpdate", Model)
+                            </div>
+                            <div id="tab10_2" class="tab-pane">
+                                @await Html.PartialAsync("_AreasCreateOrUpdate", Model)
+                            </div>
+                            <div id="tab10_3" class="tab-pane">
+                                <div class="alert alert-danger alert-dismissable">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                    <i class="fa fa-remove pr10"></i> 请先保存属性信息!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="form-group mbn">
+                        <div class="col-lg-12">
+                            <button class="btn btn-primary" type="submit" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                            <button class="btn btn-info" type="submit" id="FormSubmitContinue" name="save-continue" value="保存并编辑"><i class="fa fa-clipboard mr5"></i>保存并编辑</button>
+                            <a class="btn btn-warning" href="@Url.Action("List")"><i class="fa fa-undo mr5"></i> 返回</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <!-- End: Content -->
+</section>
+
+
+@section CurPageScripts
+{
+    <script type="text/javascript">
+
+        function numberFormatter(value, row, index) {
+            return m_pagerow + index + 1;
+        }
+
+        function strEnabledFormatter(value, row, index) {
+            if (value === 'false') {
+                return "否";
+            } else {
+                return "是";
+            }
+        }
+
+        function nameFormatter(value, row) {
+            var icon = row.Id % 2 === 0 ? 'glyphicon-star' : 'glyphicon-star-empty'
+            return '<i class="glyphicon ' + icon + '"></i> ' + value;
+        }
+
+        function priceFormatter(value) {
+            // 16777215 == ffffff in decimal
+            var color = '#' + Math.floor(Math.random() * 6777215).toString(16);
+            return '<div  style="color: ' + color + '">' +
+                '<i class="glyphicon glyphicon-usd"></i>' +
+                value.substring(1) +
+                '</div>';
+        }
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            $("#AccountType").change(function () {
+                var select = $("#AccountType option:selected").val();
+                location.href = "@Url.Action("Edit")?store=" + select + "&id=@Model.Id";
+            });
+
+
+            $("#FormSubmit").click(function () {
+
+                //表单验证
+                jQuery.validator.addMethod("notZero", function (value, element, param) {
+                    return this.optional(element) || (value != 0);
+                }, "请确保输入的值不为零");
+
+                var validator = $formobj.validate({
+                    /* @@validation states + elements
+                    ------------------------------------------- */
+                    errorClass: "text-danger",
+                    validClass: "text-success",
+                    errorElement: "em",
+                    /* @@validation rules
+                    ------------------------------------------ */
+                    rules: {
+                        Username: {
+                            required: true
+                        },
+                        Email: {
+                            required: true
+                        },
+                        MobileNumber: {
+                            required: true
+                        },
+                    },
+                    messages: {
+                        Username: {
+                            required: '请输入用户名'
+                        },
+                        Email: {
+                            required: '请输入邮箱'
+                        },
+                        MobileNumber: {
+                            required: '请输入手机号'
+                        }
+                    },
+                    /* @@validation highlighting + error placement
+                    ---------------------------------------------------- */
+                    highlight: function (element, errorClass, validClass) {
+                        $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                    },
+                    unhighlight: function (element, errorClass, validClass) {
+                        $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                    },
+                    errorPlacement: function (error, element) {
+                        if (element.is(":radio") || element.is(":checkbox")) {
+                            element.closest('.option-group').after(error);
+                        } else {
+                            //error.insertAfter(element.parent());
+                            element.parent().append(error);
+                        }
+                    },
+                    submitHandler: function (form) {
+                        //alert("submitted");
+                        form.submit();
+                    }
+                });
+            });
+
+
+            //片区 zTree
+            var treeSetting = {
+                view: {
+                    showIcon: true,
+                    selectedMulti: false
+                },
+                check: {
+                    enable: true
+                },
+                data: {
+                    simpleData: {
+                        enable: true
+                    }
+                },
+                edit: {
+                    enable: false
+                },
+                callback: {
+                    // onCheck: onCheck
+                }
+            };
+            var zNodes = @Html.Raw(Model.UserDistrictsZTree);
+            var zTree = $.fn.zTree.init($("#TreeUserDistricts"), treeSetting, zNodes);
+            zTree.expandAll(zTree);//默认是展开的
+            //保存片区设置
+            $("#UserDistrictsSubmit").click(function ()
+            {
+                var nodes = zTree.getCheckedNodes(true);
+                var l = nodes.length;
+                if (l <= 0)
+                {
+                    $(this).showToastr('请至少选择一个片区！');
+                    return;
+                }
+                else
+                {
+                    var leaves = "";
+                    for (var i = 0; i < l; i++)
+                    {
+                        if (!nodes[i].isParent)
+                        {
+                            leaves += nodes[i].id + ",";
+                        }
+                    }
+
+					var param = { userId: "@Model.Id", ids: leaves };
+                    $.ajax(
+                        {
+                            type: 'POST',
+                            url: "/User/SetDistricts",
+                            data: param,
+                            success: function (result)
+                            {
+                                if (result.Success)
+                                {
+                                    toastr.success(result.Message);
+                                    $modal.modal('hide');
+                                }
+                                else
+                                {
+                                    $(this).showToastr(result.Message);
+                                }
+                            },
+                            error: function ()
+                            {
+                                $(this).showToastr('网络错误，请重新保存！');
+                            }
+                        });
+                }
+            });
+
+        });
+    </script>
+}
+
+

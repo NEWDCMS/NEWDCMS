@@ -1,0 +1,1010 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+@model RecordingVoucherModel
+
+
+<script type="text/javascript">
+
+    jQuery(document).ready(function () {
+
+        "use strict";
+
+        // Init Theme Core
+        Core.init();
+
+        // Init Demo JS
+        Demo.init();
+        'debitAmount', 'debitTenMillion', 'debitMillion', 'debitHundredThousand', 'debitTenThousand', 'debitThousand', 'debitHundred', 'debitTen', 'debitYuan', 'debitJiao', 'debitFen'
+
+        var jienum = 0;
+        var dainum = 0;
+        //收款项目
+        $("#VoucherItems").bootstrapTable({
+            @Html.Raw(Model.Vouchers.Count > 0 ? "url: '/RecordingVoucher/AsyncVoucherItems?voucherId=" + Model.Id + "'," : "length: 9,")
+            striped: true,
+            cache: false,
+            pagination: true,
+            showPagination: false,
+            sidePagination: "server",
+            sortable: false,
+            sortOrder: "asc",
+            search: false,
+            strictSearch: false,
+            showColumns: false,
+            showRefresh: false,
+            clickToSelect: false,
+            uniqueId: "id",
+            showToggle: false,
+            editable: true,
+            cardView: false,
+            detailView: false,
+            showFooter: true,
+            headerRowSpan: 2,
+            columns: [
+                {
+                    field: 'Number',
+                    title: '<i class="fa fa-gear fs18"></i>',
+                    align: 'center',
+                    width: "50",
+                    formatter: function (value, row, index) {
+                        return m_pagerow + index + 1;
+                    },
+                    footerFormatter: function (value) {
+                        return '总计';
+                    },
+                    hrowspan: 2,
+                    hcolspan: 0,
+                    merged: false
+                },
+                {
+                    field: 'Summary',
+                    title: '摘要',
+                    width: @((int)AccessGranularityEnum.CostProfitView),
+                    align: 'center',
+                    hrowspan: 2,
+                    hcolspan: 0,
+                    merged: false,
+                    formatter: $(this).formatIsNull
+                },
+                {
+                    field: 'AccountingOptionName',
+                    title: '会计科目',
+                    align: 'center',
+                    width: @((int)AccessGranularityEnum.CostAdjustmentApproved),
+                    hrowspan: 2,
+                    hcolspan:0,
+                    merged: false,
+                    formatter: $(this).formatIsNull
+                },
+                //
+                { field: 'debitGroup', title: '借方金额', align: 'center', hcolspan: 11, hrowspan:1 , isGroup: true, visible: false },
+                {
+                    field: 'debitAmount', width: "50", title: '亿', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        if (value == 0 || value == "" || value == undefined) {
+                            return "";
+                        }
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        if (jienum.toString().split(".")[0].length >= 9);
+                        {
+                            count = jienum.toString().split(".")[0].substring(jienum.toString().split(".")[0].length - 9, jienum.toString().split(".")[0].length - 8);
+                        }
+                        jienum = 0;
+                        if (isNaN(count)) {
+                            count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                        
+                        
+                    }
+                },
+                {
+                    field: 'debitTenMillion', width: "50", title: '千', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        if (value == 0 || value == "" || value == undefined) {
+                            return "";
+                        }
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        if (jienum.toString().split(".")[0].length >= 8);
+                        {
+                            count = jienum.toString().split(".")[0].substring(jienum.toString().split(".")[0].length - 8, jienum.toString().split(".")[0].length - 7);
+                        }
+                        jienum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'debitMillion', width: "50", title: '百', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        if (jienum.toString().split(".")[0].length >= 7);
+                        {
+                            count = jienum.toString().split(".")[0].substring(jienum.toString().split(".")[0].length - 7, jienum.toString().split(".")[0].length - 6);
+                        }
+                        jienum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'debitHundredThousand', width: "50", title: '十', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        if (jienum.toString().split(".")[0].length >= 6);
+                        {
+                            count = jienum.toString().split(".")[0].substring(jienum.toString().split(".")[0].length - 6, jienum.toString().split(".")[0].length - 5);
+                        }
+                        jienum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'debitTenThousand', width: "50", title: '万', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        if (jienum.toString().split(".")[0].length >= 5);
+                        {
+                            count = jienum.toString().split(".")[0].substring(jienum.toString().split(".")[0].length - 5, jienum.toString().split(".")[0].length - 4);
+                        }
+                        jienum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'debitThousand', width: "50", title: '千', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        if (jienum.toString().split(".")[0].length >= 4);
+                        {
+                            count = jienum.toString().split(".")[0].substring(jienum.toString().split(".")[0].length - 4, jienum.toString().split(".")[0].length - 3);
+                        }
+                        jienum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'debitHundred', width: "50", title: '百', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        if (jienum.toString().split(".")[0].length >= 3);
+                        {
+                            count = jienum.toString().split(".")[0].substring(jienum.toString().split(".")[0].length - 3, jienum.toString().split(".")[0].length - 2);
+                        }
+                        jienum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'debitTen', width: "50", title: '十', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        if (jienum.toString().split(".")[0].length >= 2);
+                        {
+                            count = jienum.toString().split(".")[0].substring(jienum.toString().split(".")[0].length - 2, jienum.toString().split(".")[0].length - 1);
+                        }
+                        jienum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'debitYuan', width: "50", title: '元', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        if (jienum.toString().split(".")[0].length >= 1);
+                        {
+                            count = jienum.toString().split(".")[0].substring(jienum.toString().split(".")[0].length - 1, jienum.toString().split(".")[0].length);
+                        }
+                        jienum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    }},
+                {
+                    field: 'debitJiao', width: "50", title: '角', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        jienum = jienum.toFixed(2);
+                        if (jienum.toString().split(".")[1] != undefined) {
+                            if (jienum.toString().split(".")[1].length >= 2);
+                                {
+                                    count = jienum.toString().split(".")[1].substring(jienum.toString().split(".")[1].length - 2, jienum.toString().split(".")[1].length - 1);
+                                }
+                        }
+
+                        jienum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'debitFen', width: "50", title: '分', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                jienum += parseFloat((typeof (row.DebitAmount) == 'undefined' || row.DebitAmount == "") ? '0' : row.DebitAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                jienum += parseFloat((typeof (value[i].DebitAmount) == 'undefined' || value[i].DebitAmount == "") ? '0' : value[i].DebitAmount);
+                            }
+                        }
+                        jienum = jienum.toFixed(2);
+                        if (jienum.toString().split(".")[1] != undefined) {
+                                if (jienum.toString().split(".")[1].length >= 1);
+                            {
+                                count = jienum.toString().split(".")[1].substring(jienum.toString().split(".")[1].length - 1, jienum.toString().split(".")[1].length);
+                            }
+                        }
+
+                        jienum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                //
+                { field: 'creditGroup', title: '贷方金额', align: 'center', hcolspan: 11, hrowspan: 1, isGroup: true, visible: false},
+                {
+                    field: 'creditAmount', width: "50", title: '亿', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        if (dainum.toString().split(".")[0].length >= 9);
+                        {
+                            count = dainum.toString().split(".")[0].substring(dainum.toString().split(".")[0].length - 9, dainum.toString().split(".")[0].length-8);
+                        }
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    }},
+                {
+                    field: 'creditTenMillion', width: "50", title: '千', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        if (dainum.toString().split(".")[0].length >= 8);
+                        {
+                            count = dainum.toString().split(".")[0].substring(dainum.toString().split(".")[0].length - 8, dainum.toString().split(".")[0].length-7);
+                        }
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    }},
+                {
+                    field: 'creditMillion', width: "50", title: '百', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        if (dainum.toString().split(".")[0].length >= 7);
+                        {
+                            count = dainum.toString().split(".")[0].substring(dainum.toString().split(".")[0].length - 7, dainum.toString().split(".")[0].length-6);
+                        }
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'creditHundredThousand', width: "50", title: '十', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        if (dainum.toString().split(".")[0].length >= 6);
+                        {
+                            count = dainum.toString().split(".")[0].substring(dainum.toString().split(".")[0].length - 6, dainum.toString().split(".")[0].length-5);
+                        }
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'creditTenThousand', width: "50", title: '万', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        if (dainum.toString().split(".")[0].length >= 5);
+                        {
+                            count = dainum.toString().split(".")[0].substring(dainum.toString().split(".")[0].length - 5, dainum.toString().split(".")[0].length-4);
+                        }
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'creditThousand', width: "50", title: '千', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        if (dainum.toString().split(".")[0].length >= 4);
+                        {
+                            count = dainum.toString().split(".")[0].substring(dainum.toString().split(".")[0].length - 4, dainum.toString().split(".")[0].length-3);
+                        }
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'creditHundred', width: "50", title: '百', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        if (dainum.toString().split(".")[0].length >= 3);
+                        {
+                            count = dainum.toString().split(".")[0].substring(dainum.toString().split(".")[0].length - 3, dainum.toString().split(".")[0].length-2);
+                        }
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'creditTen', width: "50", title: '十', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        if (dainum.toString().split(".")[0].length >= 2);
+                        {
+                            count = dainum.toString().split(".")[0].substring(dainum.toString().split(".")[0].length - 2, dainum.toString().split(".")[0].length-1);
+                        }
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'creditYuan', width: "50", title: '元', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        if (dainum.toString().split(".")[0].length >= 1);
+                        {
+                            count = dainum.toString().split(".")[0].substring(dainum.toString().split(".")[0].length - 1, dainum.toString().split(".")[0].length);
+                        }
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'creditJiao', width: "50", title: '角', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        dainum = dainum.toFixed(2);
+                        if (dainum.toString().split(".")[1] != undefined) {
+                            if (dainum.toString().split(".")[1].length >= 2);
+                            {
+                                count = dainum.toString().split(".")[1].substring(dainum.toString().split(".")[1].length - 2, dainum.toString().split(".")[1].length-1);
+                            }
+                        }
+
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    } },
+                {
+                    field: 'creditFen', width: "50", title: '分', align: 'center', merged: true,
+                    footerFormatter: function (value) {
+                        var count = 0;
+                        var datas = $('#VoucherItems').bootstrapTable('getData');
+                        var len = datas.length, i, row;
+                        if (len > 1) {
+                            for (i = len - 1; i >= 0; i--) {
+                                row = datas[i];
+                                dainum += parseFloat((typeof (row.CreditAmount) == 'undefined' || row.CreditAmount == "") ? '0' : row.CreditAmount);
+                            }
+                        }
+                        else {
+                            for (var i in value) {
+                                dainum += parseFloat((typeof (value[i].CreditAmount) == 'undefined' || value[i].CreditAmount == "") ? '0' : value[i].CreditAmount);
+                            }
+                        }
+                        dainum = dainum.toFixed(2);
+                        if (dainum.toString().split(".")[1] != undefined) {
+                            if (dainum.toString().split(".")[1].length >= 1);
+                            {
+                                count = dainum.toString().split(".")[1].substring(dainum.toString().split(".")[1].length - 1, dainum.toString().split(".")[1].length);
+                            }
+                        }
+
+                        dainum = 0;
+                        if (isNaN(count)) {
+			                count = 0;
+                        }
+                        var total = parseFloat((typeof (count) == 'undefined' || count == "") ? '0' : count).toFixed(0);
+                        return total;
+                    }
+                },
+                {
+                    field: 'Operate',
+                    title: '操作',
+                    align: 'center',
+                    width: '100',
+                    hrowspan: 2,
+                    hcolspan: 0,
+                    merged: false,
+                    events: {
+						'click .rowAppend': function (e, value, row, index) {
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True") {
+								return false;
+							}
+                            $('#VoucherItems').bootstrapTable('insert', row);
+                        },
+                        'click .rowDel': function (e, value, row, index)
+						{
+							//审核、红冲后不能修改
+							if ("@Model.AuditedStatus" == "True") {
+								return false;
+							}
+                            // 删除
+                            if (row.uniqueid == undefined) {
+                                $("#VoucherItems").bootstrapTable('remove', { field: "id", values: [parseInt(row.Id)] });
+                            }
+                            else {
+                                $("#VoucherItems").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+                            }
+                        }
+                    },
+                    formatter: function (value, row, index) {
+                        return [
+                            '<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+                            '<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+                        ].join('');
+                    }
+                },
+                {
+                    field: "AccountingOptionId",
+                    hvisible: false,
+                    visible: false,
+                    hrowspan: 2,
+                    hcolspan: 0,
+                    merged: false,
+                },
+                {
+                    field: "DebitAmount",
+                    hvisible: false,
+                    visible: false,
+                    hrowspan: 2,
+                    hcolspan: 0,
+                    merged: false
+                },
+                {
+                    field: "CreditAmount",
+                    hvisible: false,
+                    visible: false,
+                    hrowspan: 2,
+                    hcolspan: 0,
+                    merged: false
+                }
+            ],
+			onClickCell: function (field, value, row, $element) {
+
+                if (field == "Operate") {
+					return false;
+				}
+
+                var input = $($element).find("input");
+                var select = $($element).find("select");
+                if (input.length > 0 || select.length > 0)
+                    return false;
+
+                //console.log(field);
+
+                //当前列所在行的索引
+				var index = $element.parent().attr("data-index");
+
+				//审核、红冲后不能修改
+				if ("@Model.AuditedStatus" == "True") {
+					return false;
+				}
+
+                if (field == "AccountingOptionName") {
+                    var html = '<div class="input-group">' +
+                        '<input type="text" class="form-control input-sm"  name="AccountingOptionName" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">' +
+                        '<span class="input-group-btn"><button type="button" class="btn btn-default btn-sm searchproduct" id="search_' + field + "_" + row.Id + '" data-index="' + index + '"><span class="glyphicon glyphicon-search"></span></button></span>' +
+                        '</div>';
+                    $($element).html(html);
+                    var inputObj = $("#search_" + field + "_" + row.Id);
+                    //选择科目
+                    inputObj.bind("click", function ()
+                    {
+                       //var actionUrl = "/Accounting/AsyncSearchSelectPopup?type=1&accountCodeTypeIds="+"1,2,4,75";
+                       // var optionUrl = "/Accounting/AsyncGetAccountingOptions";
+                        var selectIndex = $(this).attr("data-index");
+                        var PageTable = "VoucherItems";
+                        var actionUrl = "/Accounting/AsyncSearchSelectPopup?Multi=0&self=1&ifcheck=1&selectIndex=" + selectIndex + "&PageTable=" + PageTable;
+						$(this).accountingSingleSelectPopup($("#AccountingModalWindow"), actionUrl, 1, "选择科目", $("#AccountingForm"), selectIndex, function (options) {
+							//$("#VoucherItems").bootstrapTable('updateRow', {
+       //                         index: selectIndex, row: { AccountingOptionId: options[0].id, AccountingOptionName: options[0].name }
+       //                     });
+                            $("#VoucherItems").bootstrapTable('updateRow', {
+                                index: selectIndex, row: { AccountingOptionId: options[0].AccountingOptionId, AccountingOptionName: options[0].name }
+                            });
+                        });
+                        return false;
+                    });
+                }
+                else if (['debitAmount', 'debitTenMillion', 'debitMillion', 'debitHundredThousand', 'debitTenThousand', 'debitThousand', 'debitHundred', 'debitTen', 'debitYuan', 'debitJiao', 'debitFen'].indexOf(field) >= 0)
+                {
+                    //列合并
+                    var data = $('#VoucherItems').bootstrapTable('getData', true);
+                    $(this).mergeDebitColspan(data, ['debitAmount', 'debitTenMillion', 'debitMillion', 'debitHundredThousand', 'debitTenThousand', 'debitThousand', 'debitHundred', 'debitTen', 'debitYuan', 'debitJiao', 'debitFen'], $('#VoucherItems'), 3, row, index, row.DebitAmount);
+
+                }
+                else if (['creditAmount', 'creditTenMillion', 'creditMillion', 'creditHundredThousand', 'creditTenThousand', 'creditThousand', 'creditHundred', 'creditTen', 'creditYuan', 'creditJiao', 'creditFen'].indexOf(field) >= 0)
+                {
+                    //列合并
+                    var data = $('#VoucherItems').bootstrapTable('getData', true);
+                    $(this).mergeCreditColspan(data, ['creditAmount', 'creditTenMillion', 'creditMillion', 'creditHundredThousand', 'creditTenThousand', 'creditThousand', 'creditHundred', 'creditTen', 'creditYuan', 'creditJiao', 'creditFen'], $('#VoucherItems'), 14, row, index, row.CreditAmount);
+                }
+                else if (field == "Summary") {
+                    var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+                    $($element).html(html);
+                    var inputObj = $("#" + $(html).attr("id"));
+                    inputObj.focus();
+                    inputObj.select();
+                    inputObj.bind("focusout", function () {
+                        $("#VoucherItems").bootstrapTable('updateRow', { index: index, row: { Summary: $(this).val() } });
+                        $($element).html("" + value + "");
+                    });
+                }
+                //debug
+                $.each($('#VoucherItems').bootstrapTable('getData'), function (i, row) {
+                    //console.log(row);
+                });
+            },
+            onLoadSuccess: function (data)
+            {
+                $(".fixed-table-pagination").hide();
+
+                var fieldNameArr = ['debitAmount', 'debitTenMillion', 'debitMillion', 'debitHundredThousand', 'debitTenThousand', 'debitThousand', 'debitHundred', 'debitTen', 'debitYuan', 'debitJiao', 'debitFen'];
+                var allTableData = $('#VoucherItems').bootstrapTable('getData');
+                $.each(allTableData, function (i, row)
+                {
+                    if (row.DebitAmount != 0)
+                    {
+
+                        var debitArr = $(this).convertMoneyForChinese(fieldNameArr, row.DebitAmount);
+
+                        //console.log(debitArr);
+
+                        $("#VoucherItems").bootstrapTable('updateRow', {
+                            index: i,
+                            row: {
+                                debitAmount: debitArr[0],
+                                debitTenMillion: debitArr[1],
+                                debitMillion: debitArr[2],
+                                debitHundredThousand: debitArr[3],
+                                debitTenThousand: debitArr[4],
+                                debitThousand: debitArr[5],
+                                debitHundred: debitArr[6],
+                                debitTen: debitArr[7],
+                                debitYuan: debitArr[8],
+                                debitJiao: debitArr[9],
+                                debitFen: debitArr[10]
+                            }
+                        });
+
+                    }
+                    if (row.CreditAmount != 0) {
+
+                        var creditArr = $(this).convertMoneyForChinese(fieldNameArr, row.CreditAmount);
+
+                        //console.log(creditArr);
+
+                        $("#VoucherItems").bootstrapTable('updateRow', {
+                            index: i,
+                            row: {
+                                creditAmount: creditArr[0],
+                                creditTenMillion: creditArr[1],
+                                creditMillion: creditArr[2],
+                                creditHundredThousand: creditArr[3],
+                                creditTenThousand: creditArr[4],
+                                creditThousand: creditArr[5],
+                                creditHundred: creditArr[6],
+                                creditTen: creditArr[7],
+                                creditYuan: creditArr[8],
+                                creditJiao: creditArr[9],
+                                creditFen: creditArr[10]
+                            }
+                        });
+
+                    }
+                });
+
+            }
+        });
+
+
+        //保存服务器
+        var submitRemoteServer = function (callback,loadingButton) {
+
+            //获取表格的所有内容行
+            var allTableData = $('#VoucherItems').bootstrapTable('getData');
+            var flag = 0;
+            $.each(allTableData, function (i, row) {
+                if (row.AccountingOptionId == "")
+                    flag++;
+            });
+            if (flag > 0 && flag == allTableData.length) {
+                if (loadingButton != undefined) {
+                    loadingButton.stop();
+                }
+                $(this).showToastr("请填写会计科目项目!");
+                return false;
+            }
+
+            var serializeData = [];
+            var accountings = [];
+            $.each(allTableData, function (i, row)
+            {
+                var tmpObj = {
+                    Id: typeof (row.Id) == 'undefined' ? "0" : row.Id,
+                    Summary: typeof (row.Summary) == 'undefined' ? "" : row.Summary,//摘要
+                    AccountingOptionId: typeof (row.AccountingOptionId) == 'undefined' ? "" : (row.AccountingOptionId == "" ? 0 : row.AccountingOptionId),//会计科目
+                    DebitAmount: typeof (row.DebitAmount) == 'undefined' ? "0" : (row.DebitAmount == "" ? 0 : row.DebitAmount),//借方金额
+                    CreditAmount: typeof (row.CreditAmount) == 'undefined' ? "0" : (row.CreditAmount == "" ? 0 : row.CreditAmount),//贷方金额
+                };
+                serializeData.push(tmpObj);
+            });
+
+            //保存的数据
+            var postData = {
+                //凭证字(记)
+                RecordName: $("#RecordName").val(),
+                //凭证号
+                RecordNumber: $("#RecordNumber").val(),
+                //记账日期
+                RecordTime: $("#RecordTime").val(),
+                //单据项目
+                Items: serializeData
+            };
+
+            //debug
+            console.log(postData);
+            //return false;
+
+            //保存服务器
+            $(this).remoteSubmit("post", "/RecordingVoucher/CreateOrUpdate?voucherId=@(Model.Id)", postData, $("#VoucherItems"), callback, null,loadingButton);
+        };
+
+        //保存单据项目
+        $("#FormSubmit").click(function () {
+	        //防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+            submitRemoteServer(function (data) {
+                if (data.Success) {
+                    window.location.href = "/RecordingVoucher/List";
+                }
+            }, loadingButton);
+        });
+
+        //保存并继续
+        $("#FormSubmitContinue").click(function () {
+	        //防止重复保存
+			var loadingButton = Ladda.create(this);
+			loadingButton.start();
+            submitRemoteServer(null,loadingButton);
+        });
+        //审核
+		$(document).on('click', "#btn_auditing", function () {
+	        //防止重复保存
+	        var loadingButton = Ladda.create(this);
+	        loadingButton.start();
+			$(this).remoteSubmit("get", "/RecordingVoucher/AsyncAudited", { billId: "@Model.Id" }, null, function () { location.href = "/RecordingVoucher/List"; }, null,loadingButton);
+		});
+
+
+    });
+</script>

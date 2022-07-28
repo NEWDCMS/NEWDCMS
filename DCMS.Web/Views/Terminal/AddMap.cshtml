@@ -1,0 +1,71 @@
+﻿@model DCMS.ViewModel.Models.Terminals.TerminalModel
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=bB75lKXKUHnI2o0dbND5ktWFSWOEg5Tv"></script>
+    <script type="text/javascript" src="https://api.map.baidu.com/library/AreaRestriction/1.2/src/AreaRestriction_min.js"></script>
+    <title>地图展示</title>
+</head>
+<body>
+    <div class="row" style="text-align:center;margin-bottom:6px;">
+        <input id="txtWords" placeholder="城市" value="" type="text" />
+        <input id="txtLocation_Lng" placeholder="经度" value="" type="text" />
+        <input id="txtLocation_Lat" placeholder="纬度" value="" type="text" />
+        @*<input asp-for="Location_Lng, new { placeholder = "经度..."/>
+        <input asp-for="Location_Lat, new { placeholder = "纬度..."/>*@
+    </div>
+    <div id="allmap" style="width:100%;height:600px;"></div>
+</body>
+</html>
+<script type="text/javascript">
+    // 百度地图API功能
+    var map = new BMap.Map("allmap");    // 创建Map实例
+    var geoc = new BMap.Geocoder();
+    var geolocation = new BMap.Geolocation();
+
+    map.enableScrollWheelZoom(true);
+    // 初始化地图,设置中心点坐标和地图级别
+    map.centerAndZoom(new BMap.Point(108.953044, 34.351147), 15);
+    map.addControl(new BMap.ScaleControl());
+    map.addControl(new BMap.OverviewMapControl());
+    map.addControl(new BMap.MapTypeControl());
+
+    //鼠标点击监听
+    map.addEventListener("click", function (e) {
+        //通过点击百度地图，可以获取到对应的point, 由point的lng、lat属性就可以获取对应的经度纬度
+        var pt = e.point;
+        geoc.getLocation(pt, function (rs) {
+            //addressComponents对象可以获取到详细的地址信息
+            var addComp = rs.addressComponents;
+            var site = addComp.province + ", " + addComp.city + ", " + addComp.district + ", " + addComp.street + ", " + addComp.streetNumber;
+            //将对应的HTML元素设置值
+             $("#site").val(site);
+
+            document.getElementById("txtLocation_Lng").value = pt.lng;
+            document.getElementById("txtLocation_Lat").value = pt.lat;
+            document.getElementById("txtWords").value = site;
+        });
+    });
+
+    function setLocation(lng, lat) {
+        map.clearOverlays();
+        document.getElementById("Location_Lng").value = lng;
+        document.getElementById("Location_Lat").value = lat;
+
+        var pt = new BMap.Point(lng, lat);
+        var marker = new BMap.Marker(pt);//创建标注
+        map.addOverlay(marker);
+        setTimeout(function () {
+            map.panTo(pt);
+        }, 1000);
+    }
+</script>
+

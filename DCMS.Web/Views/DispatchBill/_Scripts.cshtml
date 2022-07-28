@@ -1,0 +1,248 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Sales;
+@using DCMS.Services.Sales;
+@using DCMS.Core.Infrastructure;
+
+@model DispatchBillModel
+
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        "use strict";
+        // Init Theme Core
+        Core.init({
+            sbm: "sb-l-c",
+        });
+        // Init Demo JS
+        Demo.init();
+
+        /*
+         * ======================================================
+         * mschen 2018-12-5 11:24:43 begin
+         * ======================================================
+         */
+
+        //冲改
+		$("#btn_update").click(function () {
+
+			var deliveryId = $("#DeliveryUserId").val();
+			if (deliveryId == "") {
+				$(this).showToastr('请选择送货员');
+				return;
+			}
+
+			var carId = $("#CarId").val();
+			if (carId == "") {
+				$(this).showToastr('请选择车辆');
+				return;
+			}
+
+			$.ajax({
+				type: "get",
+				url: "/DispatchBill/UpdateBill",
+				data: {
+					id: "@Model.Id",
+					deliveryId: deliveryId,
+					carId: carId
+				},
+				contentType: "application/json",
+				dataType: "json",
+				success: function (result) {
+					if (result.Success) {
+						toastr.success(result.Message);
+					}
+					else {
+						$(this).showToastr(result.Message);
+					}
+				},
+				error: function () {
+					$(this).showToastr('网络错误，请重新保存！');
+				}
+			});
+		});
+
+        //红冲
+		$("#btn_red").click(function () {
+            WinMsg.confirm({ message: "确认要红冲吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+				$.ajax({
+				type: "get",
+					url: "/DispatchBill/Reverse",
+				data: {
+					id: "@Model.Id"
+				},
+				contentType: "application/json",
+				dataType: "json",
+				success: function (result) {
+					if (result.Success) {
+						toastr.success(result.Message);
+						$("#btn_update").attr('disabled', true);
+						$("#btn_red").attr('disabled', true);
+					}
+					else {
+						$(this).showToastr(result.Message);
+					}
+				},
+				error: function () {
+					$(this).showToastr('网络错误，请重新保存！');
+				}
+			});
+			});
+        });
+
+		//打印
+		$("#btn_print").click(function () {
+			var dispatchBillId = $("#Id").val();
+
+			var printTypes = "";
+			$("input[name='DispatchBillCreatePrint']:checked").each(function (a, b) {
+				printTypes = printTypes + (printTypes == "" ? "" : ",") + $(this).val();
+			});
+			var selectData = "@Model.SelectDatas";
+
+			if (printTypes == "") {
+				$(this).showToastr('请选择打印类型');
+				return;
+			}
+
+            WinMsg.confirm({ message: "确定打印所选单据吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+                var setting = {}
+                var LODOP = null;
+				var rs = $(this).getSyncData("/SaleBill/PrintSetting", null, "get");
+				if (rs.Success) {
+                    setting = rs.Data;
+					loadCLodop(document, setting.PrintPort, () => {
+                        //判断页面是否已加载LODOP
+                        if (LODOP == null || LODOP == undefined) {
+                            LODOP = getLodopFirst(document);
+                            LODOP = getLodopSecond(document);
+                        }
+                        if (LODOP == null || LODOP == undefined) {
+                            loadingButton.stop();
+                            return;
+                        } else {
+                            $("#printData").html("");
+						}
+                        $.ajax({
+                            type: "get",
+                            url: "/DispatchBill/BillPrint",
+                            data: {
+                                printTypes: printTypes,
+                                dispatchBillId: dispatchBillId
+                            },
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (result) {
+								if (result.Success) {
+									debugger;
+									var htmls = result.Data;
+                                    //LODOP.PRINT_INIT("销售订单");
+                                    if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+                                        LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+                                    }
+                                    htmls.forEach(function (html, index) {
+                                        if (setting.IsPrintPageNumber) {
+                                            LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+                                        }
+                                        if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+                                            LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+                                        }
+                                        LODOP.NewPageA();
+									});
+                                    LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+                                    LODOP.PREVIEW(true);
+								}
+                                else {
+                                    $(this).showToastr(result.Message);
+                                }
+                            },
+                            error: function () {
+                                $(this).showToastr('网络错误，请重新保存！');
+                            }
+                        });
+
+					});
+				}
+			});
+        });
+
+
+		//销售单项目
+		$("#DispatchItems").bootstrapTable({
+			url: "/DispatchBill/AsyncDispatchItems?dispatchBillId=" + "@Model.Id",      //请求后台的URL（*）
+            striped: true,
+            cache: false,
+            pagination: true,
+            showPagination: false,
+            sidePagination: "server",
+            sortable: false,
+            sortOrder: "asc",
+            search: false,
+            strictSearch: false,
+            showColumns: false,
+            showRefresh: false,
+            clickToSelect: false,
+            uniqueId: "id",
+            showToggle: false,
+            editable: true,
+            cardView: false,
+            detailView: false,
+            showFooter: true,
+            onLoadSuccess: function (data) {
+                $(".fixed-table-pagination").hide();
+            },
+			columns: [
+				{
+					field: 'BillNumber', title: '编号', formatter: function (value, row, index) {
+						if (row.BillTypeId == 11) {
+							return [
+								'<a  href="/SaleReservationBill/Edit/' + row.BillId + '">' + row.BillNumber + '</a>'
+							].join("")
+						} else if (row.BillTypeId == 13) {
+							return [
+								'<a  href="/ReturnReservationBill/Edit/' + row.BillId + '">' + row.BillNumber + '</a>'
+							].join("")
+						}
+					}
+				},
+
+				{ field: 'BillTypeName', title: '单据类型' },
+				{ field: 'TransactionDate', title: '交易时间' },
+				{ field: 'BusinessUserName', title: '业务员' },
+				{ field: 'TerminalName', title: '客户' },
+				{ field: 'TerminalAddress', title: '客户地址' },
+				{ field: 'OrderAmount', title: '订单金额' },
+				//{ field: 'OrderQuantity', title: '销售商品数量' },
+                { field: 'OrderQuantityView', title: '销售商品数量' },
+				{
+					field: 'DispatchedStatus', title: '调度状态', formatter: function (value, row, index) {
+						if (value) {
+							return '<span class="label label-success">已调度</span>';
+						} else {
+							return '<span class="label label-default">未调度</span>';
+						}
+					}
+				},
+				{ field: 'Remark', title: '备注' },
+
+			],
+            onClickCell: function (field, value, row, $element) {
+
+            }
+        });
+
+
+        /*
+         * ======================================================
+         * mschen 2018-12-5 11:24:43 end
+         * ======================================================
+         */
+    });
+
+</script>

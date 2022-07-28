@@ -1,0 +1,278 @@
+﻿@model DCMS.ViewModel.Models.Terminals.TerminalModel
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="Location_Lng" type="hidden" />
+<input asp-for="Location_Lat" type="hidden" />
+<!-- Admin Forms CSS -->
+
+<div class="tab-block mb25">
+    <ul class="nav nav-tabs">
+        <li class="active">
+            <a href="#tab6_1" data-toggle="tab">基本信息</a>
+        </li>
+        <li>
+            <a href="#tab6_2" data-toggle="tab">门头照片</a>
+        </li>
+        <li>
+            <a href="#tab6_3" data-toggle="tab"><i class="fa fa-bolt text-purple"></i> 地图信息</a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div id="tab6_1" class="tab-pane active">
+
+            <div class="row mb10">
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        终端名称
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="终端名称"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-editor asp-for="Name" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        助记名
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="助记名"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-editor asp-for="MnemonicName" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mb10">
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        老板姓名
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="老板姓名"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-editor asp-for="BossName" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        老板电话
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="老板电话"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-editor asp-for="BossCall" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mb10">
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        片区
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="片区"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-select asp-for="DistrictId" asp-items="@Model.DistrictList" asp-default="片区" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        终端渠道
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="终端渠道"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-select asp-for="ChannelId" asp-items="@Model.ChannelList" asp-default="渠道" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mb10">
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        付款方式
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="付款方式"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-select asp-for="PaymentMethod" asp-items="@Model.PaymentMethodType" asp-default="付款方式" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        指定线路
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="指定线路"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-select asp-for="LineId" asp-items="@Model.LineList" asp-default="线路" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mb10">
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        状态
+                        @*<i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="如果停用，该终端无法开单"></i>*@
+                    </lable>
+                    <div class="col-lg-8">
+                        @Html.CheckBoxFor(model => model.Status, new { @class = "mt15" })
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        终端等级
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="终端等级"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-select asp-for="RankId" asp-items="@Model.RankList" asp-default="客户等级" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mb10">
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        终端编码
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="终端编码"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-editor asp-for="Code" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        最大欠款额
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="最大欠款额度"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        @*<dcms-editor asp-for="MaxAmountOwed" />*@
+                        <input class="form-control text-box single-line" asp-for="MaxAmountOwed"  />
+                    </div>
+                </div>
+            </div>
+            <div class="row mb10">
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        终端检索
+                        @*<i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="终端检索"></i>*@
+                    </lable>
+                    <div class="col-lg-8">
+                        <div class="input-group">
+                            <input class="form-control" type="search" placeholder="" onfocus="searchCensus()">
+                            <span class="input-group-addon">
+                                <i class="glyphicons glyphicons-google_maps pr5"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        营业编号
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="营业编号"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-editor asp-for="BusinessNo" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mb10">
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        经营许可证
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="食品经营许可证号"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-editor asp-for="FoodBusinessLicenseNo" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <lable class="col-lg-4 control-label">
+                        企业注册号
+                        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="企业注册号"></i>
+                    </lable>
+                    <div class="col-lg-8">
+                        <dcms-editor asp-for="EnterpriseRegNo" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mb10">
+                <div class="col-lg-12">
+                    <lable class="col-lg-2 control-label">
+                        地址
+                        @*<i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="地址"></i>*@
+                    </lable>
+                    <div class="col-lg-10">
+                        <dcms-editor asp-for="Address" />
+                    </div>
+                </div>
+            </div>
+			<div class="row mb10">
+				<div class="col-lg-12">
+					<lable class="col-lg-2 control-label">
+						备注
+                        </lable>
+						<div class="col-lg-10">
+							<dcms-editor asp-for="Remark" />
+						</div>
+				</div>
+			</div>
+			<div class="row mb10">
+				<div class="col-md-12">
+					<lable class="col-lg-2 control-label">
+						是否新增
+					</lable>
+					<div class="col-lg-10">
+						@Html.CheckBoxFor(model => model.IsNewAdd, new { @class = "mt15" })
+
+                        （启用该项则系统将新增终端推送到CRM，默认开启）
+					</div>
+				</div>
+	
+			</div>
+        </div>
+        <div id="tab6_2" class="tab-pane admin-form theme-primary">
+            <div class="form-group">
+                <div class="col-md-12">
+                    <div class="input-group date pull-right" id="daterangepicker2">
+                        <input type="text" id="DoorwayPhoto" name="DoorwayPhoto" class="form-control" value="@Model.DoorwayPhoto">
+                        <input type="file" class="gui-file" name="Uploader" id="Uploader" style="display:none">
+                        <span class="input-group-addon cursor" id="UploadDoorwayPhoto">
+                            <i class="fa fa-cloud-upload"></i> 上传照片
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <script>
+                $(function ()
+                {
+                    function fileLoad(ele) {
+                    var formData = new FormData();
+                    var name = $(ele).val();
+                    var files = $(ele)[0].files[0];
+                    formData.append("file", files);
+                    //formData.append("name", name);
+                        $.ajax({
+                            url: "/Terminal/FileUpload",
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false, 
+                            beforeSend: function () {
+                                $("#UploadDoorwayPhoto").html("<i class='fa fa-spinner'></i> 上传中")
+                            },
+                            success: function (result) {
+                                $("#DoorwayPhoto").val(result.Data.Url);
+                                $("#UploadDoorwayPhoto").html("<i class='fa fa-cloud-upload'></i> 上传照片");
+                            },
+                            error: function (responseStr) {
+                            }
+                        });
+                    }
+                    $("#Uploader").change(function () {
+                        if ($(this).val() != "") {
+                            fileLoad(this);
+                        }
+                    });
+                    $("#UploadDoorwayPhoto").on("click", function () {
+                        return $('#Uploader').click();
+                    });
+                });
+            </script>
+        </div>
+        <div id="tab6_3" class="tab-pane">
+            @await Html.PartialAsync("AddMap", Model)
+        </div>
+    </div>
+</div>

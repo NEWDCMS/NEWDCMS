@@ -1,0 +1,869 @@
+﻿
+@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Users;
+@model PermissionModel
+
+@{
+    var curRoleId = 0;
+    if (!string.IsNullOrEmpty(ViewContext.RouteData.Values["roleId"].ToString()))
+    {
+        curRoleId = int.Parse(ViewContext.RouteData.Values["roleId"].ToString());
+    }
+}
+
+<section id="content_wrapper">
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">角色管理</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">系统管理</a>
+                </li>
+                <li class="crumb-trail">权限设置</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+        <input type="hidden" id="role_Id">
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+		@using (Html.BeginForm(new { RoleId = curRoleId }))
+		{
+			<div class="row">
+				<div class="col-md-12 pb10">
+					<a class="btn btn-warning mr5" href="@Url.Action("List", "UserRole")"><i class="fa fa-undo mr5"></i> 返回角色</a>
+					<button id="btn_resetSetting" type="button" class="btn btn-danger pull-right mr5">
+						<span class="glyphicon glyphicon-refresh mr5" aria-hidden="true"></span>恢复默认
+					</button>
+					<button id="btn_deletechche" type="button" class="btn btn-danger pull-right mr5">
+						<span class="glyphicon glyphicons-remove mr5" aria-hidden="true"></span> 更新缓存
+					</button>
+					<button type="submit" class="btn btn-primary pull-right mr5">
+						<span class="glyphicon glyphicon-save mr5" aria-hidden="true"></span>保存
+					</button>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-3">
+					@*角色列表*@
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <div class="panel-title">
+                                <span class="glyphicon glyphicon-tasks"></span> 角色列表
+                            </div>
+                        </div>
+                        <div class="panel-body p10">
+
+                            <table class="table table-striped table-bordered table-hover" style="border-top: 1px solid #eeeeee;">
+                                <thead>
+                                    <tr>
+                                        <th data-field="Name"><div class="th-inner text-left w40">角色名</div></th>
+                                        <th class="text-center" colspan="3">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+
+                                        int index = 0;
+                                        foreach (var role in Model.UserRoleItems)
+                                        {
+                                                                        <tr>
+                                                                            <td class="text-center">@role.Name</td>
+                                                                            <td class="text-center">
+                                                                                <a class="btn btn-sm ml @(curRoleId == role.Id ? "btn-primary" : "btn-default")" data-id="@role.Id" href="@Url.Action("List", "Permission", new { roleId = role.Id, flag = 0 })" title="选择"><i class="glyphicon glyphicon-check mr5"></i> 选择</a>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                <a class="btn btn-sm ml @(curRoleId == role.Id ? "btn-info" : "btn-default")" data-id="@role.Id" href="@Url.Action("List", "Permission", new { roleId = role.Id, flag = 1 })" title="重置"><i class="glyphicon glyphicon-check mr5"></i> 重置</a>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                <a class="btn btn-sm ml @(curRoleId == role.Id ? "btn-info" : "btn-default")" data-id="@role.Id" href="javascript:void(0);" title="默认权限" onclick="setDefaultPermiss('@role.Name', '@role.Id')"><i class="glyphicon glyphicon-check mr5"></i> 默认权限</a>
+                                                                            </td>
+                                                                        </tr>
+                                                index++;
+                                            }
+
+                                        }
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    @*权限列表*@
+
+
+
+                    <ul class="nav nav-tabs tabs-bg">
+                        <li class="active">
+                            <a href="#tab_type1" data-toggle="tab" aria-expanded="true">
+                                <i class="fa fa-file text-purple"></i> PC端
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tab_type2" data-toggle="tab" aria-expanded="true">
+                                <i class="fa fa-file text-purple"></i> APP端
+                            </a>
+                        </li>
+                    </ul>
+
+
+                    @*销售 采购 仓库 财务 档案 报表 设置 数据 频道*@
+                <div class="tab-content">
+
+                    @*PC端*@
+                    <div class="tab-pane active" id="tab_type1">
+                        <div class="panel">
+                            <div class="panel-body p10">
+
+                                <ul class="nav nav-tabs tabs-bg">
+                                    @{
+                                        int i = 0;
+                                        if (Model.PCPermissions.MenuTrees != null && Model.PCPermissions.MenuTrees.Count > 0)
+                                        {
+                                            foreach (var module in Model.PCPermissions.MenuTrees)
+                                            {
+                                                <li class="@(i==0?"active":"")">
+                                                    <a href="#tab10_type1_@module.Module.Id" data-toggle="tab" aria-expanded="true">
+                                                        <i class="fa fa-file text-purple"></i>
+                                                        @module.Module.Name
+                                                    </a>
+                                                </li>
+                                                i++;
+                                            }
+                                        }
+
+                                        <li>
+                                            <a href="#tab10_type1_888" data-toggle="tab" aria-expanded="true">
+                                                <i class="fa fa-file text-purple"></i> 数据
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#tab10_type1_889" data-toggle="tab" aria-expanded="true">
+                                                <i class="fa fa-file text-purple"></i> 频道
+                                            </a>
+                                        </li>
+
+                                        <li class="dropdown">
+                                            <a class="dropdown-toggle" href="#" role="menu" data-toggle="dropdown" aria-expanded="true">
+                                                <i class="fa fa-gear text-primary pl5"></i>
+                                            </a>
+                                            <ul class="dropdown-menu">
+                                                @if (Model.PCPermissions.MenuTrees != null && Model.PCPermissions.MenuTrees.Count > 0)
+                                                {
+                                                    foreach (var module in Model.PCPermissions.MenuTrees)
+                                                    {
+                                                        <li>
+                                                            <a href="#">
+                                                                <label class="checkbox-inline">
+                                                                    <input type="checkbox" @(module.Module.Selected ? "checked" : "") id="pc_module_@(module.Module.Id)" name="pc_module_@(module.Module.Id)" value="@module.Module.Id">
+                                                                    @(module.Module.Name)(ACL)
+                                                                </label>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+
+                                            </ul>
+                                        </li>
+                                    }
+                                </ul>
+                                <div class="tab-content">
+
+
+                                    @if (Model.PCPermissions.MenuTrees != null && Model.PCPermissions.MenuTrees.Count > 0)
+                                    {
+                                        {
+                                            int j = 0;
+
+                                            foreach (var module in Model.PCPermissions.MenuTrees)
+                                            {
+                                                <div id="tab10_type1_@module.Module.Id" class="tab-pane @(j==0?"active":"")">
+
+                                                    <div class="panel">
+                                                        <div class="panel-body p10">
+                                                            <table class="table table-striped table-bordered table-hover" style="border-top: 1px solid #eeeeee;">
+                                                                <tbody>
+                                                                    @foreach (var node in module.Children)
+                                                                    {
+                                                                        if (node.Children.Count > 0)
+                                                                        {
+                                                                            <tr>
+                                                                                <td width="50">├─</td>
+                                                                                <td width="200px">
+                                                                                    <label class="checkbox-inline">
+                                                                                        <input type="checkbox" @(node.Module.Selected ? "checked" : "") id="pc_module_@(node.Module.Id)" name="pc_module_@(node.Module.Id)" value="@node.Module.Id">
+                                                                                        <b> @node.Module.Name (模块)</b>
+                                                                                    </label>
+                                                                                </td>
+                                                                                @for (int k = 0; k <= 9; k++)
+                                                                                {
+                                                                                    if (k < node.PermissionRecords.Count)
+                                                                                    {
+                                                                                        <td>
+                                                                                            <label class="checkbox-inline mr10">
+                                                                                                <input type="checkbox" @(node.PermissionRecords[k].Selected ? "checked" : "") id="pc_allow_@(node.Module.Id)_@(node.PermissionRecords[k].Id)" name="pc_allow_@(node.Module.Id)_@(node.PermissionRecords[k].Id)" value="@node.PermissionRecords[k].Id" data-per="@node.PermissionRecords[k].Id" data-model="@node.Module.Id"> @node.PermissionRecords[k].Name
+                                                                                            </label>
+                                                                                        </td>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <td colspan="@(10-k)"></td>
+                                                                                        break;
+                                                                                    }
+                                                                                }
+                                                                            </tr>
+
+                                                                            foreach (var child in node.Children)
+                                                                            {
+                                                                                <tr>
+                                                                                    <td width="50">└──</td>
+                                                                                    <td width="200px">
+
+                                                                                        <label class="checkbox-inline">
+                                                                                            <input type="checkbox" @(child.Module.Selected ? "checked" : "") id="pc_module_@(child.Module.Id)" name="pc_module_@(child.Module.Id)" value="@child.Module.Id">
+                                                                                            @child.Module.Name
+                                                                                        </label>
+
+
+                                                                                    </td>
+                                                                                    <td width="150px" style="background-color:#00ffff">
+                                                                                        <label class="checkbox-inline">
+                                                                                            <input type="checkbox" id="pc_allselect_@(child.Module.Id)" name="pc_allselect_@(child.Module.Id)" class="pc_allselect" value="@(child.Module.Id)">
+                                                                                            全选
+                                                                                        </label>
+                                                                                    </td>
+                                                                                    @for (int k = 0; k < 9; k++)
+                                                                                    {
+                                                                                        if (k < child.PermissionRecords.Count)
+                                                                                        {
+                                                                                            <td width="150px">
+                                                                                                <label class="checkbox-inline mr10">
+                                                                                                    <input type="checkbox" @(child.PermissionRecords[k].Selected ? "checked" : "") id="pc_allow_@(child.Module.Id)_@(child.PermissionRecords[k].Id)" name="pc_allow_@(child.Module.Id)_@(child.PermissionRecords[k].Id)" value="@child.PermissionRecords[k].Id" data-per="@child.PermissionRecords[k].Id" data-model="@child.Module.Id"> @child.PermissionRecords[k].Name
+                                                                                                </label>
+                                                                                            </td>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <td colspan="@(10-k)"></td>
+                                                                                            break;
+                                                                                        }
+                                                                                    }
+                                                                                </tr>
+                                                                            }
+                                                                        }
+
+                                                                    }
+                                                                </tbody>
+                                                            </table>
+
+
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                                j++;
+                                            }
+                                        }
+                                    }
+
+                                    <div id="tab10_type1_888" class="tab-pane" )">
+                                        <div class="panel">
+                                            <div class="panel-body p10">
+                                                <table class="table table-striped table-bordered table-hover" style="border-top: 1px solid #eeeeee;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>
+                                                                数据权限
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="text-left">价格</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.ViewPurchasePrice, new { @class = "mt15" }) 是否允许查看进价
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.PlaceOrderPricePermitsLowerThanMinPriceOnWeb, new { @class = "mt15" }) WEB端开单价格允许低于最低售价
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.APPSaleBillsAllowPreferences, new { @class = "mt15" }) APP销售类单据允许优惠
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.APPAdvanceReceiptFormAllowsPreference, new { @class = "mt15" }) APP预收款单允许优惠
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>
+                                                                <div class="input-group">
+                                                                    <input asp-for="PCPermissions.DataChannelPermission.MaximumDiscountAmount" class="form-control" />
+                                                                    <span class="input-group-addon">最大优惠额度</span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.APPAdvanceReceiptFormAllowsPreference, new { @class = "mt15" }) APP销售类单据允许欠款
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <dcms-select asp-for="PCPermissions.DataChannelPermission.AppOpenChoiceGift" asp-items="@Model.PCPermissions.DataChannelPermission.AppOpenChoiceGifts" class="form-control" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-left">打印</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.PrintingIsNotAudited, new { @class = "mt15" }) 销售单/销售订单/退货单/退货订单不审核也可以打印
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-left">单据</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <dcms-select asp-for="PCPermissions.DataChannelPermission.AllowViewReportId" asp-items="@Model.PCPermissions.DataChannelPermission.AllowViewReports" class="form-control" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-left">客户档案</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.APPAllowModificationCustomerInfo, new { @class = "mt15" }) APP允许修改客户档案
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="tab10_type1_889" class="tab-pane" )">
+                                        <div class="panel">
+                                            <div class="panel-body p10">
+                                                <table class="table table-striped table-bordered table-hover" style="border-top: 1px solid #eeeeee;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>
+                                                                频道设置
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+
+                                                        <tr>
+                                                            <td class="text-left">
+                                                                <label for="channel_1">通知</label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.Auditcompleted, new { @class = "mt15" }) 审核完成
+                                                                </label>
+
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableSchedulingCompleted, new { @class = "mt15" }) 调度完成
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableInventoryCompleted, new { @class = "mt15" }) 盘点完成
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableTransfeCompleted, new { @class = "mt15" }) 转单/签收完成
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableStockEarlyWarning, new { @class = "mt15" }) 库存预警
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableCustomerLossWarning, new { @class = "mt15" }) 客户流失预警
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableBillingException, new { @class = "mt15" }) 开单异常
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableCompletionOrCancellationOfAccounts, new { @class = "mt15" }) 交账完成/撤销
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+
+                                                        <tr>
+                                                            <td class="text-left">
+                                                                <input type="checkbox" class="channel_2" name="channel" value="2" id="channel_2" checked="checked" style="visibility:hidden;">
+                                                                <label for="channel_2">待办</label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableApprovalAcl, new { @class = "mt15" }) 审批
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableReceivablesAcl, new { @class = "mt15" }) 收款
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableAccountAcl, new { @class = "mt15" }) 交账
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td style="padding-left: 100px;">
+                                                                <label class="checkbox-inline mr10">
+                                                                    @Html.CheckBoxFor(m => m.PCPermissions.DataChannelPermission.EnableDataAuditAcl, new { @class = "mt15" }) 资料审核
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+
+
+                                                    </tbody>
+                                                </table>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @*App端*@
+                    <div class="tab-pane" id="tab_type2">
+                        <div class="panel">
+                            <div class="panel-body p10">
+                                <ul class="nav nav-tabs tabs-bg">
+                                    @{
+                                        if (Model.APPPermissions.MenuTrees != null && Model.APPPermissions.MenuTrees.Count > 0)
+                                        {
+                                            int pi = 0;
+                                            foreach (var module in Model.APPPermissions.MenuTrees)
+                                            {
+                                                <li class="@(pi==0?"active":"")">
+                                                    <a href="#tab10_type2_@module.Module.Id" data-toggle="tab" aria-expanded="true">
+                                                        <i class="fa fa-file text-purple"></i>
+                                                        @module.Module.Name
+                                                    </a>
+                                                </li>
+                                                pi++;
+                                            }
+                                        }
+
+                                        <li class="dropdown">
+                                            <a class="dropdown-toggle" href="#" role="menu" data-toggle="dropdown" aria-expanded="true">
+                                                <i class="fa fa-gear text-primary pl5"></i>
+                                            </a>
+                                            <ul class="dropdown-menu">
+                                                @if (Model.APPPermissions.MenuTrees != null && Model.APPPermissions.MenuTrees.Count > 0)
+                                                {
+                                                    foreach (var module in Model.APPPermissions.MenuTrees)
+                                                    {
+                                                        <li>
+                                                            <a href="#">
+                                                                <label class="checkbox-inline">
+                                                                    <input type="checkbox" @(module.Module.Selected ? "checked" : "") id="ad_module_@(module.Module.Id)" name="ad_module_@(module.Module.Id)" value="@module.Module.Id">
+                                                                    @(module.Module.Name)(ACL)
+                                                                </label>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+
+                                            </ul>
+                                        </li>
+                                    }
+                                </ul>
+                                <div class="tab-content">
+
+
+                                    @if (Model.APPPermissions.MenuTrees != null && Model.APPPermissions.MenuTrees.Count > 0)
+                                    {
+                                        {
+                                            int aj = 0;
+
+                                            foreach (var module in Model.APPPermissions.MenuTrees)
+                                            {
+                                                <div id="tab10_type2_@module.Module.Id" class="tab-pane @(aj==0?"active":"")">
+
+                                                    <div class="panel">
+                                                        <div class="panel-body p10">
+
+                                                            <table class="table table-striped table-bordered table-hover" style="border-top: 1px solid #eeeeee;">
+                                                                <tbody>
+                                                                    @foreach (var node in module.Children)
+                                                                    {
+                                                                        if (node.Children.Count > 0)
+                                                                        {
+                                                                            <tr>
+                                                                                <td width="50">├─</td>
+                                                                                <td width="200px">
+                                                                                    <label class="checkbox-inline">
+                                                                                        <input type="checkbox" @(node.Module.Selected ? "checked" : "") id="ad_module_@(node.Module.Id)" name="ad_module_@(node.Module.Id)" value="@node.Module.Id">
+                                                                                        <b>@(node.Module.Name)(模块)</b>
+                                                                                    </label>
+                                                                                </td>
+
+
+                                                                                @for (int k = 0; k <= 9; k++)
+                                                                                {
+                                                                                    if (k < node.PermissionRecords.Count)
+                                                                                    {
+                                                                                        <td width="150px">
+                                                                                            <label class="checkbox-inline mr10">
+                                                                                                <input type="checkbox" @(node.PermissionRecords[k].Selected ? "checked" : "") id="ad_allow_@(node.Module.Id)_@(node.PermissionRecords[k].Id)" name="ad_allow_@(node.Module.Id)_@(node.PermissionRecords[k].Id)" value="@node.PermissionRecords[k].Id"> @node.PermissionRecords[k].Name
+                                                                                            </label>
+                                                                                        </td>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <td colspan="@(10-k)"></td>
+                                                                                        break;
+                                                                                    }
+                                                                                }
+                                                                            </tr>
+
+                                                                            foreach (var child in node.Children)
+                                                                            {
+                                                                                <tr>
+                                                                                    <td width="50">└──</td>
+                                                                                    <td width="200px">
+                                                                                        <label class="checkbox-inline">
+                                                                                            @*app模块控制*@
+                                                                                            <input type="checkbox" @(child.Module.Selected ? "checked" : "") id="ad_module_@(child.Module.Id)" name="ad_module_@(child.Module.Id)" value="@child.Module.Id">
+                                                                                            @child.Module.Name
+                                                                                        </label>
+                                                                                    </td>
+                                                                                    <td width="150px" style="background-color:#00ffff">
+                                                                                        <label class="checkbox-inline">
+                                                                                            <input type="checkbox" id="pc_allselect_@(child.Module.Id)" name="pc_allselect_@(child.Module.Id)" class="pc_allselect" value="@(child.Module.Id)">
+                                                                                            全选
+                                                                                        </label>
+                                                                                    </td>
+
+                                                                                    @for (int k = 0; k < 9; k++)
+                                                                                    {
+                                                                                        if (k < child.PermissionRecords.Count)
+                                                                                        {
+                                                                                            <td>
+                                                                                                <label class="checkbox-inline mr10">
+                                                                                                    <input type="checkbox" @(child.PermissionRecords[k].Selected ? "checked" : "") id="ad_allow_@(child.Module.Id)_@(child.PermissionRecords[k].Id)" name="ad_allow_@(child.Module.Id)_@(child.PermissionRecords[k].Id)" value="@child.PermissionRecords[k].Id" data-model="@child.Module.Id"> @child.PermissionRecords[k].Name
+                                                                                                </label>
+                                                                                            </td>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <td colspan="@(10-k)"></td>
+                                                                                            break;
+                                                                                        }
+                                                                                    }
+                                                                                </tr>
+                                                                            }
+                                                                        }
+
+                                                                    }
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                                aj++;
+                                            }
+                                        }
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                </div>
+            </div>
+        }
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "UserRoleForm" }, { "showSave", "true" } }); }
+@section CurPageScripts
+{
+    @{
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.unobtrusive.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/jquery.treegrid.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/locale/bootstrap-table-zh-CN.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table-treegrid.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.ztree.all-3.5.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/AuthorizePermissionModal.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");
+    }
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+            //全选
+            var $selectAll = $(".pc_allselect");
+            $selectAll.click(function () {
+                var _value = $(this).val();
+                if ($(this).prop("checked") == true) {
+                    $(":checkbox[data-model='" + _value + "']").prop("checked", true);
+                } else {
+                    $(":checkbox[data-model='" + _value + "']").prop("checked", false);
+                }
+            });
+            
+            
+            //清理缓存
+            $("#btn_deletechche").click(function () {
+                $.ajax({
+                    type: "GET",
+                    url: "/Permission/ClearCache",
+                    beforeSend: function () {
+                    },
+                    success: function (result) {
+                        if (result.Success) {
+                            location.reload();
+                        } else {
+                            $(this).showToastr("未知异常，请检查系统日志");
+                        }
+                    },
+                    error: function () {
+                    },
+                    complete: function () {
+                    }
+                });
+
+            });
+        });
+        /**
+         * 默认权限勾选
+         * userRole 角色
+         */
+        function setDefaultPermiss(userRole, roleId) {
+            if (roleId != @curRoleId) {
+                WinMsg.alert("请选择对应角色");
+                return false;
+            }
+            var defaultPermiss = [{
+                "role": "超级管理员",
+                "permissions": {
+                    "web": [],
+                    "app": []
+                }
+            }, {
+                "role": "送货员",
+                "permissions": {
+                    "web": ["130_307", "130_304", "130_305","130_306"],
+                    "app": ["130_307","130_304"]
+                }
+            }, {
+                "role": "业务员",
+                "permissions": {
+                    "web": [],
+                    "app": ["39_25", "39_22", "39_23", "39_24", "39_28", "39_407", "40_32", "40_29", "40_30", "40_31", "41_39", "41_36", "41_37", "41_38", "41_42", "41_404", "42_46", "42_43", "42_44", "44_60", "44_61", "67_72", "61_98", "89_188", "89_187", "90_189", "122_285", "122_282", "128_298", "128_421", "128_422", "128_423", "128_299", "129_303", "129_300", "129_301", "129_302", "130_307", "130_304", "147_342", "162_372", "163_374"]
+                }
+            }, {
+                "role": "员工",
+                "permissions": {
+                    "web": [],
+                    "app": []
+                }
+            }, {
+                "role": "仓储管理员",
+                "permissions": {
+                    "web": ["39_25", "39_22", "39_23", "39_24", "39_28", "39_407", "39_27", "40_32", "40_29", "40_30", "40_31", "40_35", "40_33", "40_34", "41_39", "41_36",
+                        "41_37", "41_38", "41_42", "41_404", "41_41", "42_46", "42_43", "42_44", "42_45", "42_49", "42_47", "42_48", "45_64", "45_65", "46_66", "46_67",
+                        "46_68", "46_69", "47_70", "47_71", "72_114", "72_111", "72_112", "72_113", "72_117", "72_115", "72_116", "73_121", "73_118", "73_119", "73_120",
+                        "73_124", "73_122", "73_123", "74_125", "74_126", "75_127", "75_128", "76_129", "76_130", "81_134", "81_131", "81_132", "81_133", "81_137", "81_135",
+                        "81_136", "84_155", "84_152", "84_153", "84_154", "84_158", "84_156", "84_157", "85_162", "85_159", "85_160", "85_161", "85_165", "85_163", "85_164",
+                        "86_169", "86_166", "86_167", "86_168", "86_172", "86_170", "86_171", "87_176", "87_173", "87_174", "87_175", "87_179", "87_177", "87_178", "88_183",
+                        "88_180", "88_181", "88_182", "88_186", "88_184", "88_185", "90_189", "90_190", "91_191", "91_192", "92_193", "92_194", "93_195", "93_196", "94_197",
+                        "94_198", "95_199", "95_200", "96_201", "96_202", "98_205", "98_206", "99_207", "99_208","100_209","100_210"],
+                    "app": ["39_25", "39_22", "39_23", "39_24", "39_28", "39_407", "39_27", "40_32", "40_29", "40_30", "40_31", "40_35", "40_33", "40_34", "41_39", "41_36",
+                        "41_37", "41_38", "41_42", "41_404", "41_41", "42_46", "42_43", "42_44", "42_45", "42_49", "42_47", "42_48","45_64","46_66","46_69","47_70","47_71",
+                        "72_114", "72_111", "72_112", "72_116", "73_121", "73_118", "73_119", "73_123", "81_134", "81_131", "81_132", "81_136", "85_162", "85_159", "85_164",
+                        "86_169", "86_166", "86_171", "90_189", "98_205"]
+                }
+            }, {
+                "role": "财务岗位",
+                "permissions": {
+                    "web": ["39_25", "39_22", "39_23", "39_24", "39_28", "39_407", "39_27", "40_32", "40_29", "40_30", "40_31", "40_35", "40_33", "40_34", "41_39", "41_36",
+                        "41_37", "41_38", "41_42", "41_404", "41_41", "42_46", "42_43", "42_44", "42_45", "42_49", "42_47", "42_48", "43_57", "43_57", "43_59", "44_60", "44_63",
+                        "44_61", "44_62", "67_72", "49_74", "49_75", "50_76", "50_77", "51_78", "51_79", "52_80", "52_81", "53_82", "53_83", "54_84", "54_85", "55_86", "55_87",
+                        "56_88", "56_89", "57_90", "57_91", "58_92", "58_93", "59_94", "59_95", "60_96", "60_97", "61_98", "62_99", "63_100", "64_101", "72_114", "72_111", "72_112",
+                        "72_113", "72_117", "72_115", "72_116", "73_121", "73_118", "73_119", "73_120", "73_124", "73_122", "73_123", "74_125", "74_126", "82_141", "82_138",
+                        "82_139", "82_140", "82_144", "82_142", "82_143", "90_189", "90_190", "91_191", "91_192", "92_193", "92_194", "93_195", "93_196", "94_197", "94_198",
+                        "95_199", "95_200", "96_201", "96_202", "97_203", "97_204", "98_205", "98_206", "99_207", "99_208", "100_209", "100_210", "105_214", "105_211", "105_212",
+                        "105_213", "105_217", "105_260", "105_215", "105_216", "106_221", "106_218", "106_219", "106_220", "106_224", "106_222", "106_223", "107_228", "107_225",
+                        "107_226", "107_227", "107_231", "107_229", "107_230", "108_235", "108_232", "108_233", "108_234", "108_238", "108_236", "108_237", "109_242", "109_239",
+                        "109_240", "109_241", "109_245", "109_244", "110_249", "110_253", "110_246", "110_247", "110_248", "110_252", "110_250", "110_251", "111_257", "111_254",
+                        "111_255", "111_256", "111_258", "111_259", "112_261", "112_263", "112_262", "113_267", "113_264", "113_265", "113_266", "113_268", "113_269", "114_270",
+                        "114_271", "114_272", "115_273", "115_274", "115_275", "116_276", "116_277", "116_278", "117_279", "117_280", "117_281", "122_285", "122_282", "122_283",
+                        "122_284", "123_409", "123_410", "123_286", "123_287", "123_411", "124_142", "124_413", "124_288", "124_289", "124_414", "125_415", "125_416", "125_290",
+                        "125_291", "125_417", "126_295", "126_292", "126_293", "126_294", "127_418", "127_419", "127_296", "127_297", "127_420", "128_298", "128_421", "128_422",
+                        "128_423", "128_299", "129_303", "129_300", "129_301", "129_302", "130_307", "130_304", "130_305", "130_306", "1867_2036", "146_340", "146_341", "147_342",
+                        "147_343", "148_344", "148_345", "149_346", "149_347", "150_348", "150_349", "151_350", "151_351", "152_352", "152_353", "153_354", "153_355", "154_356",
+                        "154_357", "155_358", "155_359", "156_360", "156_361", "157_362", "157_363", "158_364", "159_366", "159_367", "160_368", "160_369", "161_370", "161_371",
+                        "162_372", "162_373", "163_374", "163_375", "165_377", "165_376", "166_379", "166_378", "167_381", "167_380", "168_383", "168_382", "169_385", "169_384",
+                        "170_387", "170_386", "171_389", "171_388", "172_391", "172_390", "183_408", "183_394", "184_2033", "184_2032"],
+                    "app": ["39_25", "39_22", "39_23", "39_24", "39_28", "39_407", "39_27", "40_32", "40_29", "40_30", "40_31", "40_34", "41_39", "41_36", "41_37", "41_38", "41_42",
+                        "41_404", "41_41", "42_46", "42_43", "42_44", "42_48", "43_57", "43_58", "43_59", "44_60", "44_61", "44_62", "67_72", "49_74", "49_75", "50_76", "50_77",
+                        "51_78", "51_79", "52_80", "52_81", "53_82", "53_83", "54_84", "54_85", "55_86", "55_87", "61_98", "62_99", "63_100", "64_101", "72_114", "72_111", "72_112",
+                        "72_116", "73_121", "73_118", "73_119", "73_123", "82_143", "90_189", "98_205", "105_214", "105_211", "105_216", "106_221", "106_218", "106_223", "107_228",
+                        "107_225", "107_230", "108_235", "108_232", "108_237", "109_242", "109_239", "109_244", "110_249", "110_246", "110_251", "111_257", "111_254", "122_285",
+                        "122_282", "128_298", "128_421", "128_422", "128_423", "128_299", "129_303", "129_300", "129_301", "129_302", "130_307", "130_304", "1867_2036", "147_342",
+                        "152_352", "152_353", "154_356", "155_358", "156_360", "156_361", "157_362", "158_364", "161_370", "162_372", "163_374"]
+                }
+            }];
+            $.each(defaultPermiss, function (i, n) {
+                if (n.role == userRole) {
+                    if (userRole == "超级管理员") {
+                        $(":checkbox[name^='pc_allow_']").prop("checked", true);
+                        $(":checkbox[name^='ad_allow_']").prop("checked", true);
+                    } else {
+                        $.each(n.permissions.web, function (j, p) {
+                            $(":checkbox[name='pc_allow_" + p + "']").prop("checked", true);
+                        });
+                        $.each(n.permissions.app, function (k, a) {
+                            $(":checkbox[name='ad_allow_" + a + "']").prop("checked", true);
+                        });
+                   role}Id
+                }
+            });
+        }
+    </script>
+}

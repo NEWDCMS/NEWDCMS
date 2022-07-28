@@ -1,0 +1,44 @@
+﻿@using DCMS.ViewModel.Models.Global.Common;
+
+@model  SignalrModel
+
+@Html.HiddenFor(m=>m.MobilePhone)
+
+@*template-user-events*@
+    <script id="template-news-events" type="text/x-tmpl">
+        {% if(o.data!=null){ %}
+        {% if(o.data[0].Count>0){ %}
+        <li class="bg-light p8">
+            <span class="fw600 pl5 lh30"> 系统通知</span>
+            <span class="label label-warning label-sm pull-right lh20 h-20 mt5 mr5">{%=o.data[0].Count%}</span>
+        </li>
+        {% for (var i=0,item;item=o.data[i]; i++) { %}
+        {% if(item.children[0]!=null){ %}
+        <li class="p10 br-t item-1">
+            <div class="media">
+                <a class="media-left" href="#" style="min-width:55px;">
+                    <i class="fa fa-bell fs30"></i>
+                    <span class="badge badge-hero badge-danger">{%=item.children[0].Count%}</span>
+                </a>
+
+                <div class="media-body va-m">
+                    <a href="javascript:;" data-index="{%=JSON.stringify(i)%}" class="showNews" style="text-decoration:none;">
+                        <h5 class="media-heading mv5">{%=item.children[0].Title%} <small class="text-muted">- {%=item.children[0].Date%}</small> </h5>
+                        <span class="hubspan" style="color:#999;">{%=item.children[0].Content%}</span>
+                    </a>
+                </div>
+
+            </div>
+        </li>
+        {% } %}
+        {% } %}
+        {% } else{ %}
+        <li class="p10 br-t item-1">
+            <div class="media" style="text-align:center;">
+                <span class="hubspan">未接收到任何消息</span>
+            </div>
+        </li>
+        {% } %}
+        {% } %}
+    </script>
+

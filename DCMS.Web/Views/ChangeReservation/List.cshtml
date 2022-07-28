@@ -1,0 +1,544 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Sales;
+
+@model ChangeReservationListModel
+@{
+    var refURL = Context.Request.GetAbsoluteUri();
+}
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">销售</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">销售单据</a>
+                </li>
+                <li class="crumb-trail">订单转销售单</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <form method="Get" class="form-horizontal" id="formSearch">
+                    <div class="panel panel-default" id="panel0">
+                        <div class="panel-heading">
+                            <span class="glyphicon glyphicon-search"></span> 高级搜索
+                            <a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedSearch"><i class="fa fa-angle-double-right"></i></a>
+                        </div>
+                        <div class="panel-body p10">
+                            <div class="row">
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="StartTime" placeholder="开始..." />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="EndTime" placeholder="结束..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="BusinessUserId" asp-items="@Model.BusinessUsers" asp-default="选择业务员" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <input asp-for="BillNumber" class="form-control" placeholder="单号..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <input asp-for="Remark" class="form-control" placeholder="备注..." />
+                                </div>
+                                <div class=" col-sm-1">
+                                    <dcms-select-bool asp-for="ChangedStatus" asp-items="@(new string[] {  "已转", "未转"})" asp-default="转单状态" />
+                                </div>
+                                <div class=" col-sm-1">
+                                    <dcms-select-bool asp-for="DispatchedStatus" asp-items="@(new string[] {  "已调度", "未调度"})" asp-default="调度状态" />
+                                </div>
+
+                            </div>
+
+                            <div class="row mt10">
+                                <div class="col-sm-12">
+                                    <button id="btn_query" type="button" class="btn btn-primary btn-block">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 单据列表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+
+                        <div id="toolbar" class="btn-group mb10">
+                            @*<button id="btn_batchchange" type="button" class="btn btn-primary btn-sm mr5">
+                                    <span class="glyphicon glyphicon-shopping-cart mr5" aria-hidden="true"></span>批量转单
+                                </button>
+                                <button id="btn_refusechange" type="button" class="btn btn-alert btn-sm mr5">
+                                    <span class="glyphicon glyphicon-list-alt mr5" aria-hidden="true"></span>批量拒签转单
+                                </button>*@
+                            @*<button id="btn_change" type="button" class="btn btn-alert btn-sm">
+                                    <span class="glyphicon glyphicon-list-alt mr5" aria-hidden="true"></span>转单
+                                </button>*@
+                        </div>
+
+                        <table class="table table-striped table-hover" id="dataGriveView1"></table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+</section>
+
+@await Html.PartialAsync("_Windows", Model)
+
+@{
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/assets/skin/default_skin/css/theme.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Toastr/toastr.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Tables/bootstrap-table.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/datepicker/css/bootstrap-datetimepicker.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/daterange/daterangepicker.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/colorpicker/css/bootstrap-colorpicker.min.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/tagmanager/tagmanager.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/fancytree/skin-win8/ui.fancytree.min.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/Content/Site.css");
+}
+
+@section CurPageScripts
+{
+
+    @{
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.unobtrusive.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/jquery.treegrid.min.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/locale/bootstrap-table-zh-CN.min.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table-treegrid.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/globalize.min.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/moment.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/moment-with-locales.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/daterange/daterangepicker.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/datepicker/js/bootstrap-datetimepicker.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/colorpicker/js/bootstrap-colorpicker.min.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/jquerymask/jquery.maskedinput.min.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/tagmanager/tagmanager.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+        //Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");
+    }
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            //全选
+            $("input[name='btSelectAll']").click(function () {
+                var selectStatus = $(this).is(':checked')
+                if (selectStatus) {
+                    $("input[name='btSelectItem']").each(function (i, n) {
+                        n.checked = true;
+                    });
+                } else {
+                    $("input[name='btSelectItem']").each(function (i, n) {
+                        n.checked = false;
+                    });
+                }
+            });
+
+            //高级搜索
+            $("#panel0 #AdvancedSearch").click(function () {
+                var ico = $(this).find(".fa");
+                if (ico.hasClass('fa-angle-double-right'))
+                    ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+                else
+                    ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+                $("#panel0").find(".panel-body").toggleClass("hidden fadeIn");
+            });
+
+            $("#btn_change").click(function () {
+                var ids = "";
+                $.each($("input[name='btSelectItem']"), function () {
+                    if (this.checked) {
+                        var billid = $(this).val();
+                        ids = ids + (ids == "" ? "" : ",") + billid;
+                    }
+                });
+
+                if (ids == "") {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                var billtype = $("input[name='selectBillType']").val();
+
+                Change(billtype, ids);
+
+            });
+
+            //查询参数
+            var $params = function (params)
+            {
+                var temp =
+                {
+                    billType: 0,
+                    businessUserId: $("#BusinessUserId").val(),
+                    deliveryUserId: $("#DeliveryUserId").val(),
+                    startTime: $("#startTimS").val(),
+                    endTime: $("#EndTime").val(),
+                    billNumber: $("#BillNumber").val(),
+                    remark: $("#Remark").val(),
+                    changedStatus: $("#ChangedStatus").val(),
+                    dispatchedStatus: $("#DispatchedStatus").val(),
+                    pageSize: params.limit,
+                    pageIndex: (params.offset / params.limit)
+                };
+                return temp;
+            };
+
+            //搜索
+            $("#btn_query").click(function ()
+            {
+                $("#dataGriveView1").bootstrapTable('refresh');
+            });
+
+
+            //订单列表
+            $("#dataGriveView1").bootstrapTable({
+                url: "/ChangeReservation/AsyncList",
+                method: 'get',
+                //toolbar: '#toolbar',
+                striped: true,
+                cache: false,
+                pagination: true,
+                sortable: true,
+                sortOrder: "asc",
+                queryParams: $params,
+                sidePagination: "server",
+                idField: 'Id',
+                pageNumber: 1,
+                pageSize: 25,
+                pageList: [10, 25, 50, 100],
+           		search: false,
+				strictSearch: true,
+				showColumns: false,
+				showRefresh: false,
+				clickToSelect: true,
+				uniqueId: "Id",
+				showToggle: false,
+				cardView: false,
+				detailView: false,
+				showFooter: false,
+                columns: [
+                    { checkbox: true },
+                    {
+                        field: 'BillNumber',
+                        title: '编号',
+                        align: 'left',
+                        width:'150',
+                        formatter: function (value, row, index) {
+                            if (row.BillType == 11) {
+                                return [
+                                    '<a  href="/SaleReservationBill/Edit/' + row.BillId + '">' + row.BillNumber + '</a>'
+                                ].join("")
+                            } else if (row.BillType == 13) {
+                                return [
+                                    '<a  href="/ReturnReservationBill/Edit/' + row.BillId + '">' + row.BillNumber + '</a>'
+                                ].join("")
+                            }
+                        }
+                    },
+                    { field: 'BillTypeName', title: '单据类型', align: 'left' },
+                    {
+                        field: 'CreatedOnUtc', title: '制单时间', align: 'center',
+                        formatter: function (value, row, index)
+                        {
+                            return $(this).dateFtt('yyyy-MM-dd hh:ss:mm', new Date(value));
+                        }
+                    },
+                    { field: 'BusinessUserName', title: '业务员', align: 'left' },
+                    { field: 'TerminalName', title: '客户', align: 'left' },
+                    {
+                        field: 'SumAmount', title: '订单金额', align: 'right',
+                        formatter: function (value, row, index)
+                        {
+                            var amount = value == null ? 0 : value;
+                            if (amount != 0)
+                                return "￥" + parseFloat(amount).toFixed(2);
+                            else
+                                return "";
+                        }
+                    },
+                    { field: 'WareHouseName', title: '出货/入货仓库', align: 'left' },
+                    {
+                        field: 'DispatchedStatus', title: '调度状态', align: 'center',
+                        formatter: function (value, row, index)
+                        {
+                            if (!value)
+                            {
+                                return '<span class="label label-danger">未调度</span>';
+                            }
+                            else
+                            {
+                                 return '<span class="label label-success">已调度</span>';
+                            }
+                        }
+                    },
+                    { field: 'WareHouseName', title: '调度仓库', align: 'left' },
+                    { field: 'DeliveryUserName', title: '送货员', align: 'left' },
+                    {
+                        field: 'Operation', title: '单据来源', align: 'center',
+                        formatter: function (value, row, index)
+                        {
+                            if (0)
+                            {
+                                return '<span class="label label-info">线下</span>';
+                            }
+                            else
+                            {
+                                 return '<span class="label label-info">线上</span>';
+                            }
+                        } },
+                    {
+                        field: 'CollectionAmount', title: '现金', align: 'right',
+                        formatter: function (value, row, index)
+                        {
+
+                            if (row.BillType == 11)
+                            {
+                                var amount = value == null ? 0 : value;
+                                if (amount != 0)
+                                    return '<a href="/financereceiveaccount/list" title="对账单">￥' + parseFloat(amount).toFixed(2) + '</a>';
+                                else
+                                    return "";
+                            }
+                            else if (row.BillType == 13)
+                            {
+                                 var amount = value == null ? 0 : value;
+                                if (amount != 0)
+                                    return '<a href="/financereceiveaccount/list" title="对账单">￥' + (parseFloat(-amount).toFixed(2)) + '</a>';
+                                else
+                                    return "";
+                            }
+                        }
+                    },
+                    {
+                        field: 'OweCash', title: '欠款', align: 'right',
+                        formatter: function (value, row, index)
+                        {
+
+                             if (row.BillType == 11)
+                            {
+                                var amount = value == null ? 0 : value;
+                                if (amount != 0)
+                                    return '<a href="/financereceiveaccount/list" title="对账单">￥' + parseFloat(amount).toFixed(2) + '</a>';
+                                else
+                                    return "";
+                            }
+                            else if (row.BillType == 13)
+                            {
+                                    var amount = value == null ? 0 : value;
+                                    if (amount != 0)
+                                        return '<a href="/financereceiveaccount/list" title="对账单">￥' + (parseFloat(-amount).toFixed(2)) + '</a>';
+                                    else
+                                        return "";
+                            }
+                        }
+                    },
+                    { field: 'Remark', title: '备注', align: 'left' },
+                    {
+                        field: 'Operate',
+                        title: '操作',
+                        align: 'center',
+                        width: '130',
+                        events: {
+                            'click .rowChange': function (e, value, row, index) {
+
+                            }
+                        },
+                        formatter: function (value, row, index)
+                        {
+                            if (row.BillType == 11)
+                            {
+                                if (!row.ChangedStatus)
+                                {
+                                    if (row.DispatchedStatus) { //已经调度的单据限制转单
+                                        return "";
+                                    }
+                                    else {
+                                        return ['<a href="/salebill/create?orderId=' + row.BillId + '" target="_blank" title="转单">转销售单</i></a>'].join('');
+                                    }
+                                }
+                                else
+                                {
+                                    return ['<a href="/salebill/edit/' + row.SaleBillId + '" target="_blank">' + row.SaleBillNumber + '</i></a>'].join('');
+                                }
+                            }
+                            else if (row.BillType == 13)
+                            {
+                                if (!row.ChangedStatus)
+                                {
+                                    if (row.DispatchedStatus) {
+                                        return "";
+                                    }
+                                    else {
+                                        return ['<a href="/returnbill/create?orderId=' + row.BillId + '" target="_blank" title="转单">转退货单</i></a>'].join('');
+                                    }
+                                }
+                                else
+                                {
+                                    return ['<a href="/returnbill/edit/' + row.ReturnBillId + '" target="_blank" >' + row.ReturnBillNumber + '</i></a>'].join('');
+                                }
+                            }
+                        }
+                    }
+                ],
+                onPageChange: function (number, size) {
+                    m_pagerow = (number - 1) * size;
+                },
+                onLoadSuccess: function (data)
+                {
+                    //alert($("#dataGriveView1").bootstrapTable('getData').length);
+                }
+            });
+        });
+
+
+
+        //转单
+        function Change(billtype, ids) {
+
+            location.href = "@Url.Action("Create")?billtype=" + billtype + "&ids=" + ids;
+
+            //var actionUrl = "/ChangeReservation/Create";
+            //var param = { billtype: billtype, ids: ids, };
+            //$(this).showModalV2($("#ChangeReservationWindow"), actionUrl, param, "转单", $("#ChangeReservationForm"), function () {
+            //    $('#btnSave_' + $("#ChangeReservationWindow").attr("id") + '').unbind("click").bind('click', function () {
+
+            //        //表单验证
+            //        jQuery.validator.addMethod("notZero", function (value, element, param) {
+            //            return this.optional(element) || (value != 0);
+            //        }, "请确保输入的值不为零");
+
+            //        var validator = $("#ChangeReservationForm").validate({
+            //            /* @@validation states + elements
+            //            ------------------------------------------- */
+            //            errorClass: "text-danger",
+            //            validClass: "text-success",
+            //            errorElement: "em",
+            //            /* @@validation rules
+            //            ------------------------------------------ */
+            //            rules: {
+            //                //AccountingId: {
+            //                //	required: true
+            //                //},
+            //                //WareHouseId: {
+            //                //	required: true
+            //                //},
+            //                DeliveryUserId: {
+            //                    required: true
+            //                },
+            //                //TransactionDate: {
+            //                //	required: true
+            //                //}
+            //            },
+            //            messages: {
+            //                //AccountingId: {
+            //                //	required: '收款方式不能为空'
+            //                //},
+            //                //WareHouseId: {
+            //                //	required: '仓库不能为空'
+            //                //},
+            //                DeliveryUserId: {
+            //                    required: '送货员不能为空'
+            //                },
+            //                //TransactionDate: {
+            //                //	required: '交易日期不能为空'
+            //                //}
+            //            },
+            //            /* @@validation highlighting + error placement
+            //            ---------------------------------------------------- */
+            //            highlight: function (element, errorClass, validClass) {
+            //                $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+            //            },
+            //            unhighlight: function (element, errorClass, validClass) {
+            //                $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+            //            },
+            //            errorPlacement: function (error, element) {
+            //                if (element.is(":radio") || element.is(":checkbox")) {
+            //                    element.closest('.option-group').after(error);
+            //                } else {
+            //                    //error.insertAfter(element.parent());
+            //                    element.parent().append(error);
+            //                }
+            //            },
+            //            submitHandler: function (form) {
+            //                //alert("submitted");
+            //                form.submit();
+            //            }
+            //        });
+
+            //        $(this).saveModalV3($("#ChangeReservationWindow"), "/ChangeReservation/List", $("#ChangeReservationForm"));
+            //    });
+            //});
+        }
+
+
+    </script>
+}

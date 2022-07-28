@@ -1,0 +1,881 @@
+﻿
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Report;
+
+@model BusinessVisitModel
+
+<style type="text/css">
+
+    .mt30 {
+        margin-top: 15px !important;
+    }
+
+    .expanding-header {
+        z-index: 999;
+        position: absolute;
+        top: 30px;
+        left: 30px;
+        width: 302px;
+        /*height: 43px;*/
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 2px;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .expanding-header.collapsed {
+            width: 48px;
+            overflow: hidden;
+        }
+
+        .expanding-header .map-header-icon {
+            cursor: pointer;
+            width: 47px;
+            padding: 10px 13px;
+            color: #FFF;
+            font-size: 22px;
+            float: left;
+            margin-right: 10px;
+        }
+
+        .expanding-header .flag-sm {
+            cursor: pointer;
+        }
+
+    .maps-page .expanding-header,
+    .map-full-page .expanding-header {
+        top: 24px;
+        left: 90px;
+    }
+
+        .maps-page .expanding-header input.form-control {
+            min-width: 250px;
+        }
+</style>
+
+<section id="content_wrapper">
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left" style="margin-top:60px;">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">报表</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">员工报表</a>
+                </li>
+                <li class="crumb-trail">业务员外勤轨迹</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="pn posr">
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="expanding-header" style="height:auto">
+            <span class="glyphicons glyphicons-show_lines map-header-icon"></span>
+            <div class="pull-right p10 pr10" id="datetimepicker_panel">
+                <div class="panel mbn">
+                    <div class="panel-body">
+                        <div id="datetimepicker3">
+                            <input type="text" id="txtSignDate" name="txtSignDate" class="form-control" style="display:none">
+                        </div>
+                        <div id="BusinessUsers" style="max-height:500px;overflow-y:scroll;"></div>
+                    </div>
+                </div>
+                <div class="panel" style="text-align:right;height:auto;">
+                    <button type="button" id="btn_play" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="allmap" style="width: 100%; height: 100%;"></div>
+    </section>
+    <!-- End: Content -->
+</section>
+
+@{
+    await Html.RenderPartialAsync("_MapModal", new ViewDataDictionary(ViewData) { { "formId", "MapForm" } });
+}
+
+
+@*template-user-events*@
+<script id="template-user-events" type="text/x-tmpl">
+    {% if(o.data!=null){ %}
+    <ul class="nav tray-nav tray-nav-border custom-nav-animation affix-top" style="position:relative;" data-spy="affix" data-offset-top=(int)AccessGranularityEnum.InventoryProfitlossExport>
+        {% for (var i=0,user;user=o.data[i]; i++) { %}
+        <li class="animated animated-short zoomIn">
+            <a href="javascript:;" class="p10 showTracks" data-json="{%=JSON.stringify(user.VisitRecords)%}" data-tracks="{%=JSON.stringify(user.RealTimeTracks)%}">
+                <div>
+                    <span class="pull-left mr10"><img class="media-object mn thumbnail thumbnail-sm rounded mw40" src="@LayoutExtensions.ResourceServerUrl("/Content/images/app.jpg")" alt="..."> </span><b>{%=user.BusinessUserName%}</b> 业务员
+                </div>
+                <div class="media-links pt6 pbn">
+                    <span class="text-light fs12 mr10" data-toggle="tooltip" title="已拜访">
+                        <span class="glyphicons glyphicons-circle_ok  mr5"></span> {%=user.VisitedCount%}
+                    </span>
+                    <span class="text-light fs12 mr10" data-toggle="tooltip" title="未拜访">
+                        <span class="glyphicons glyphicons-circle_remove  mr5"></span> {%=user.NoVisitedCount%}
+                    </span>
+                    <span class="text-light fs12 mr10" data-toggle="tooltip" title="异常拜访">
+                        <span class="glyphicons glyphicons-circle_exclamation_mark"></span> {%=user.ExceptVisitCount%}
+                    </span>
+                </div>
+            </a>
+        </li>
+        {% } %}
+    </ul>
+    {% } %}
+</script>
+
+@*template-timeline-events*@
+<script id="template-timeline-events" type="text/x-tmpl">
+    {% if(o.data!=null){ %}
+    {% for (var i=0,track;track=o.data[i]; i++) { %}
+    <div class="timeline-divider mtn">
+        <div class="divider-label">{%=$(this).crtTimeFtt('hh:mm',track.SigninDateTime)%}</div>
+    </div>
+    <div class="row pbn mbn">
+        <div class="col-sm-12 pbn mbn">
+            <div class="timeline-item">
+                <div class="timeline-icon">
+                    <span class="fa fa-circle text-warning"></span>
+                </div>
+                <div class="panel ml30 mb10">
+                    <div class="panel-heading" style="line-height:36px;height:40px;">
+                        <span class="panel-title">{%=track.TerminalName%}</span>
+                    </div>
+                    <div class="panel-body">
+                        <div><span class="fa fa-clock-o"></span> {%=$(this).crtTimeFtt('hh:mm',track.SigninDateTime)%}- {%=$(this).crtTimeFtt('hh:mm',track.SignOutDateTime)%} 在店: {%=$(this).calcDateTime(track.SignOutDateTime,track.SignOutDateTime)%}</div>
+                        <div>
+                            <ul id="fa-icon-list" class="fa-icon-list mbn">
+                                <li class="fa-icon-wrap" style="height:unset"><i class="fa fa-suitcase"></i> 销订 <br />{%=track.SaleOrderAmount%}</li>
+                                <li class="fa-icon-wrap" style="height:unset"><i class="fa fa-shopping-cart"></i> 销售<br />{%=track.SaleAmount%}</li>
+                                <li class="fa-icon-wrap" style="height:unset"><i class="fa fa-reply-all"></i> 退订<br />{%=track.ReturnOrderAmount%}</li>
+                                <li class="fa-icon-wrap" style="height:unset"><i class="fa fa-truck"></i> 退货<br />{%=track.ReturnAmount%}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        在途：{%=$(this).calcDateTime(o.data[i].SigninDateTime,o.data[(i==0?i:i-1)].SignOutDateTime)%}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% } %}
+    {% } %}
+</script>
+
+
+@section CurPageScripts
+{
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=bB75lKXKUHnI2o0dbND5ktWFSWOEg5Tv"></script>
+    <script type="text/javascript" src="https://api.map.baidu.com/library/AreaRestriction/1.2/src/AreaRestriction_min.js"></script>
+    <script type="text/javascript" src="https://api.map.baidu.com/library/GeoUtils/1.2/src/GeoUtils_min.js"></script>
+    <script type="text/javascript">
+
+        //这块需要追加到 Common.js
+        ; (function ($) {
+            $.fn.extend({
+                //时间格式化 format：yyyy-MM-dd hh:mm:ss
+                crtTimeFtt(format, value) {
+                    var crtTime = new Date(value);
+                    return this.dateFtt(format, crtTime);
+                },
+                //时间格式化
+                dateFtt(fmt, date) {
+                    var o = {
+                        "M+": date.getMonth() + 1,                 //月份
+                        "d+": date.getDate(),                    //日
+                        "h+": date.getHours(),                   //小时
+                        "m+": date.getMinutes(),                 //分
+                        "s+": date.getSeconds(),                 //秒
+                        "q+": Math.floor((date.getMonth() + 3) / 3), //季度
+                        "S": date.getMilliseconds()             //毫秒
+                    };
+                    if (/(y+)/.test(fmt))
+                        fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+                    for (var k in o)
+                        if (new RegExp("(" + k + ")").test(fmt))
+                            fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                    return fmt;
+                },
+                //计算时间差
+                calcTime: function (invalidTime, validTime) {
+                    var secs1 = (new Date().getTime() / 1000) - parseFloat(validTime);
+                    var secs2 = parseFloat(invalidTime) - parseFloat(validTime);
+                    var retStr = "";
+                    if (secs1 > 5) {
+                        retStr += this.secondsToString(secs1) + " 前";
+                    }
+                    if (secs2 > 5) {
+                        retStr += " for " + this.secondsToString(secs2);
+                    }
+                    return retStr;
+                },
+                //计算时间差
+                calcDateTime: function (beginTime, endTime) {
+                    var str = "";
+                    var begintime_ms = Date.parse(new Date(beginTime.replace(/-/g, "/")));
+                    var endtime_ms = Date.parse(new Date(endTime.replace(/-/g, "/")));
+                    //时间差的毫秒数
+                    var dateSpan = endtime_ms - begintime_ms;
+                    //相差天数
+                    var days = Math.floor(dateSpan / (24 * 3600 * 1000));
+                    //计算天数后剩余的毫秒数
+                    var leave1 = dateSpan % (24 * 3600 * 1000);
+                    var hours = Math.floor(leave1 / (3600 * 1000));
+                    //计算小时数后剩余的毫秒数
+                    var leave2 = leave1 % (3600 * 1000);
+                    var minutes = Math.floor(leave2 / (60 * 1000));
+                    //计算分钟数后剩余的毫秒数
+                    var leave3 = leave2 % (60 * 1000);
+                    var seconds = Math.round(leave3 / 1000);
+
+                    if (days > 0)
+                        str += days + "天";
+                    if (hours > 0)
+                        str += hours + "时";
+                    if (minutes >= 0)
+                        str += minutes + "分";
+                    if (seconds >= 0)
+                        str += seconds + "秒";
+
+                    return str;
+                },
+                //时间转化
+                secondsToTime: function (secs) {
+                    var hours = Math.floor(secs / (60 * 60));
+                    var divisor_for_minutes = secs % (60 * 60);
+                    var minutes = Math.floor(divisor_for_minutes / 60);
+                    var divisor_for_seconds = divisor_for_minutes % 60;
+                    var seconds = Math.ceil(divisor_for_seconds);
+                    var obj = {
+                        "h": hours,
+                        "m": minutes,
+                        "s": seconds
+                    };
+                    return obj;
+                },
+                //时间转化
+                secondsToString: function (secs) {
+                    obj = this.secondsToTime(secs);
+                    secStr = obj.s + " 秒";
+                    minStr = "";
+                    hrStr = "";
+                    if (obj.s > 1) {
+                        secStr += "s";
+                    }
+                    if (obj.m > 0) {
+                        minStr = obj.m + " 分";
+                        if (obj.m > 1) {
+                            minStr += "s";
+                        }
+                        secStr = "";
+                    }
+                    if (obj.h > 0) {
+                        hrStr = obj.h + " 时";
+                        if (obj.h > 1) {
+                            hrStr += "s";
+                        }
+                        minStr = "";
+                        secStr = "";
+                    }
+                    return hrStr + " " + minStr + " " + secStr;
+                },
+                //用于排序跟踪时间线
+                sortBy: function (attr, rev) {
+                    var of;
+                    if ("undefined" == typeof rev) {
+                        of = 1;
+                    }
+                    else {
+                        of = (rev) ? 1 : -1;
+                    }
+                    return function (a, b) {
+                        a = a[attr];
+                        b = b[attr];
+                        if (a < b) {
+                            return of * -1;
+                        }
+                        if (a > b) {
+                            return of * 1;
+                        }
+                        return 0;
+                    }
+                },
+                //载入业务员
+                loadBusinessUsers: function (date) {
+                    $.ajax({
+                        type: 'GET',
+                        cache: true,
+                        url: "/visitStore/getBusinessUserTracks?signinDateTime=" + date + "&r=" + Math.random(),
+                        dataType: "json",
+                        beforeSend: function () {
+                            $("#BusinessUsers").html("<img src='@LayoutExtensions.ResourceServerUrl("/Content/images/loading.gif")'/>");
+                        },
+                        success: function (result) {
+                            if (result.Data != null && result.Data.length > 0) {
+                                $(this).showBusinessUsers(result.Data, $("#BusinessUsers"));
+                            }
+                            else {
+                                $(this).showAlert("BusinessUsers", "抱歉，获取服务器端数据失败，您可以尝试刷新.", false);
+                            }
+                        },
+                        error: function (msg) {
+                            $(this).showAlert("BusinessUsers", "抱歉，获取服务器端数据失败，您可以尝试刷新.", false);
+                        }
+                    });
+                },
+                //载入时间线
+                showTrackTimeLine: function (json, obj) {
+                    json.sort($(this).sortBy('SigninDateTime', false));
+                    var temps = tmpl("template-timeline-events");
+                    var result = this.renderTemplate(temps, json, obj);
+                },
+                //解析业务员
+                showBusinessUsers: function (json, obj) {
+                    var temps = tmpl("template-user-events");
+                    var result = this.renderTemplate(temps, json, obj);
+                },
+                //解析模板
+                renderTemplate: function (func, data, obj) {
+                    if (!func) {
+                        return $();
+                    }
+                    //console.log({ data: data });
+                    var result = func({ data: data });
+                    return obj.html(result).children();
+                },
+                //友好提示
+                showAlert: function (obj, msg, close) {
+                    var html = "<div class=\"alert alert-sm alert-border-left alert-danger light alert-dismissable\">";
+                    if (close) {
+                        html += "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">×</button>"
+                    }
+                    html += "<i class=\"fa fa-info pr10\"></i><strong>" + msg + "</strong></div>";
+                    $("#" + obj + "").html(html);
+                }
+            });
+        })(jQuery);
+
+        // 创建Map实例
+        var map = new BMap.Map("allmap");
+        var geoc = new BMap.Geocoder();
+
+        map.enableScrollWheelZoom(true);
+        // 初始化地图,设置中心点坐标和地图级别
+        map.centerAndZoom(new BMap.Point(108.953044, 34.351147), 14);
+        map.addControl(new BMap.ScaleControl());
+        map.addControl(new BMap.OverviewMapControl());
+        map.addControl(new BMap.MapTypeControl());
+
+        //设置当地图容器发生改变时地图自动适应
+        map.enableAutoResize();
+
+        var arrpoints, playBtn, car, label, centerPoint, prePoint;
+        playBtn = document.getElementById("btn_play");//播放
+        var index = 0;
+        var timer, count, currentCount = 0;
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            $("[data-toggle='tooltip']").tooltip();
+
+            // 初始日历选择器
+            $('#datetimepicker3').datetimepicker({
+                //defaultDate: "1/1/2018",
+                locale: 'zh-cn',
+                format: "YYYY-MM-DD",
+                inline: true
+            });
+            $("#datetimepicker3").on("dp.change", function (e) {
+                //console.log($(this).crtTimeFtt("yyyy-MM-dd", e.date));
+                $(this).loadBusinessUsers($(this).crtTimeFtt("yyyy-MM-dd", e.date));
+            });
+
+            /*
+           * ============================================
+           *百度地图API功能
+           * ============================================
+           */
+            var wHeight = $(window).height();
+            $('#main').height(wHeight);
+            $('#allmap').height(wHeight+100);
+
+            //日历工具栏折叠
+            $('.expanding-header .map-header-icon').on('click', function () {
+                $("#datetimepicker_panel").toggle();
+                $(this).parent('.expanding-header').toggleClass('collapsed');
+            });
+
+            //路线轨迹描绘
+            function drawLuShu(points) {
+                //初始化黑线
+                map.clearOverlays();
+                var bs = map.getBounds();   //获取可视区域
+                var bssw = bs.getSouthWest();   //可视区域左下角
+                var bsne = bs.getNorthEast();   //可视区域右上角
+
+                if (points) {
+                    var x = (points.map(point => point.lng).reduce((total, curr) => {
+                        return total + curr;
+                    })) / points.length;
+                    var y = points.map(point => point.lat).reduce((total, curr) => {
+                        return total + curr;
+                    }) / points.length;
+                    var point = new BMap.Point(x, y);
+                    map.setCenter(point);
+                    var pLine = [];
+                    //points = douglasPeucker(points, 2); //轨迹抽稀
+                    points = linearSmooth5(points); //轨迹优化
+
+                    for (var i = 0; i < points.length; i++) {
+                        //排除异常数据
+                        if (points[i].lng < 135 && points[i].lat > 4.15) {
+                            var result = BMapLib.GeoUtils.isPointInRect(new BMap.Point(points[i].lng, points[i].lat), map.getBounds());
+                            if (result == true) {
+                                //只加载可视范围内的覆盖物
+                                pLine.push(new BMap.Point(points[i].lng, points[i].lat));
+
+                                //添加标注
+                                if (points[i].type === "1") {
+                                    var mylabelIcon = new BMap.Icon("https://www.zhoupu123.com/staticResource/images/track/consumer.png?v=1", new BMap.Size(40, 80));
+
+                                    var marker2 = new BMap.Marker(new BMap.Point(points[i].lng,
+                                        points[i].lat), { icon: mylabelIcon });  // 创建标注
+                                    map.addOverlay(marker2);
+                                }
+                                else {
+                                    var marker = new BMap.Marker(new BMap.Point(points[i].lng,
+                                        points[i].lat));
+                                    map.addOverlay(marker);
+                                }
+                            }
+
+                        }
+                    }
+
+                    //定位到中心坐标
+                    if (pLine.length > 1) {
+                        arrpoints = pLine;
+                        //添加起点终点标志
+                        var walking = new BMap.WalkingRoute(map, { renderOptions: { map: map, autoViewport: true } });
+                        walking.search(new BMap.Point(pLine[0].lng,
+                            pLine[0].lat), new BMap.Point(pLine[pLine.length - 1].lng,
+                                pLine[pLine.length - 1].lat));
+
+                        //画轨迹线
+                        map.addOverlay(new BMap.Polyline(pLine, {
+                            enableEditing: false,//是否启用线编辑，默认为false
+                            enableClicking: true,//是否响应点击事件，默认为true
+                            strokeWeight: '5',//折线的宽度，以像素为单位
+                            strokeOpacity: 0.8,//折线的透明度，取值范围0 - 1
+                            strokeColor: "#18a45b" //折线颜色
+                        }));
+
+                        label = new BMap.Label("", {
+                            offset: new BMap.Size(40, 20)
+                        });
+
+                        label.setStyle({
+                            color: '#444444',
+                            backgroundColor: '#f8f8f8',
+                            border: '1px solid #bbbbbb',
+                            borderRadius: '5px'
+                        });
+
+                        //添加动画图标
+                        var myIcon = new BMap.Icon("https://lbsyun.baidu.com/jsdemo/img/car.png", new BMap.Size(40, 20), {
+                            anchor: new BMap.Size(20, 10),
+                            imageSize: new BMap.Size(40, 20),
+                        });
+                        car = new BMap.Marker(points[0], {
+                            icon: myIcon
+                        });
+
+                        car.setLabel(label);
+                        map.addOverlay(car);
+                        //点亮播放按钮
+                        playBtn.disabled = false;
+                    }
+                    else {
+                        $(this).showToastr("抱歉，该业务员无可视范围内的运动轨迹，您可以尝试通过缩放地图来获取运动轨迹！");
+                    }
+
+                    if (pLine.length > 0) {
+                        var minLng = pLine[0].lng;
+                        var maxLng = pLine[0].lng;
+                        var minLat = pLine[0].lat;
+                        var maxLat = pLine[0].lat;
+                        pLine.forEach(pot => {
+                            if (pot.lng > maxLng) maxLng = pot.lng;
+                            if (pot.lng < minLng) minLng = pot.lng;
+                            if (pot.lat > maxLat) maxLat = pot.lat;
+                            if (pot.lat < minLat) minLat = pot.lat;
+                        });
+
+                        map.centerAndZoom(pLine[0], (getZoom(maxLng, minLng, maxLat, minLat)) > 18 ? 15 : getZoom(maxLng, minLng, maxLat, minLat));
+                    }
+
+                }
+                else {
+                    //初始化地图
+                    debugger;
+                    map.centerAndZoom(new BMap.Point(108.953044, 34.351147), 15);
+                    arrpoints = [];
+                    playBtn.disabled = true;
+                    //pauseBtn.disabled = true;
+                }
+            }
+
+            //播放
+            $("#btn_play").click(function () {
+                play();
+            });
+
+            //鼠标点击监听
+            map.addEventListener("click", function (e) {
+                drawLuShu(arrpoints);
+            });
+
+
+            //初始用户数据
+            $(this).loadBusinessUsers();
+            $(document).on("click", ".showTracks", function () {
+                var Body = $('body');
+                if (Body.hasClass('sb-r-c'))
+                    $("#toggle_sidemenu_r").click();
+                //else {
+                //    $("#toggle_sidemenu_r").click();
+                //}
+
+                var tracks = $(this).attr("data-json");
+                var realTimeTracks = $(this).attr("data-tracks");
+                if (tracks != null && JSON.parse(tracks) != null && JSON.parse(tracks).length > 0) {
+                    var points = [];
+                    $(this).showTrackTimeLine(JSON.parse(tracks), $("#sidebar-right-tab1"));
+                    $.each(JSON.parse(realTimeTracks), function (i, track) {
+                        points.push({ lng: track.Longitude, lat: track.Latitude, type: track.Ctype });
+                    });
+                    if (points.length > 0)
+                        drawLuShu(points);
+                }
+                else {
+                    $(this).showAlert("sidebar-right-tab1", "抱歉，该业务员无可用跟踪，您可以尝试刷新.", false);
+                }
+            });
+
+        });
+
+        //计算地图级数
+        function getZoom(maxLng, minLng, maxLat, minLat) { //计算缩放级别
+            var zoom = [
+                "50",
+                "100",
+                @((int)AccessGranularityEnum.CostProfitView),
+                "500",
+                "1000",
+                "2000",
+                "5000",
+                "10000",
+                "20000",
+                "25000",
+                "50000",
+                "100000",
+                "200000",
+                "500000",
+                "1000000",
+                "2000000"
+            ]; //级别18到3。
+            var pointA = new BMap.Point(maxLng, maxLat); // 创建点坐标A
+            var pointB = new BMap.Point(minLng, minLat); // 创建点坐标B
+            var distance = map.getDistance(pointA, pointB).toFixed(1); //获取两点距离,保留小数点后两位
+            for (var i = 0, zoomLen = zoom.length; i < zoomLen; i++) {
+                if (zoom[i] - distance > 0) {
+                    return 18 - i + 3; //之所以会多3，是因为地图范围常常是比例尺距离的10倍以上。所以级别会增加3。
+                }
+            }
+        };
+
+        function play() {
+            var points = [];
+            if (arrpoints)
+                points = arrpoints;
+
+            if (points.length > 0) {
+                playBtn.disabled = true;
+                //pauseBtn.disabled = false;
+
+                var point; //在这里确定下一个要跳的点和index增不增
+
+                if (index == points.length - 1) {
+                    return
+                }
+                setRotation(points[index - 1] || points[0], points[index], points[index + 1] || points[points.length - 1], car)
+                var projection = map.getMapType().getProjection();
+                var init_pos = projection.lngLatToPoint(points[index]);
+                var target_pos = projection.lngLatToPoint(points[index + 1]);
+
+                //如果发现有count就执行
+                if (typeof count != 'undefined') {
+                    if (count > currentCount && count >= 1) {
+                        var x = linear(init_pos.x, target_pos.x, currentCount, count);
+                        var y = linear(init_pos.y, target_pos.y, currentCount, count);
+                        point = projection.pointToLngLat(new BMap.Pixel(x, y));
+                        currentCount++;
+                    } else {
+                        if (count <= currentCount) {
+                            point = points[index + 1] || points[points.length - 1];
+                        } else {
+                            point = points[index]
+                        }
+                        //console.log(point)
+                        index++;
+                        count = undefined;
+                        currentCount = 0;
+                        map.panTo(point);
+                    }
+                } else {
+                    //计算points[index]  和pointt[index+1] 之间的count
+                    count = Math.round(Math.sqrt(Math.pow(init_pos.x - target_pos.x, 2) + Math.pow(init_pos.y - target_pos.y, 2)) /
+                        (1000 / (1000 / 10)));
+                    point = points[index]
+                }
+
+                if (index > 0 || currentCount > 0) {
+                    map.addOverlay(new BMap.Polyline([prePoint, point], {
+                        strokeColor: "red",
+                        strokeWeight: 1,
+                        strokeOpacity: 1
+                    }));
+                }
+                prePoint = point;
+                label.setContent("经度: " + point.lng + "<br>纬度: " + point.lat);
+                car.setPosition(point);
+
+                if (index < points.length) {
+                    timer = window.setTimeout("play(" + index + ")", 10);
+                } else {
+                    playBtn.disabled = true;
+                    // pauseBtn.disabled = true;
+                    map.panTo(point);
+                }
+            }
+            else {
+                $(this).showAlert("timeline", "抱歉，该业务员无可用跟踪，您可以尝试刷新.", false);
+            }
+        }
+
+        function setRotation(prePos, curPos, targetPos, me) {
+            //设置car的角度
+            var deg = 0;
+            //start!
+            curPos = map.pointToPixel(curPos);
+            targetPos = map.pointToPixel(targetPos);
+
+            if (targetPos.x != curPos.x) {
+                var tan = (targetPos.y - curPos.y) / (targetPos.x - curPos.x),
+                    atan = Math.atan(tan);
+                deg = atan * 360 / (2 * Math.PI);
+                //degree  correction;
+                if (targetPos.x < curPos.x) {
+                    deg = -deg + 90 + 90;
+
+                } else {
+                    deg = -deg;
+                }
+                //console.log(car)
+                car.setRotation(-deg);
+
+            } else {
+                var disy = targetPos.y - curPos.y;
+                var bias = 0;
+                if (disy > 0)
+                    bias = -1
+                else
+                    bias = 1
+                car.setRotation(-bias * 90);
+            }
+            return;
+
+        }
+
+        function linear(initPos, targetPos, currentCount, count) {
+            var b = initPos,
+                c = targetPos - initPos,
+                t = currentCount,
+                d = count;
+            return c * t / d + b;
+        }
+
+        //计算距离
+        function calculationDistance(point1, point2) {
+            let lat1 = point1.C_COORDINATEY;
+            let lat2 = point2.C_COORDINATEY;
+            let lng1 = point1.C_COORDINATEX;
+            let lng2 = point2.C_COORDINATEX;
+            let radLat1 = lat1 * Math.PI / 180.0;
+            let radLat2 = lat2 * Math.PI / 180.0;
+            let a = radLat1 - radLat2;
+            let b = (lng1 * Math.PI / 180.0) - (lng2 * Math.PI / 180.0);
+            let s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2)
+                + Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
+            return s * 6370996.81;
+        };
+        //计算垂距
+        function distToSegment(start, end, center) {
+            //下面用海伦公式计算面积
+            let a = Math.abs(calculationDistance(start, end));
+            let b = Math.abs(calculationDistance(start, center));
+            let c = Math.abs(calculationDistance(end, center));
+            let p = (a + b + c) / 2.0;
+            let s = Math.sqrt(Math.abs(p * (p - a) * (p - b) * (p - c)));
+            return s * 2.0 / a;
+        };
+
+        //递归方式压缩轨迹
+        function compressLine(coordinate, result, start, end, dMax) {
+            if (start < end) {
+                let maxDist = 0;
+                let currentIndex = 0;
+                let startPoint = coordinate[start];
+                let endPoint = coordinate[end];
+                for (let i = start + 1; i < end; i++) {
+                    let currentDist = distToSegment(startPoint, endPoint, coordinate[i]);
+                    if (currentDist > maxDist) {
+                        maxDist = currentDist;
+                        currentIndex = i;
+                    }
+                }
+                if (maxDist >= dMax) {
+                    //将当前点加入到过滤数组中
+                    result.push(coordinate[currentIndex]);
+                    //将原来的线段以当前点为中心拆成两段，分别进行递归处理
+                    compressLine(coordinate, result, start, currentIndex, dMax);
+                    compressLine(coordinate, result, currentIndex, end, dMax);
+                }
+            }
+            return result;
+        };
+
+        //param coordinate 原始轨迹
+        //param dMax 允许最大距离误差
+        //return douglasResult 抽稀后的轨迹
+        function douglasPeucker(coordinate, dMax) {
+            if (!coordinate || !(coordinate.length > 2)) {
+                return null;
+            }
+            coordinate.forEach((item, index) => {
+                item.key = index;
+            });
+            let result = compressLine(coordinate, [], 0, coordinate.length - 1, dMax);
+            result.push(coordinate[0]);
+            result.push(coordinate[coordinate.length - 1]);
+            let resultLatLng = result.sort((a, b) => {
+                if (a.key < b.key) {
+                    return -1;
+                } else if (a.key > b.key)
+                    return 1;
+                return 0;
+            });
+            resultLatLng.forEach((item) => {
+                item.key = undefined;
+            });
+            return resultLatLng;
+        };
+
+        //轨迹平滑算法
+        function linearSmooth5(listin) {
+            var size = listin.length;
+            var listout = [];
+
+            if (size < 5) {
+                return listin;
+            }
+            else {
+                listout.push({
+                    lng: (3.0 * listin[0].lng + 2.0
+                        * listin[1].lng + listin[2].lng - listin[4].lng) / 5.0, lat: (3.0 * listin[0].lat + 2.0
+                            * listin[1].lat + listin[2].lat - listin[4].lat) / 5.0, type: listin[0].type
+                });
+
+                listout.push({
+                    lng: (4.0 * listin[0].lng + 3.0
+                        * listin[1].lng + 2
+                        * listin[2].lng + listin[3].lng) / 10.0, lat: (4.0 * listin[0].lat + 3.0
+                        * listin[1].lat + 2
+                        * listin[2].lat + listin[3].lat) / 10.0, type: listin[1].type
+                });
+
+                for (i = 2; i <= size - 3; i++) {
+                    listout.push({ lng: (listin[i - 2].lng + listin[i - 1].lng + listin[i].lng + listin[i + 1].lng + listin[i + 2].lng) / 5.0, lat: (listin[i - 2].lat + listin[i - 1].lat + listin[i].lat + listin[i + 1].lat + listin[i + 2].lat) / 5.0, type: listin[i].type });
+                }
+
+                listout.push({
+                    lng: (4.0 * listin[size - 1].lng + 3.0
+                        * listin[size - 2].lng + 2
+                        * listin[size - 3].lng + listin[
+                            size - 4].lng) / 10.0, lat: (4.0 * listin[size - 1].lat + 3.0
+                        * listin[size - 2].lat + 2
+                        * listin[size - 3].lat + listin[
+                            size - 4].lat) / 10.0, type: listin[size - 2].type
+                });
+
+                listout.push({
+                    lng: (3.0 * listin[size - 1].lng + 2.0
+                        * listin[size - 2].lng
+                        + listin[size - 3].lng - listin[
+                            size - 5].lng) / 5.0, lat: (3.0 * listin[size - 1].lat + 2.0
+                        * listin[size - 2].lat
+                        + listin[size - 3].lat - listin[
+                            size - 5].lat) / 5.0, type: listin[size - 1].type
+                });
+            }
+            return listout;
+        }
+    </script>
+
+}
+
+

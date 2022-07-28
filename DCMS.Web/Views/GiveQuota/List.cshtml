@@ -1,0 +1,740 @@
+﻿@using System.Linq;
+@using System.Collections.Generic;
+@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Products;
+
+@model GiveQuotaListModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">档案</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">商品相关</a>
+                </li>
+                <li class="crumb-trail">赠品额度</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="pull-left">
+                            主管
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="ui-draggable-handle">
+                            <ul class="ui-fancytree fancytree-container fancytree-ext-edit" tabindex="0">
+                                <li class="fancytree-lastsib">
+                                    <span class="fancytree-node fancytree-expanded fancytree-folder fancytree-has-children fancytree-lastsib fancytree-exp-el fancytree-ico-ef"><span class="fancytree-expander"></span><span class="fancytree-icon"></span><span class="fancytree-title">主管名称</span></span>
+                                    <ul>
+                                        @foreach (var user in Model.Managers)
+                                        {
+                                            <li class="" data-id="@Model.UserId">
+                                                <a href="@Url.Action("List", new { userId = user.Id,year= Model.Year,remark=Model.Remark })">
+                                                    <span class="fancytree-node fancytree-expanded fancytree-exp-n fancytree-ico-e" style="@((user.Id==Model.UserId)?"color:#CBE8F6;":"")">
+                                                        <span class="fancytree-expander"></span><span class="fancytree-icon"></span><span class="fancytree-title">@user.UserRealName</span>
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        }
+
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-10">
+                @*Toolbar*@
+                <div class="row mb10">
+                    <div class="col-md-2">
+                        <select class="form-control" id="SelectYear" name="SelectYear">
+                            <option value="@Html.Raw(Url.Action("List", new { userId = Model.UserId, year = 0 }))" selected=" @(Model.Year == 0 ? "selected" : "")">年份</option>
+                            @{
+                                int j = 0;
+                                List<int> Years = new List<int>();
+                                for (var i = 0; i < 10; i++)
+                                {
+                                    if (i < 2)
+                                    {
+                                        Years.Add(DateTime.Now.AddYears(-i).Year);
+                                    }
+                                    else
+                                    {
+                                        j++;
+                                        Years.Add(DateTime.Now.AddYears(j).Year);
+                                    }
+                                }
+                                foreach (var year in Years.OrderBy(y => y))
+                                {
+                                    @*<option value="@Html.Raw(Url.Action("List", new { userId = Model.UserId, year = year,remark=Model.Remark }))" selected="@(Model.Year == year ? "selected" : "")">@(year)</option>*@
+                                    @if (Model.Year == year)
+                                    {
+                                        <option value="@Html.Raw(Url.Action("List", new { userId = Model.UserId, year = year,remark=Model.Remark }))" selected="selected">@(year)</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@Html.Raw(Url.Action("List", new { userId = Model.UserId, year = year,remark=Model.Remark }))">@(year)</option>
+                                    }
+
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        @*<input class="form-control" placeholder="备注..." />*@
+                        <input asp-for="Remark" class="form-control" placeholder="备注..." />
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-primary btn-block" type="button" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                    </div>
+                </div>
+
+                @*GridView*@
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span>额度设置
+                        </span>
+                    </div>
+                    <div class="panel-body p5">
+                        <table id="GiveQuotaOption" class="table table-striped table-bordered table-hover"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+
+@{
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } });
+    //商品选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ProductModalForm" }, { "modalWindow", "ModalProductWindows" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+}
+
+@section CurPageScripts
+{
+
+<script type="text/javascript">
+
+        jQuery(document).ready(function () {
+            "use strict";
+
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+
+            // Init Demo JS
+
+            //Demo.init();
+
+			//权限提示
+			if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+				$('#alert-demo-2').fadeToggle();
+				setTimeout(function () {
+					$('#alert-demo-2').fadeToggle();
+				}, 3000);
+			}
+
+            function formatFixed(value, row, index) {
+                return "" + parseFloat(typeof (value) == 'undefined' ? '0' : value).toFixed(2) + "";
+            }
+
+            //选择年份
+            $("#SelectYear").change(function () {
+				var year = $(this).val();
+                window.location.href = year;
+            });
+
+			//备注
+			$("#Remark").blur(function () {
+				@*var remark = $(this).val();
+				window.location.href = "/GiveQuota/List?userId=@Model.UserId&year=@Model.Year&remark=" + remark;*@
+			});
+
+            //商品列表选择赋值
+            window.operateEventsPop = {
+				'click .rowSelect': function (e, value, row, index) {
+					//var index = $(this).attr("data-id");
+					//var keys = Object.keys(row.Units);
+					//$("#GiveQuotaOption").bootstrapTable('updateRow', { index: index, row: { ProductSKU: row.Sku, ProductId: row.Id, ProductName: row.Name, BarCode: row.SmallBarCode, UnitConversion: row.UnitConversion, Units: row.Units, UnitId: row.SmallUnitId, UnitName: keys[2] } });
+                    //$('#productSelect_ModalForm').modal('hide');
+                    
+					try {
+						var index = $(this).attr("data-id");
+						var keys = Object.keys(row.Units);
+                        var ProductId = row.Id;
+                        var flag = 0;
+                        var allTableData = $('#GiveQuotaOption').bootstrapTable('getData');
+                        $.each(allTableData, function (i, row) {
+                            if (typeof (row.ProductId) != 'undefined') {
+                                if (row.ProductId == ProductId) {
+                                    flag++;
+                                    $('#ModalProductWindows').modal('hide');
+                                    $(this).showToastr('该商品已设置额度');
+                                    return;
+                                }
+                            }
+                        });
+                        if (flag == 0) {
+                            $("#GiveQuotaOption").bootstrapTable('updateRow', { index: index, row: { ProductSKU: row.Sku, ProductId: row.Id, ProductName: row.Name, BarCode: row.SmallBarCode, UnitConversion: row.UnitConversion, Units: row.Units, UnitId: row.SmallUnitId, UnitName: keys[0] } });
+                            $('#ModalProductWindows').modal('hide');
+                        }
+						
+					}
+					catch (err) {
+						console.log(err);
+						$(this).showToastr(err);
+						return;
+					}
+
+				}
+            };
+
+            var monthly = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            var curDate = new Date();
+            $("#GiveQuotaOption").bootstrapTable({
+               @Html.Raw(Model.Items.Count > 0 ? "url: '/GiveQuota/AsyncList?year="+ Model.Year.Value + "&userId="+Model.UserId.Value + "'," : "length: 9,")
+                striped: true,
+                cache: false,
+                pagination: true,
+                showPagination: false,
+                sidePagination: "server",
+                sortable: false,
+                sortOrder: "asc",
+                search: false,
+                strictSearch: false,
+                showColumns: false,
+                showRefresh: false,
+                clickToSelect: false,
+                uniqueId: "id",
+                showToggle: false,
+                editable: true,
+                cardView: false,
+                detailView: false,
+                showFooter: false,
+                onLoadSuccess: function (data) {
+                    $(".fixed-table-pagination").hide();
+                },
+                onPostBody: function (data) {
+                    $("[data-toggle='popover']").popover();
+                },
+                columns: [
+                    {
+                        title: '<i class="fa fa-gear fs18"></i>',
+                        align: 'center',
+                        formatter: function (value, row, index) {
+                            return m_pagerow + index + 1;
+                        }
+                    },
+                    {
+                        field: 'ProductSKU',
+                        title: '商品编号',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'Id',
+                        visible: false
+                    },
+                    {
+                        field: 'UnitId',
+                        visible: false
+                    },
+                    {
+                        field: 'Units',
+                        visible: false
+                    },
+                    {
+                        field: 'ProductId',
+                        visible: false
+                    },
+                    {
+                        field: 'ProductName',
+                        title: '商品名称',
+                        class: 'editable',
+                        align: 'left',
+                        width: '100',
+                        formatter: function (value) {
+                            return (value == 0 || value == "" || value == undefined) ? "" : "<a style='color:black; text-decoration:none;' data-trigger='hover' title='' data-container='body' data-toggle='popover' data-placement='top' data-content='" + value + "'>" + $(this).cutString(value, 10) + "</a>";
+                        }
+                    },
+                    {
+                        field: 'UnitConversion',
+                        title: '单位换算',
+                        formatter: $(this).formatIsNull
+                    }, {
+                        field: 'UnitName',
+                        title: '单位',
+                        align: 'center',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'Jan',
+                        align: 'right',
+                        class: 'editable',
+                        title: '1月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 1)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Jan_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'Feb',
+                        align: 'right',
+                        class: 'editable',
+                        title: '2月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 2)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Feb_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'Mar',
+                        align: 'right',
+                        class: 'editable',
+                        title: '3月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 3)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Mar_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'Apr',
+                        align: 'right',
+                        class: 'editable',
+                        title: '4月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 4)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Apr_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'May',
+                        align: 'right',
+                        class: 'editable',
+                        title: '5月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 5)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.May_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'Jun',
+                        align: 'right',
+                        class: 'editable',
+                        title: '6月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 6)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row, index) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Jun_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'Jul',
+                        align: 'right',
+                        class: 'editable',
+                        title: '7月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 7)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Jul_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'Aug',
+                        align: 'right',
+                        class: 'editable',
+                        title: '8月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 8)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Aug_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+
+                    },
+                    {
+                        field: 'Sep',
+                        align: 'right',
+                        class: 'editable',
+                        title: '9月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 9)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Sep_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'Oct',
+                        align: 'right',
+                        class: 'editable',
+                        title: '10月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 10)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Oct_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'Nov',
+                        align: 'right',
+                        class: 'editable',
+                        title: '11月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 11)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Nov_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'Dec',
+                        align: 'right',
+                        class: 'editable',
+                        title: '12月',
+                        width: '52',
+                        cellStyle: function () {
+                            if (parseInt(curDate.getMonth()) + 1 > 12)
+                                return { css: { "background-color": "#eae7e7" } };
+                            else
+                                return { css: { "background-color": "" } };
+                        },
+                        formatter: function (value, row) {
+                            return (value == 0 || value == "") ? "" : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='余额' data-container='body' data-toggle='popover' data-placement='top' data-content='" + row.Dec_Balance + row.SmallUnitName + "'>" + value + "</a>";
+                        }
+                    },
+                    {
+                        field: 'Total',
+                        title: '总计',
+                        formatter: $(this).formatFixed
+					},
+					{
+                        field: 'Remark',
+                        title: '备注',
+                        width: '100',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'Operate',
+                        title: '操作',
+                        align: 'center',
+                        width: '100',
+                        events: {
+                            'click .rowAppend': function (e, value, row, index) {// 添加
+                                row.Id = 0;
+								//var that = $('#GiveQuotaOption').bootstrapTable('append', row);
+								$('#GiveQuotaOption').bootstrapTable('insert', row);
+                            },
+							'click .rowCopy': function (e, value, row, index) {// 复制
+                                $('#GiveQuotaOption').bootstrapTable('append', row);
+                            },
+                            'click .rowDel': function (e, value, row, index) {// 删除
+								//$("#GiveQuotaOption").bootstrapTable('remove', { field: "id", values: [parseInt(row.Id)] });
+								var datas = $('#GiveQuotaOption').bootstrapTable('getData');
+								var len = datas.length;
+								if (len == 1) {
+									$(this).showToastr('数据不能删除');
+									return;
+                                }
+								if (row.uniqueid == undefined) {
+                                    $("#GiveQuotaOption").bootstrapTable('remove', { field: "Id", values: [parseInt(row.Id)] });
+								}
+								else {
+									$("#GiveQuotaOption").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+								}
+                            }
+                        },
+                        formatter: function (value, row, index) {
+                            return [
+                                '<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+                                '<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+                            ].join('');
+                        }
+                    }
+                ],
+                onClickCell: function (field, value, row, $element) {
+					if (field == "Operate") {
+						return false;
+					}
+                    var input = $($element).find("input");
+                    var select = $($element).find("select");
+                    if (input.length > 0 || select.length > 0)
+                        return false;
+
+                    //当前列所在行的索引
+                    var index = $element.parent().attr("data-index");
+                    //console.log(index);
+
+                    if (field == "ProductName") {
+                        //var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+                        var html = '<div class="input-group">' +
+                            '<input type="text" class="form-control input-sm"  name="ProductName" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">' +
+                            '<span class="input-group-btn"><button class="btn btn-default btn-sm searchproduct" id="search_' + field + "_" + row.Id + '" data-index="' + index +'"><span class="glyphicon glyphicon-search"></span></button></span>' +
+                            '</div>';
+
+                        $($element).html(html);
+                        var inputObj = $("#search_" + field + "_" + row.Id);
+                        inputObj.focus();
+                        inputObj.bind("focusout", function () {
+                            $("#GiveQuotaOption").bootstrapTable('updateRow', { index: index, row: { ProductName: $(this).val() } });
+                            $($element).html("" + value + "");
+                        });
+                        //选择商品
+                        inputObj.bind("click", function () {
+                            $(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup", { Index: $(this).attr("data-index") }, "选择商品", $("#ProductModalForm"),
+                                function () { });
+                        });
+                    }
+                    else if (monthly.indexOf(field) >= 0) {
+                        var order = monthly.indexOf(field);
+
+                        if (parseInt(curDate.getMonth()) >= (parseInt(order) + 1)) {
+                            $(this).showToastr("以往月份不能修改！")
+                            return false;
+                        }
+
+                        var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+                        $($element).html(html);
+                        var inputObj = $("#" + $(html).attr("id"));
+                        inputObj.focus();
+                        inputObj.bind("focusout", function () {
+                            if (isNaN($(this).val())) {
+                                $(this).showToastr("数字格式不正确！")
+                            }
+
+                            if (row.UnitName == row.SmallUnitName && $(this).val().indexOf(".") > -1)
+                                row[field] = parseInt($(this).val());
+                            else
+                                row[field] = $(this).val();
+
+                            row.Total = parseFloat(parseFloat(row.Jan == '' ? "0" : row.Jan) + parseFloat(row.Feb == '' ? "0" : row.Feb) + parseFloat(row.Mar == '' ? "0" : row.Mar) + parseFloat(row.Apr == '' ? "0" : row.Apr) + parseFloat(row.May == '' ? "0" : row.May) + parseFloat(row.Jun == '' ? "0" : row.Jun) + parseFloat(row.Jul == '' ? "0" : row.Jul) + parseFloat(row.Aug == '' ? "0" : row.Aug) + parseFloat(row.Sep == '' ? "0" : row.Sep) + parseFloat(row.Oct == '' ? "0" : row.Oct) + parseFloat(row.Nov == '' ? "0" : row.Nov) + parseFloat(row.Dec == '' ? "0" : row.Dec)).toFixed(2);
+                            $("#GiveQuotaOption").bootstrapTable('updateRow', { index: index, row: row });
+                            $($element).html("" + value + "");
+                        });
+                    } else if (field == "Remark") {
+                        var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+                        $($element).html(html);
+                        var inputObj = $("#" + $(html).attr("id"));
+                        inputObj.focus();
+                        inputObj.bind("focusout", function () {
+                            $("#GiveQuotaOption").bootstrapTable('updateRow', { index: index, row: { Remark: $(this).val() } });
+                            $($element).html("" + value + "");
+                        });
+                    } else if (field == "UnitName")
+                    {
+
+                        console.log("Units:" + row.Units);
+
+                        if (row.Units == null) {
+                            $(this).showToastr('请选择商品');
+                            return;
+                        }
+
+                        console.log("UnitId:"+row.UnitId);
+
+                        var html = '<select name="' + field + '" id="' + field + "_" + row.Id + '">';
+                        //var keys = Object.keys(row.Units);
+                        $.each(row.Units, function (key, unit) {
+                            //html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+							if (unit > 0) {
+								html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+							}
+                        });
+                        html += '</select>';
+
+                        $($element).html(html);
+                        var inputObj = $("#" + $(html).attr("id"));
+                        inputObj.focus();
+                        inputObj.bind("focusout", function ()
+                        {
+                            console.log(row.UnitId + "=" + inputObj.val());
+                            console.log(inputObj.find("option:selected").text());
+                            $($element).html("" + inputObj.find("option:selected").text() + "");
+                            $("#GiveQuotaOption").bootstrapTable('updateRow', { index: index, row: { UnitId: $(this).val(),UnitName: inputObj.find("option:selected").text(),Units: row.Units } });
+                        });
+                    }
+                    $.each($('#GiveQuotaOption').bootstrapTable('getData'), function (i, row) {
+                        //console.log(row);
+                    });
+				},
+				onLoadSuccess: function (data) {
+					//显示额度主表备注
+                    $("#Remark").val(data.remark);
+				}
+            });
+
+
+            //保存配置
+			$("#FormSubmit").click(function () {
+                //获取表格的所有内容行
+                var allTableData = $('#GiveQuotaOption').bootstrapTable('getData');
+                var serializeData = [];
+                $.each(allTableData, function (i, row)
+				{
+                    var tmpObj = {
+                        "Id": typeof (row.Id) == 'undefined' ? "0" : row.Id,
+                        "ProductId": typeof (row.ProductId) == 'undefined' ? "0" : row.ProductId,
+                        "UnitId": typeof (row.UnitId) == 'undefined' ? "0" : row.UnitId,
+                        "Jan": typeof (row.Jan) == 'undefined' ? "0" : row.Jan,
+                        "Feb": typeof (row.Feb) == 'undefined' ? "0" : row.Feb,
+                        "Mar": typeof (row.Mar) == 'undefined' ? "0" : row.Mar,
+                        "Apr": typeof (row.Apr) == 'undefined' ? "0" : row.Apr,
+                        "May": typeof (row.May) == 'undefined' ? "0" : row.May,
+                        "Jun": typeof (row.Jun) == 'undefined' ? "0" : row.Jun,
+                        "Jul": typeof (row.Jul) == 'undefined' ? "0" : row.Jul,
+                        "Aug": typeof (row.Aug) == 'undefined' ? "0" : row.Aug,
+                        "Sep": typeof (row.Sep) == 'undefined' ? "0" : row.Sep,
+                        "Oct": typeof (row.Oct) == 'undefined' ? "0" : row.Oct,
+                        "Nov": typeof (row.Nov) == 'undefined' ? "0" : row.Nov,
+                        "Dec": typeof (row.Dec) == 'undefined' ? "0" : row.Dec,
+                        "Total": typeof (row.Total) == 'undefined' ? "0" : row.Total,
+                        "Remark": typeof (row.Remark) == 'undefined' ? "" : row.Remark
+                    };
+                    serializeData.push(tmpObj);
+                });
+				//return false;
+				var remark = $("#Remark").val();
+                @*$.ajax({
+                    type: "post",
+					url: "/GiveQuota/Update?year=@(Model.Year.Value)&userId=@(Model.UserId.Value)&giveQuotaId=@(Model.GiveQuotaId.Value)&remark="+remark,
+                    data: serializeData,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        if (result.Success) {
+                            toastr.success(result.Message);
+                            $("#GiveQuotaOption").bootstrapTable('refresh');
+                        }
+                        else {
+                            $(this).showToastr(result.Message);
+                        }
+                    },
+                    error: function () {
+                        $(this).showToastr('网络错误，请重新保存！');
+                    }
+                });*@
+
+                //保存的数据
+				var postData = {
+					UserId:@(Model.UserId.Value),
+					Year:@(Model.Year.Value),
+                    Remark:$("#Remark").val(),
+					//商品项目
+					Items: serializeData,
+				};
+
+				//保存服务器
+				$(this).remoteSubmit("post","/GiveQuota/CreateOrUpdate?giveQuotaId=@(Model.GiveQuotaId.Value)", postData, null);
+
+            });
+        });
+</script>
+}

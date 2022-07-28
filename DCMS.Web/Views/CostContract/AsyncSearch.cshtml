@@ -1,0 +1,121 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+
+@model CostContractBillModel
+
+@Html.HiddenFor(m => m.CustomerId)
+@Html.HiddenFor(m => m.AccountingOptionId)
+
+<div class="bootstrap-table">
+    <div class="fixed-table-container">
+        <div class="fixed-table-body">
+            <table class="table table-striped table-hover" id="costcontract_datatable"></table>
+            @*<table class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="bs-checkbox " style="text-align: center; vertical-align: middle; width: 36px; ">
+                            <div class="th-inner "><input name="btSelectAll" type="checkbox"></div>
+                        </th>
+                        <th><div class="th-inner">客户</div></th>
+                        <th><div class="th-inner">合同编号</div></th>
+                        <th><div class="th-inner">月份</div></th>
+                        <th class="text-center"><div class="th-inner">交易金额</div></th>
+                        <th class="text-center"><div class="th-inner">操作</div></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        if (Model.SelectItems.Count > 0)
+                        {
+                            int index = 0;
+                            foreach (var item in Model.SelectItems)
+                            {
+                                <tr>
+                                    <td class="bs-checkbox ">
+                                        <input data-index="@index" name="btSelectItem" class="btSelectItem" type="checkbox" value="@item.Id">
+                                    </td>
+                                    <td>@item.CustomerName</td>
+                                    <td><a href="@Url.Action("Edit", new { id=item.Id })">@item.BillNumber</a></td>
+                                    <td>@item.MonthName</td>
+                                    <td class="text-center">@item.Amount</td>
+                                    <td class="text-center">
+                                        <a class="btn btn-sm btn-primary btn_addselect_contract" data-id="@item.Id" data-name="@item.BillNumber" data-amount="@item.Amount" data-month="@item.Month"><i class="glyphicon glyphicon-pencil mr5"></i> 选择</a>
+                                    </td>
+
+                                </tr>
+                                index++;
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="6" class="text-center">没有找到匹配记录！</td></tr>
+                        }
+                    }
+                </tbody>
+            </table>*@
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+	$(function () {
+		//终端列表
+        $("#costcontract_datatable").bootstrapTable({
+            url: "/CostContract/AsyncSearcCostContracts",
+			method: 'get',
+			striped: true,
+			cache: false,
+			pagination: true,
+			queryParams: function (params) {
+				var temp =
+					{
+                        customerId: $("#CustomerId").val(),
+                        accountOptionId: $("#AccountingOptionId").val(),
+						pageSize: params.limit,
+						pageIndex: (params.offset / params.limit)
+					};
+				return temp;
+			},
+			sidePagination: "server",
+			idField: 'Id',
+			pageNumber: 1,
+			pageSize: 10,
+			search: false,
+			strictSearch: true,
+			showRefresh: false,
+			clickToSelect: false,
+			uniqueId: "Id",
+			showToggle: false,
+			cardView: false,
+			detailView: false,
+			columns: [
+                { field: 'CustomerName', title: '客户',align: 'left' },
+                { field: 'BillNumber', title: '合同编号',align: 'left' },
+                { field: 'MonthName', title: '月份', align: 'center' },
+                { field: 'Amount', title: '合同金额', align: 'center' },
+                { field: 'Balance', title: '余额', align: 'center' },
+				{
+                    field: 'operate', title: '操作', align: 'center', width: '100',
+                    events: operateEventsPopAccountOption,
+                    formatter: function (value, row, index)
+                    {
+                        return [
+                            '<a class="btn btn-sm btn-primary btn_addselect_contract" data-id="@Model.RowIndex"><i class="glyphicon glyphicon-pencil mr5"></i>&nbsp;选择</a>'
+                            ].join('');
+					}
+				}
+			],
+			onPageChange: function (number, size) {
+				m_pagerow = (number - 1) * size;
+			},
+			onLoadSuccess: function (data) {
+				//console.log('load');
+			},
+			onLoadError: function (a, b) {  //加载失败时执行
+				console.log('加载数据失败');
+			}
+		});
+	});
+</script>

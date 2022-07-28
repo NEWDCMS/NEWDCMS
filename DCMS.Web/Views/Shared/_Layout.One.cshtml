@@ -1,0 +1,94 @@
+﻿@using DCMS.Web.Framework.UI
+@{
+    //Theme CSS
+    Html.AddCssFileParts("~/assets/skin/default_skin/css/theme.css");
+    //Admin Panels CSS
+    Html.AddCssFileParts("~/assets/admin-tools/admin-plugins/admin-panels/adminpanels.css");
+    //Admin Forms CSS
+    Html.AddCssFileParts("~/assets/admin-tools/admin-forms/css/admin-forms.css");
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <title>@(Html.CurrentStoreTitle() + " - DCMS管理系统")</title>
+    <meta name="keywords" content="@(Html.DCMSTitle(true))" />
+    <meta name="description" content="@(Html.DCMSMetaDescription())">
+    <meta name="author" content="DCMS">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="@Html.ResourceServerUrl("~/assets/img/favicon.ico")">
+    @*头部Css样式*@
+    @Html.DCMSCssFiles(ResourceLocation.Head)
+    @*头部Script脚本*@
+    @Html.DCMSScripts(ResourceLocation.Head)
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="@Html.ResourceServerUrl("~/Scripts/libs/html5shiv.js")"></script>
+    <script src="@Html.ResourceServerUrl("~/Scripts/libs/respond.min.js")"></script>
+    <![endif]-->
+    <!--MiniProfiler 调试-->
+    @Html.Action("MiniProfiler", "Common")
+    <!--MiniProfiler end-->
+</head>
+
+<body class="dashboard-page sb-l-o sb-r-c onload-check sb-l-m">
+    @*页面通知提示*@
+    @await Html.PartialAsync("_Notifications")
+    <!-- Start: Tools Setting Pane -->
+    @*<div id="skin-toolbox">
+            @{ await Html.RenderPartialAsync("_ToolsSetting"); }
+        </div>*@
+    <!-- End: Tools Setting Pane -->
+    <!-- Start: Main -->
+    <div id="main">
+        <!-- Start: Header -->
+        @{ await Html.RenderPartialAsync("_Header"); }
+        <!-- End: Header -->
+        <!-- Start: Sidebar -->
+        @Html.Action("LeftSidebar", "Common", null)
+        <!-- Start: Content -->
+        @RenderBody()
+        <!-- End: Content-Wrapper -->
+        <!-- Start: Right Sidebar -->
+        @{ await Html.RenderPartialAsync("_RightSidebar.One"); }
+        <!-- End: Right Sidebar -->
+    </div>
+    <!-- End: Main -->
+    <!-- BEGIN: PAGE SCRIPTS -->
+    @*尾部部Css样式*@
+    @Html.DCMSCssFiles(ResourceLocation.Footer)
+
+    @if (IsSectionDefined("NewDefinFrameWorkScripts"))
+    {
+        @RenderSection("NewDefinFrameWorkScripts", false)
+    }
+    else
+    {
+        <!-- jQuery -->
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery-1.11.1.min.js", order: 99);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery_ui/jquery-ui.min.js", order: 99);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/bootstrap.min.js", order: 99);
+    }
+
+    @{
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/utility.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/main.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/demo.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-plugins/admin-panels/json2.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-plugins/admin-panels/jquery.ui.touch-punch.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-plugins/admin-panels/adminpanels.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/pages/widgets.js");
+    }
+    @*尾部Script脚本*@
+    @Html.DCMSScripts(ResourceLocation.Footer, false)
+    @if (IsSectionDefined("CurPageScripts"))
+    {
+        @RenderSection("CurPageScripts", false)
+    }
+    <!-- END: PAGE SCRIPTS -->
+
+</body>
+</html>
+

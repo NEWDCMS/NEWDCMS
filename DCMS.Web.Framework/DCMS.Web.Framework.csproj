@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net6.0</TargetFramework>
+	<Copyright>Copyright © DCMS</Copyright>
+	<Company>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Company>
+	<Authors>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Authors>
+	<Version>3.0.0.1</Version>
+	<Description>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Description>
+	<PackageLicenseUrl>http://www.jsdcms.com/</PackageLicenseUrl>
+	<PackageProjectUrl>http://www.jsdcms.com/</PackageProjectUrl>
+	<RepositoryUrl></RepositoryUrl>
+	<RepositoryType></RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<Compile Remove="Infrastructure\AdminWidgetZones.cs" />
+	<Compile Remove="Infrastructure\Extensions\ApplicationPartManagerExtensions.cs" />
+	<Compile Remove="Mvc\Filters\AdminAntiForgeryAttribute.cs" />
+	<Compile Remove="Mvc\Filters\PublicAntiForgeryAttribute.cs" />
+	<Compile Remove="Validators\CreditCardPropertyValidator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="BundlerMinifier.Core" Version="3.2.449" />
+	  <PackageReference Include="FluentValidation.AspNetCore" Version="10.3.6" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.2" />
+	  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.1" />
+	  <PackageReference Include="WebMarkupMin.AspNetCore6" Version="2.11.0" />
+	  <PackageReference Include="WebMarkupMin.NUglify" Version="2.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\DCMS.Core\DCMS.Core.csproj" />
+	<ProjectReference Include="..\DCMS.Data\DCMS.Data.csproj" />
+	<ProjectReference Include="..\DCMS.Services\DCMS.Services.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,250 @@
+﻿<script type="text/javascript">
+    //这块需要追加到 Common.js
+    ; (function ($) {
+        $.fn.extend({
+            //载入内容
+            initData: function () {
+                localMessageList = [];
+                for (var i = 0; i < 12; i++) {
+                    localMessageList.push({ "children": [], "Count": 0 });
+                };
+            },
+            refreshMessages: function (result) {
+                $(this).showMessages(result, $("#newTemplate"));
+            },
+            refreshDetails: function (result) {
+                $(this).showDetails(result, $("#sidebar-right-tab1"));
+            },
+            //处理数组
+            handleData: function (array, index, str, flag) {
+                if (array.length > 0 && array.length < 20) {
+                    array.push(str);
+                }
+                else {
+                    //array.splice(array[0]);
+                    array.splice(0, 1);
+                    array.push(str);
+                }
+
+                //按点击次数排序
+                array.sort(function (a, b) {
+                    if (a.Count <= b.Count) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                });
+
+                localMessageList[index].children = array;
+            },
+            sunCount: function (localMessageList) {
+                var count = 0;
+                if (localMessageList.length > 0) {
+                    localMessageList.forEach(function (vm, index) {
+                        if (vm.children.length > 0) {
+                            count = count + vm.children.length;
+                        }
+                    });
+                    localMessageList[0].Count = count;
+                    $("#topMenuNewCopunt")[0].innerHTML = count;
+                    $(this).updateMessageSidebar("#toggle_sidemenu_r", count);
+                }
+            },
+            handleDataByType: function (data, localMessageList) {
+                var myDate = new Date(data.Date);
+                switch (data.MType) {
+                    case 0:
+                        var item = { "Title": "单据审批", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[0].children.length < 20 ? localMessageList[0].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[0].children, 0, item);
+                        break;
+                    case 1:
+                        var item = { "Title": "收款通知", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[1].children.length < 20 ? localMessageList[1].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[1].children, 1, item);
+                        break;
+                    case 2:
+                        var item = { "Title": "交账通知", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[2].children.length < 20 ? localMessageList[2].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[2].children, 2, item);
+
+                        break;
+                    case 4:
+                        var item = { "Title": "审核结果通知", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[3].children.length < 20 ? localMessageList[3].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[3].children, 3, item);
+                        break;
+                    case 5:
+                        var item = { "Title": "调拨完成", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[4].children.length < 20 ? localMessageList[4].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[4].children, 4, item);
+                        break;
+                    case 6:
+                        var item = { "Title": "盘点单", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[5].children.length < 20 ? localMessageList[5].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[5].children, 5, item);
+                        break;
+                    case 7:
+                        var item = { "Title": "转单/签收", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[6].children.length < 20 ? localMessageList[6].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[6].children, 6, item);
+                        break;
+                    case 8:
+                        var item = { "Title": "库存预警", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[7].children.length < 20 ? localMessageList[7].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[7].children, 7, item);
+                        break;
+                    case 9:
+                        var item = { "Title": "异常拜访通知", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[8].children.length < 20 ? localMessageList[8].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[8].children, 8, item);
+                        break;
+                    case 10:
+                        var item = { "Title": "客户流失预警", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[9].children.length < 20 ? localMessageList[9].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[9].children, 9, item);
+                        break;
+                    case 11:
+                        var item = { "Title": "开单异常", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[10].children.length < 20 ? localMessageList[10].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[10].children, 10, item);
+                        break;
+                    case 12:
+                        var item = { "Title": "交款完成/撤销", "Date": myDate.toLocaleDateString(), "Content": data.Content, "Count": localMessageList[11].children.length < 20 ? localMessageList[11].children.length + 1 : 20, "Id": data.Id };
+                        $(this).handleData(localMessageList[11].children, 11, item);
+                        break;
+                    default:
+                        return null;
+                }
+            },
+            loadData: function (userId) {
+                $(this).initData();
+
+                $(this).remoteRequest('GET', '/message/get', { "userId": userId }, function (result) {
+                    if (result.Success) {
+                        //var vms = result.Data;
+                        //if (vms != null && vms.length > 0) {
+                        //	vms.forEach(function (vm, index) {
+                        //		$(this).handleDataByType(vm, localMessageList);
+                        //	});
+                        //}
+
+                        var vms = result.Data;
+                        if (vms != undefined) {
+                            vms.forEach(function (vm, index) {
+                                $(this).handleDataByType(vm, localMessageList);
+                            });
+                        }
+                        $(this).sunCount(localMessageList);
+
+                        $(this).refreshMessages(localMessageList);
+                        $(this).refreshDetails(localMessageList);
+                    }
+                    else {
+                        //$(this).showToastr(result.Message);
+                    }
+                });
+            },
+            //解析消息模板
+            showMessages: function (json, obj) {
+                var temps = tmpl("template-news-events");
+                this.renderTemplate(temps, json, obj); //解析模板
+            },
+            showDetails: function (json, obj) {
+                var temps = tmpl("template-news-detail");
+                this.renderTemplate(temps, json, obj); //解析模板
+            },
+            //解析模板if (Target.hasClass('slide-open')) {
+            renderTemplate: function (func, data, obj) {
+                if (!func) {
+                    return $();
+                }
+                var result = func({ data: data });
+                return obj.html(result).children();
+            },
+            updateMessageSidebar: function (obj, count) {
+                var toggle_sidemenu_r = "<a href=\"#\" class=\"pl5\"><i class=\"fa fa-sign-in fs22 text-primary\"></i><span class=\"badge badge-hero badge-danger\">" + count + "</span></a>";
+                $(obj).html(toggle_sidemenu_r);
+            }
+        })
+
+    })(jQuery);
+
+    $(function () {
+
+        //折叠项目  //minus
+        $(".showChildRow").click(function () {
+            var id = $(this).attr("data-id");
+            var open = $(this).attr("data-open");
+            if (open == "true") {
+                $(".showChildRow_" + id).hide();
+                $(this).attr("data-open", false);
+                $(this).html('<i class="fa fa-plus"></i>');
+            }
+            else
+            {
+                $(".showChildRow_" + id).show();
+                $(this).attr("data-open", true);
+                $(this).html('<i class="fa fa-minus"></i>');
+            }
+        });
+
+        var data = $(this).getSyncData('/RecordingVoucher/GetUserOwnCash', { userId: $("#BusinessUserId").val() });
+        if (data != null) {
+            //$("#UserUsedAmount").val(parseFloat(data.UserUsedAmount).toFixed(2));
+            //$("#UserAvailableAmount").val(parseFloat(data.UserAvailableOweCash).toFixed(2));
+            $("#UserUsedAmount_Box").html(data.UserUsedAmount.toFixed(2));
+            $("#UserAvailableOweCash_Box").html(data.UserAvailableOweCash.toFixed(2));
+        }
+
+        Number.prototype.toFixed = function (n) {
+            if (n > 20 || n < 0) {
+                throw new RangeError('toFixed() digits argument must be between 0 and 20');
+            }
+
+            const number = this;
+
+            if (isNaN(number) || number >= Math.pow(10, 21)) {
+                return number.toString();
+            }
+
+            if (typeof (n) == 'undefined' || n == 0) {
+                return (Math.round(number)).toString();
+            }
+
+            let result = number.toString();
+            const arr = result.split('.');
+
+            // 整数的情况
+            if (arr.length < 2) {
+                result += '.';
+                for (let i = 0; i < n; i += 1) {
+                    result += '0';
+                }
+                return result;
+            }
+
+            const integer = arr[0];
+
+            const decimal = arr[1];
+
+            if (decimal.length == n) {
+                return result;
+            }
+
+            if (decimal.length < n) {
+                for (let i = 0; i < n - decimal.length; i += 1) {
+                    result += '0';
+                }
+                return result;
+            }
+
+            result = integer + '.' + decimal.substr(0, n);
+
+            const last = decimal.substr(n, 1);
+
+            // 四舍五入，转换为整数再处理，避免浮点数精度的损失
+            if (parseInt(last, 10) >= 5) {
+
+                const x = Math.pow(10, n);
+
+                result = (Math.round((parseFloat(result) * x)) + 1) / x;
+
+                result = result.toFixed(n);
+
+            }
+
+            return result;
+
+        }
+    });
+</script>

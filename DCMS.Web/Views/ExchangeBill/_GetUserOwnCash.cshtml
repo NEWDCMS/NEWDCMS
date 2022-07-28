@@ -1,0 +1,14 @@
+﻿@using DCMS.ViewModel.Models.Sales;
+@model SaleBillModel
+
+<script type="text/javascript">
+    $(function () {
+        var businessUserId = $("#BusinessUserId").val();
+        $(document).remoteRequest('GET', '/RecordingVoucher/GetUserOwnCash', { userId: businessUserId }, function (data) {
+            //业务员已用欠款
+            $("#UserUsedAmount").val(parseFloat(data.UserUsedAmount).toFixed(2));
+            //业务员可用欠款
+            $("#UserAvailableAmount").val(parseFloat(data.UserAvailableOweCash).toFixed(2));
+        });
+    });
+</script>

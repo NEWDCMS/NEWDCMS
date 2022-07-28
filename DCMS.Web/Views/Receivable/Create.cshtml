@@ -1,0 +1,139 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Terminals;
+
+@model ReceivableModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">档案</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">往来相关</a>
+                </li>
+                <li class="crumb-trail">应收款初期</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+        <div class="row">
+            <div class="col-md-12">
+
+                <form asp-action="Create" asp-controller="Receivable" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="ReceivableForm">
+
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <div class="panel-title">
+                                <span class="glyphicon glyphicon-tasks"></span> 创建应收款
+                            </div>
+                        </div>
+                        <div class="panel-body p10 pt10">
+                            <div class="tab-block">
+                                <ul class="nav nav-tabs tabs-bg">
+                                    <li class="active">
+                                        <a href="#tab10_1" data-toggle="tab" aria-expanded="true"><i class="fa fa-align-justify text-purple"></i> 单据信息</a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div id="tab10_1" class="tab-pane active">
+                                        @await Html.PartialAsync("_CreateOrUpdate", Model)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="form-group mbn">
+                                <div class="col-lg-12">
+                                    <button id="FormSubmit" type="button" class="btn btn-primary" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                                    <button id="FormSubmitContinue" type="button" class="btn btn-success" name="save-continue" value="保存并继续"><i class="fa fa-clipboard mr5"></i>保存并继续</button>
+                                    <button id="btn_init" type="button" class="btn btn-info ladda-button" data-style="zoom-out" disabled><span class="glyphicon glyphicon-check mr5" aria-hidden="true"></span>初始化</button>
+                                    <a class="btn btn-warning" href="@Url.Action("List")"><i class="fa fa-undo mr5"></i> 返回</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+
+@await Html.PartialAsync("_Windows", Model)
+
+@{
+//Html.AddCssFileParts(ResourceLocation.Head, "~/assets/skin/default_skin/css/theme.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Toastr/toastr.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Tables/bootstrap-table.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/datepicker/css/bootstrap-datetimepicker.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/daterange/daterangepicker.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/tagmanager/tagmanager.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/fancytree/skin-win8/ui.fancytree.min.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Content/zTree.theme.metro.min.css");
+}
+
+@section NewDefinFrameWorkScripts
+{
+    @{
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery-1.11.1.min.js", order: 999);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery_ui/jquery-ui.min.js", order: 999);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/bootstrap.min.js", order: 999);
+    }
+}
+
+@section CurPageScripts
+{
+    @{
+//Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.unobtrusive.js");
+////Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/jquery.treegrid.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/locale/bootstrap-table-zh-CN.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table-treeview.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/globalize.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/moment.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/moment-with-locales.js");
+////Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/daterange/daterangepicker.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/datepicker/js/bootstrap-datetimepicker.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/jquerymask/jquery.maskedinput.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/tagmanager/tagmanager.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/fancytree/jquery.fancytree-all.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.ztree.all-3.5.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+    }
+
+    @await Html.PartialAsync("_Scripts", Model)
+}

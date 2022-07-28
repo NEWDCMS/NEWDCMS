@@ -1,0 +1,777 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">首页</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="dashboard.html">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">档案</a>
+                </li>
+                <li class="crumb-trail">数据初始</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <form asp-action="ImportInitData" asp-controller="StoreDataInit" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="DataInitForm" enctype="multipart/form-data">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <div class="panel-title">
+                                <span class="glyphicon glyphicon-tasks"></span> 数据初始
+                            </div>
+                        </div>
+
+                        <div class="admin-form panel-body p10 pt10">
+                            <div class="tab-block">
+                                <ul class="nav nav-tabs tabs-bg">
+                                    <li class="active">
+                                        <a href="#tab10_1" data-toggle="tab" aria-expanded="true"><i class="fa fa-align-justify text-purple"></i> 品牌信息</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_2" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 商品类别</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_3" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 片区信息</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_4" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 渠道信息</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_5" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 终端等级</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_6" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 线路</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_7" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 供应商</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_8" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 仓库信息</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_9" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 终端档案</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_10" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 商品档案</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_11" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 初始库存</a>
+                                    </li>
+                                    <li>
+                                        <a href="#tab10_12" data-toggle="tab"><i class="fa fa-align-justify text-purple"></i> 期末余额</a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                    @*品牌信息*@
+                                    <div id="tab10_1" class="tab-pane active">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file1" id="file1" onchange="document.getElementById('uploader1').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader1" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downBrand" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=1 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a href="javascript:void(0);" id="btn_Brand" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+                                            <a id="btn_showBrand" href="@Url.Action("List","Brand")" target="_blank" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*商品类别*@
+                                    <div id="tab10_2" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file2" id="file2" onchange="document.getElementById('uploader2').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader2" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downCategory" href="@Url.Action("UploadDownTemplate","StoreDataInit", new { order=2 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_category" href="javascript:void(0);" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+                                            <a id="btn_showCategory" href="@Url.Action("List","Product")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*片区信息*@
+                                    <div id="tab10_3" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file3" id="file3" onchange="document.getElementById('uploader3').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader3" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downDistrict" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=3 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_District" href="javascript:void(0);" class="btn btn-info" ddisabled>
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+                                            <a id="btn_showDistrict" href="@Url.Action("List","Terminal")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*渠道信息*@
+                                    <div id="tab10_4" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file4" id="file4" onchange="document.getElementById('uploader4').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader4" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downChannel" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=4 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_Channel" href="javascript:void(0);" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+                                            <a id="btn_showChannel" href="@Url.Action("List","Channel")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*终端等级*@
+                                    <div id="tab10_5" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file5" id="file5" onchange="document.getElementById('uploader5').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader5" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downRank" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=5 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_Rank" href="javascript:void(0);" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+                                            <a id="btn_showRank" href="@Url.Action("List","Rank")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*线路*@
+                                    <div id="tab10_6" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file6" id="file6" onchange="document.getElementById('uploader6').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader6" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downLine" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=6 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_Line" href="javascript:void(0);" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+                                            <a id="btn_showLine" href="@Url.Action("List","LineTier")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*供应商*@
+                                    <div id="tab10_7" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file7" id="file7" onchange="document.getElementById('uploader7').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader7" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downManufacturer" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=7 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_Manufacturer" href="javascript:void(0);" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+                                            <a id="btn_showManufacturer" href="@Url.Action("List","Manufacturer")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*仓库*@
+                                    <div id="tab10_8" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file8" id="file8" onchange="document.getElementById('uploader8').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader8" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downWareHouse" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=8 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_WareHouse" href="javascript:void(0);" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+                                            <a id="btn_showWareHouse" href="@Url.Action("List","WareHouse")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*终端档案*@
+                                    <div id="tab10_9" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file9" id="file9" onchange="document.getElementById('uploader9').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader9" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downTerminal" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=9 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_Terminal" href="javascript:void(0);" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+                                            <a id="btn_showTerminal" href="@Url.Action("List","Terminal")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*商品档案*@
+                                    <div id="tab10_10" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file10" id="file10" onchange="document.getElementById('uploader10').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader10" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downProduct" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=10 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_product" href="javascript:void(0);" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+
+                                            <a id="btn_showProduct" href="@Url.Action("List","Product")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*初始库存*@
+                                    <div id="tab10_11" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file11" id="file11" onchange="document.getElementById('uploader11').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader11" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downStock" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=11 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_stock" href="javascript:void(0);" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+
+                                            <a id="btn_showStock" href="@Url.Action("List","StockReport")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @*期末余额*@
+                                    <div id="tab10_12" class="tab-pane">
+                                        <div class="row">
+                                            <div class="col-lg-2"></div>
+                                            <div class="col-lg-6">
+                                                <div class="section">
+                                                    <label class="field prepend-icon append-button file">
+                                                        <span class="button btn-primary">选择文件</span>
+                                                        <input type="file" class="gui-file" name="file12" id="file12" onchange="document.getElementById('uploader12').value = this.value;" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                                        <input type="text" class="gui-input" id="uploader12" placeholder="请选择文件">
+                                                        <label class="field-icon">
+                                                            <i class="fa fa-upload"></i>
+                                                        </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <a id="btn_downEndAmount" href="@Url.Action("UploadDownTemplate","StoreDataInit",new { order=12 })" class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-download-alt mr5"></span>下载模板
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" style="text-align:center;">
+                                            <a id="btn_EndAmount" href="javascript:void(0);" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-hand-up mr5"></span>一键导入
+                                            </a>
+
+                                            <a id="btn_showEndAmount" href="@Url.Action("List","TrialBalance")" class="btn btn-alert">
+                                                <span class="glyphicon glyphicon-list-alt mr5"></span>预览
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+@{await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } }); }
+
+@section CurPageScripts
+{
+    @{
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.unobtrusive.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/jquerymask/jquery.maskedinput.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/tagmanager/tagmanager.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");
+    }
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+
+            // Init Demo JS
+
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            };
+
+            //品牌信息
+            $("#btn_Brand").click(function () {
+                if ($("#uploader1").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file1").get(0);//获得第一个files的名称和值
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;//获取文件信息
+                    var data = new FormData();//通过FormData构造函数创建一个空对象
+                    data.append(files[0].name, files[0]);//通过append方法追加数据
+
+                    upload(data, 1);
+                }
+                else {
+                    $(this).showToastr("请选择文件!");
+                }
+            });
+            //商品类别
+            $("#btn_category").click(function () {
+                if ($("#uploader2").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file2").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;//获取文件信息
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);
+
+                    upload(data, 2);
+                }
+                else {
+                    $(this).showToastr("请先选择文件!");
+                }
+            });
+            //片区信息
+            $("#btn_District").click(function () {
+                if ($("#uploader3").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file3").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);
+
+                    upload(data, 3);
+                }
+                else {
+                    $(this).showToastr("请先选择文件!");
+                }
+            });
+            //渠道信息
+            $("#btn_Channel").click(function () {
+                if ($("#uploader4").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file4").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);
+
+                    upload(data, 4);
+                }
+                else {
+                    $(this).showToastr("请先选择文件!");
+                }
+            });
+            //终端等级
+            $("#btn_Rank").click(function () {
+                if ($("#uploader5").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file5").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);//通过append方法追加数据
+
+                    upload(data, 5);
+                }
+                else {
+                    $(this).showToastr("请先选择文件!");
+                }
+
+            });
+            //线路信息
+            $("#btn_Line").click(function () {
+                if ($("#uploader6").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file6").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);
+
+                    upload(data, 6);
+                }
+                else {
+                    $(this).showToastr("请先选择文件!");
+                }
+            });
+            //供应商
+            $("#btn_Manufacturer").click(function () {
+                if ($("#uploader7").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file7").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);
+
+                    upload(data, 7);
+                }
+                else {
+                    $(this).showToastr("请先选择文件！");
+                }
+
+            });
+            //仓库信息
+            $("#btn_WareHouse").click(function () {
+                if ($("#uploader8").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file8").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);
+                    upload(data, 8);
+                }
+                else {
+                    $(this).showToastr("请先选择文件!");
+                }
+            });
+            //终端档案
+            $("#btn_Terminal").click(function () {
+                if ($("#uploader9").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file9").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);
+                    upload(data, 9);
+                }
+                else {
+                    $(this).showToastr("请先选择文件!");
+                }
+            });
+            //商品档案
+            $("#btn_product").click(function () {
+                if ($("#uploader10").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file10").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);
+                    upload(data, 10);
+                }
+                else {
+                    $(this).showToastr("请先选择文件！");
+                }
+            });
+            //初始库存
+            $("#btn_stock").click(function () {
+                if ($("#uploader11").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file11").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);
+                    upload(data, 11);
+                }
+                else {
+                    $(this).showToastr("请先选择文件！");
+                }
+            });
+            //期末余额
+            $("#btn_EndAmount").click(function () {
+                if ($("#uploader12").val() == "") {
+                    $(this).showToastr("请选择文件!");
+                    return;
+                }
+                var fileUpload = $("#file12").get(0);
+                if (fileUpload.files.length > 0) {
+                    var files = fileUpload.files;
+                    var data = new FormData();
+                    data.append(files[0].name, files[0]);
+                    upload(data, 12);
+                }
+                else {
+                    $(this).showToastr("请先选择文件!");
+                }
+            });
+
+
+            var upload = function (data, order) {
+                $.ajax({
+                    type: "post",
+                    url: "/StoreDataInit/ImportInitData?order=" + order,
+                    contentType: false,
+                    processData: false,
+                    data: data,
+                    success: function (data) {
+                        if (data.Success) {
+                            toastr.success(data.Message);
+                        }
+                        else {
+                            $(this).showToastr(data.Message);
+                        }
+                    },
+                    error: function () {
+                        $(this).showToastr("上传文件出现错误！");
+                    }
+                });
+            }
+
+        });
+    </script>
+}
+

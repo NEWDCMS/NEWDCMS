@@ -1,0 +1,110 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Terminals;
+
+@model ReceivableModel
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="TerminalId" type="hidden" />
+
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-warning alert-dismissable mt10">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+<div class="form-group">
+    <label asp-for="TerminalName" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+
+        <input asp-for="TerminalId" type="hidden" />
+        <div class="input-group">
+            <input asp-for="TerminalName" class="form-control" placeholder="客户..." />
+            <span class="input-group-btn">
+                <button id="btn_search_customer" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </span>
+        </div>
+
+        @*<div class="input-group">
+            <input asp-for="TerminalName" class="form-control" placeholder="客户..." />
+            <span class="input-group-btn">
+                <button id="btn_search_customer" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </span>
+        </div>*@
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.TerminalName)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="OperationUserName" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <dcms-select asp-for="OperationUserId" asp-items="@Model.OperationUsers" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.OperationUserName)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="BossName" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="BossName" class="form-control" placeholder="老板名称..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.BossName)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="BossCall" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="BossCall" class="form-control" placeholder="老板电话..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.BossCall)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="OweCash" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="OweCash" class="form-control" placeholder="初始欠款..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.OweCash)
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="BalanceDate" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <dcms-editor asp-for="BalanceDate" placeholder="欠款时间" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.BalanceDate)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="Remark" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="Remark" class="form-control" placeholder="备注..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Remark)
+    </div>
+</div>
+

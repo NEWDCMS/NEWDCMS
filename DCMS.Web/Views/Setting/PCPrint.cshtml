@@ -1,0 +1,363 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model PCPrintSettingModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">首页</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="dashboard.html">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">配置</a>
+                </li>
+                <li class="crumb-trail">PC打印设置</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span> 电脑打印设置
+                        </span>
+                    </div>
+                    <div class="admin-form panel-body p5 pt10">
+
+                        <form asp-action="PCPrint" asp-controller="Setting" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="SettingForm">
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+
+                                <div class="alert alert-warning alert-dismissable mt10">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                    <div asp-validation-summary="All"></div>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <label asp-for="StoreName" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    <input asp-for="StoreName" class="form-control" />
+                                </div>
+                                <div class="col-lg-4">
+
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Address" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    <input asp-for="Address" class="form-control" />
+                                </div>
+                                <div class="col-lg-4">
+
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="PlaceOrderTelphone" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    <input asp-for="PlaceOrderTelphone" class="form-control" />
+                                </div>
+                                <div class="col-lg-4">
+
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="PrintMethod" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @*@Html.RadioButtonFor(m => m.PrintMethod, Model.PrintMethods)*@
+                                    @Html.RadioButtonFor(m => m.PrintMethod, 1, new { @id = "PrintMethod1", @name = "PrintMethod", @class = "mt15" })PDF版
+                                    @Html.RadioButtonFor(m => m.PrintMethod, 2, new { @id = "PrintMethod2", @name = "PrintMethod", @class = "mt15" })自定义版
+                                </div>
+                                <div class="col-lg-4">
+
+                                </div>
+                            </div>
+
+
+                            @*<div class="form-group">
+                                    <div class="col-lg-12">
+                                        <hr />
+                                    </div>
+                                </div>*@
+
+
+                            <div class="form-group">
+                                <label asp-for="PaperType" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-9">
+                                    @*@Html.RadioButtonFor(m => m.PaperType, Model.PaperTypes)*@
+                                    @Html.RadioButtonFor(m => m.PaperType, 1, new { @id = "PaperType1", @name = "PaperType", @class = "mt15 PaperType" })标准票据打印纸（215.9*139.7mm）
+                                    @Html.RadioButtonFor(m => m.PaperType, 2, new { @id = "PaperType2", @name = "PaperType", @class = "mt15 PaperType" })标准票据打印纸（215.9*93.1mm）
+                                    @Html.RadioButtonFor(m => m.PaperType, 3, new { @id = "PaperType3", @name = "PaperType", @class = "mt15 PaperType" })标准票据打印纸（215.9*69.9mm）
+                                    @Html.RadioButtonFor(m => m.PaperType, 4, new { @id = "PaperType4", @name = "PaperType", @class = "mt15 PaperType" })A4打印纸（210.0*297.0mm）
+                                    @Html.RadioButtonFor(m => m.PaperType, 5, new { @id = "PaperType5", @name = "PaperType", @class = "mt15 PaperType" })自定义
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label asp-for="PaperWidth" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-2">
+                                    <div class="input-group">
+                                        <input asp-for="PaperWidth" class="form-control" />
+                                        <span class="input-group-addon">宽(mm)</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="input-group">
+                                        <input asp-for="PaperHeight" class="form-control" />
+                                        <span class="input-group-addon">高(mm)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="BorderType" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @*@Html.RadioButtonFor(m => m.BorderType, Model.BorderTypes)*@
+                                    @Html.RadioButtonFor(m => m.BorderType, 1, new { @id = "BorderType1", @name = "BorderType", @class = "mt15" })无边距打印（推荐）
+                                    @Html.RadioButtonFor(m => m.BorderType, 2, new { @id = "BorderType2", @name = "BorderType", @class = "mt15" })有边距打印
+                                    @Html.RadioButtonFor(m => m.BorderType, 3, new { @id = "BorderType2", @name = "BorderType", @class = "mt15" })自定义
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="MarginTop" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-2">
+                                    <div class="input-group">
+                                        <input asp-for="MarginTop" class="form-control" />
+                                        <span class="input-group-addon">上边距(mm)</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="input-group">
+                                        <input asp-for="MarginBottom" class="form-control" />
+                                        <span class="input-group-addon">下边距(mm)</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="input-group">
+                                        <input asp-for="MarginLeft" class="form-control" />
+                                        <span class="input-group-addon">左边距(mm)</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="input-group">
+                                        <input asp-for="MarginRight" class="form-control" />
+                                        <span class="input-group-addon">右边距(mm)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="PrintInAllPages" asp-postfix=":" class="col-lg-3 control-label"></label>
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.PrintInAllPages, new { @class = "mt10" })
+                                </div>
+                                <div class="col-lg-4">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="PageRowsCount" asp-postfix=":" class="col-lg-3 control-label"></label>
+                                <div class="col-lg-2">
+                                    <div class="input-group">
+                                        <input asp-for="PageRowsCount" class="form-control" />
+                                        <span class="input-group-addon">每页最多打印行数</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="input-group">
+                                        <input asp-for="HeaderHeight" class="form-control" />
+                                        <span class="input-group-addon">表头高度(mm)</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="input-group">
+                                        <input asp-for="FooterHeight" class="form-control" />
+                                        <span class="input-group-addon">表尾高度(mm)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="IsPrintPageNumber" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.IsPrintPageNumber, new { @class = "mt10" })
+                                </div>
+                                <div class="col-lg-4">
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label asp-for="PrintHeader" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.PrintHeader, new { @class = "mt10" })
+                                </div>
+                                <div class="col-lg-4">
+
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="PrintFooter" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.PrintFooter, new { @class = "mt10" })
+                                </div>
+                                <div class="col-lg-4">
+
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="IsFixedRowNumber" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-2">
+                                    <input asp-for="FixedRowNumber" class="form-control" placeholder="行数" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="PrintSubtotal" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    @Html.CheckBoxFor(model => model.PrintSubtotal, new { @class = "mt10" })
+                                </div>
+                                <div class="col-lg-4">
+
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label asp-for="PrintPort" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-2">
+                                    <div class="input-group">
+                                        @Html.TextBoxFor(model => model.PrintPort, new { @class = "form-control" })
+                                        <span class="input-group-addon">打印端口</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <lable class="col-lg-3 control-label"></lable>
+                                <div class="col-lg-8">
+                                    <button class="btn btn-primary" type="submit" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } }); }
+
+
+@section CurPageScripts
+{
+
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+
+            // Init Demo JS
+
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            $(".PaperType").click(function () {
+                var paperType = $(this).val();
+                switch (paperType) {
+                    case "1":
+                        $("#PaperWidth").val(215.9);
+                        $("#PaperHeight").val(139.7);
+                        break;
+                    case "2":
+                        $("#PaperWidth").val(215.9);
+                        $("#PaperHeight").val(93.1);
+                        break;
+                    case "3":
+                        $("#PaperWidth").val(215.9);
+                        $("#PaperHeight").val(69.9);
+                        break;
+                    case "4":
+                        $("#PaperWidth").val(210.0);
+                        $("#PaperHeight").val(297.0);
+                        break;
+                    default:
+                        $("#PaperWidth").val(0);
+                        $("#PaperHeight").val(0);
+                        break;
+                }
+            });
+        });
+    </script>
+}

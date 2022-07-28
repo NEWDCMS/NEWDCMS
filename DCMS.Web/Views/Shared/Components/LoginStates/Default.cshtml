@@ -1,0 +1,101 @@
+﻿@using DCMS.ViewModel.Models.Users;
+@using DCMS.Core;
+@using DCMS.Core.Infrastructure;
+
+@model UserModel
+
+@{
+
+    var workContext = EngineContext.Current.Resolve<IStoreContext>();
+
+}
+    <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown dropdown-item-slide">
+
+            <a class="dropdown-toggle pl10 pr10" data-toggle="dropdown" href="#">
+                APP 下载
+            </a>
+            <ul class="dropdown-menu dropdown-hover dropdown-persist pn w300 bg-white animated animated-shorter fadeIn" role="menu">
+                <li class="bg-light">
+                    <img src="data:image/png;base64,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" width="300px" id="upload_image" alt="Sample">
+                </li>
+                <li class="p10 br-t item-1">
+                    <div class="media">
+                        <a class="btn btn-primary btn-block" href="http://storage.jsdcms.com:5000/api/version/updater/app/download" target="_blank">
+                            <span class="glyphicon glyphicon-download" aria-hidden="true"></span> 直接下载
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </li>
+        <li class="ph10 pv20">
+            <i class="fa fa-circle text-tp fs8"></i>
+        </li>
+        <li class="dropdown dropdown-item-slide">
+
+            <a class="dropdown-toggle pl10 pr10" data-toggle="dropdown" href="#" id="ddl_news">
+                <span class="octicon octicon-radio-tower fs18"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-hover dropdown-persist pn w350 bg-white animated animated-shorter fadeIn" role="menu" id="newTemplate" style="max-height:930px;">
+            </ul>
+        </li>
+        <li class="ph10 pv20">
+            <i class="fa fa-circle text-tp fs8"></i>
+        </li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle fw600 p15" data-toggle="dropdown" title="@Model.UserRoleNames (@(workContext.CurrentStore!=null?workContext.CurrentStore.Name:""))">
+                <img src="@LayoutExtensions.ResourceServerUrl("/content/images/app.jpg")" alt="avatar" class="mw30 br64 mr15">
+                <span>@Model.UserRealName</span>
+                <span class="caret caret-tp"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-persist pn w250 bg-white" role="menu">
+                <li class="of-h">
+                    <a href="#" class="fw600 p12 animated animated-short fadeInUp topMenuNewCopunt">
+                        <span class="fa fa-envelope pr5"></span> 消息
+                        <span class="pull-right lh20 h-20 label label-warning label-sm" id="topMenuNewCopunt"></span>
+                    </a>
+                </li>
+                <li class="br-t of-h">
+                    <a href="#" class="fw600 p12 animated animated-short fadeInUp">
+                        <span class="fa fa-cny"></span> 可用欠款
+                        <span class="pull-right" id="UserUsedAmount_Box">0.00</span>
+                    </a>
+                </li>
+                <li class="br-t of-h">
+                    <a href="#" class="fw600 p12 animated animated-short fadeInUp">
+                        <span class="fa fa-cny"></span> 已经欠款
+                        <span class="pull-right" id="UserAvailableOweCash_Box">0.00</span>
+                    </a>
+                </li>
+                <li class="br-t of-h">
+                    <a href="@Url.Action("UserSetting","User")" class="fw600 p12 animated animated-short fadeInDown">
+                        <span class="fa fa-gear pr5"></span> 账户设置
+                    </a>
+                </li>
+                <li class="br-t of-h">
+                    <a href="@Url.Action("ClearCache","Common")" class="fw600 p12 animated animated-short fadeInDown">
+                        <span class="fa fa-trash-o pr5"></span> 清理系统缓存
+                    </a>
+                </li>
+                <li class="br-t of-h">
+                    <a href="@Url.RouteUrl("Logout")" class="fw600 p12 animated animated-short fadeInDown">
+                        <span class="fa fa-power-off pr5"></span> 注销
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="dropdown dropdown-item-slide">
+            <a class="dropdown-toggle pl10 pr10" data-toggle="dropdown" href="#">
+                <i class="fa fa-gear"></i>
+                <span class="fw600">设置</span>
+                <span class="caret caret-tp"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-hover dropdown-persist pn  bg-white animated animated-shorter fadeIn" role="menu">
+
+                @Html.Action("TopSidebar", "Common")
+
+            </ul>
+        </li>
+
+    </ul>

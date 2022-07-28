@@ -1,0 +1,181 @@
+﻿@using DCMS.ViewModel.Models.Sales;
+@using DCMS.ViewModel.Models.Products;
+
+@model SaleReservationBillModel
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        font-size: 14px;
+        font-family: Simsun;
+        line-height: 25px;
+    }
+
+    .box {
+        display: inline-block;
+    }
+
+    .content {
+        width: 100%;
+    }
+
+    .header {
+        text-align: center;
+        margin-top: 3%;
+        margin-bottom: 0.5%;
+    }
+
+        .header .content .title {
+            margin-bottom: 0.3%;
+            font-size: 20px;
+        }
+
+        .header .content .small {
+            margin-top: 0.2%;
+            margin-bottom: 0.2%;
+            line-height: 20px;
+        }
+
+            .header .content .small > .box {
+                text-align: left;
+                width: calc(100%/3 - 5px);
+            }
+
+    .body {
+        margin-bottom: 0.5%;
+    }
+
+        .body table {
+            border: 1px solid;
+            width: 100%;
+        }
+
+            .body table thead tr td {
+                text-align: center;
+                border-left: 1px dotted;
+                font-size: 14px;
+            }
+
+            .body table tbody tr td {
+                width: auto;
+                border-top: 1px dotted;
+                border-left: 1px dotted;
+            }
+                .body table tbody tr td.num {
+                    text-align: right;
+                }
+
+            .body table tfoot tr td {
+                border-top: 1px solid;
+                border-right: 0px;
+                border-left: 0px;
+                border-bottom: 0px;
+            }
+                .body table tfoot tr td.num {
+                    text-align: right;
+                }
+
+            .body table .index {
+                border-left: 0px;
+                text-align: center;
+            }
+
+    .footer .content .box {
+        text-align: left;
+        margin-top: 0.1%;
+        margin-bottom: 0.1%;
+        width: calc(100%/4 - 10px);
+    }
+
+    .footer .content p {
+        text-align: left;
+        width: 100%;
+    }
+
+        .footer .content p small {
+            font-size: 12px;
+            font-style: italic;
+        }
+</style>
+<div class="header">
+    <div align="center">
+        <div class="content">
+            <h2 class="title">@(ViewBag.StoreName)销售订单</h2>
+            <div class="small">
+                <div class="box">单据编号：@Model.BillNumber</div>
+                <div class="box">客户名称：@Model.TerminalName</div>
+                <div class="box">打印时间：@Model.PrintDate</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="body">
+    <div align="center">
+        <div class="content">
+            <table cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr>
+                        <td class="index">号</td>
+                        <td>条码</td>
+                        <td>商品名称</td>
+                        <td>规格</td>
+                        <td>单位</td>
+                        <td>数量</td>
+                        <td>单价</td>
+                        <td>金额</td>
+                        <td>批次</td>
+                        <td>有效期</td>
+                        <td>辅助数量</td>
+                        <td>备注</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model?.Items?.Count(); i++)
+                    {
+                        var item = Model.Items[i];
+                        <tr>
+                            <td class="index">@(i + 1)</td>
+                            <td>@item.BarCode</td>
+                            <td>@item.ProductName</td>
+                            <td>@item.UnitConversion</td>
+                            <td>@item.SmallUnitName</td>
+                            <td class="num">@(item.Quantity)</td>
+                            <td class="num">@(item.Price.ToString("0.00"))</td>
+                            <td class="num">@(item.Amount.ToString("0.00"))</td>
+                            <td style="text-align:center;">-</td>
+                            <td>@((item.ExpirationDays ?? 0).ToString() + "天")</td>
+                            <td>@(item.BigQty+"大" + item.StrokeQty + "中" + item.SmallQty + "小")</td>
+                            <td>@(string.IsNullOrWhiteSpace(item.Remark) ? "-" : item.Remark)</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan=5>合计：</td>
+                        <td class="num">@(Model.Items.Sum(s => s.Quantity))</td>
+                        <td></td>
+                        <td class="num">@(Model.Items.Sum(s => s.Amount).ToString("0.00"))</td>
+                        <td></td>
+                        <td></td>
+                        <td colspan=2>@(Model.Items.Sum(s => s.BigQty) + "大" + Model.Items.Sum(s => s.StrokeQty) + "中" + Model.Items.Sum(s => s.SmallQty) + "小")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="footer">
+    <div align="center">
+        <div class="content">
+            <div class="box">制单人：@Model.MakeUserName</div>
+            <div class="box">业务员：@Model.BusinessUserName</div>
+            <div class="box"></div>
+            <div class="box"></div>
+            <p><br /><small>营业执照：&nbsp;&nbsp;&nbsp;&nbsp;食品流通许可证：&nbsp;&nbsp;&nbsp;&nbsp;供货地址：@(ViewBag.StoreAddress)&nbsp;&nbsp;&nbsp;&nbsp;供货电话：@(ViewBag.PlaceOrderTelphone)</small><br /></p>
+            <p>供应商承诺：以上商品均已履行进货检查验收法定程序，所验票证齐全。</p>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,65 @@
+﻿@model DCMS.ViewModel.Models.Products.ManufacturerModel
+
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="StoreId" type="hidden" />
+<input asp-for="Description" type="hidden" />
+<input asp-for="PriceRanges" type="hidden" />
+<input asp-for="DisplayOrder" type="hidden" />
+<input asp-for="CreatedOnUtc" type="hidden" />
+<input asp-for="UpdatedOnUtc" type="hidden" />
+
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        名称
+        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="供应商名称"></i>
+    </lable>
+    <div class="col-lg-8">
+        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        助记码
+        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="助记码"></i>
+    </lable>
+    <div class="col-lg-8">
+        @Html.EditorFor(model => model.MnemonicName, new { htmlAttributes = new { @class = "form-control" } })
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        联系人
+        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="联系人"></i>
+    </lable>
+    <div class="col-lg-8">
+        @Html.EditorFor(model => model.ContactName, new { htmlAttributes = new { @class = "form-control" } })
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        联系人电话
+        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="联系人电话"></i>
+    </lable>
+    <div class="col-lg-8">
+        @Html.EditorFor(model => model.ContactPhone, new { htmlAttributes = new { @class = "form-control" } })
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        地址
+        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="地址"></i>
+    </lable>
+    <div class="col-lg-8">
+        @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        状态
+        <i class="fa fa-exclamation-circle text-warning fa-lg" data-placement="top" data-toggle="tooltip" title="" data-original-title="状态"></i>
+    </lable>
+    <div class="col-lg-8">
+        @Html.CheckBoxFor(model => model.Status, new { htmlAttributes = new { @class = "form-control mt15" } })
+    </div>
+</div>

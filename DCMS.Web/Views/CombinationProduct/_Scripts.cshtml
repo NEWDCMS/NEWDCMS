@@ -1,0 +1,508 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.WareHouses;
+@model CombinationProductBillModel
+
+
+<script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+             if (("@Model.ReversedStatus").toLowerCase() == "true") {
+                $("#inkpadBox").hide();
+                $("#inkpadBox1").css('display', 'block');
+            }
+            //组合商品搜索
+			$("#btn_search_comproduct").click(function () {
+
+				if ($("#WareHouseId").val() == "" || $("#WareHouseId").val() == "0") {
+					$("#WareHouseId").focus();
+					$(this).showToastr("请选择仓库！");
+					return false;
+				}
+
+				//选择商品
+				$(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchComSelectPopup", { pageIndex: $(this).attr("data-index"), wareHouseId: $("#WareHouseId").val() }, "选择商品", $("#ProductModalForm"),
+                    function () {
+                        $('#ProductModalForm .selectCom').bind('click', function () {
+                            var productId = $(this).attr("data-id");
+							var productName = $(this).attr("data-name");
+							var productCost = $(this).attr("data-cost");
+
+                            var json = $(this).attr("data-json");
+
+                            $("#ProductName").val(productName);
+							$("#ProductId").val(productId);
+							$("#ProductCost").val(productCost);
+
+                            $('#CombinationProductItems').bootstrapTable('removeAll');
+                            //[{"StoreId":2,"CombinationId":3,"ProductId":12,"ProductName":"雪花勇闯500听-酒店","Quantity":1,"UnitId":11,"Units":null,"UnitName":"瓶","DisplayOrder":0,"id":5},{"StoreId":2,"CombinationId":3,"ProductId":9,"ProductName":"雪花勇闯酒店--专供","Quantity":10,"UnitId":13,"Units":null,"UnitName":"箱","DisplayOrder":0,"id":6}]
+                            $.each(JSON.parse(json), function (index, row) {
+                                var row = {
+                                    ProductId: row.ProductId,
+                                    ProductSKU: row.ProductSKU,
+                                    ProductName: row.ProductName,
+                                    SubProductQuantity: row.Quantity,
+                                    //UnitId: row.UnitId,
+									SubProductUnitId: row.UnitId,
+                                    SubProductUnitName: row.UnitName,
+                                    //SubProductUnitName: row.UnitConversion,
+									Quantity: 0,
+									CostPrice: row.CostPrice,
+                                    CostAmount: 0,
+									Stock: row.Stock,
+									StockQuantityConversion: row.StockQuantityConversion
+                                };
+                                //console.log(row);
+                                $('#CombinationProductItems').bootstrapTable('insertNew', row);
+                            });
+
+                            $("#ModalProductWindows").modal('hide');
+                        });
+                    });
+            });
+
+            //项目
+            $("#CombinationProductItems").bootstrapTable({
+                @Html.Raw(Model.Items.Count > 0 ? "url: '/CombinationProduct/AsyncCombinationProductItems?billId=" + Model.Id + "'," : "length: 9,")
+                striped: true,
+                cache: false,
+                pagination: true,
+                showPagination: false,
+                sidePagination: "server",
+                sortable: false,
+                sortOrder: "asc",
+                search: false,
+                strictSearch: false,
+                showColumns: false,
+                showRefresh: false,
+                clickToSelect: false,
+                uniqueId: "id",
+                showToggle: false,
+                editable: true,
+                cardView: false,
+                detailView: false,
+                showFooter: true,
+                onLoadSuccess: function (data) {
+                    $(".fixed-table-pagination").hide();
+                },
+                onPostBody: function (data) {
+                    $("[data-toggle='popover']").popover();
+                },
+                columns: [
+                    {
+                        title: '<i class="fa fa-gear fs18"></i>',
+                        width: '50',
+                        align: 'center',
+                        formatter: function (value, row, index) {
+                            return m_pagerow + index + 1;
+                        }
+                    },
+                    //{ field: 'UnitId', visible: false },
+					{ field: 'SubProductUnitId', visible: false },
+                    { field: 'ProductId', visible: false },
+                    {
+                        field: 'ProductSKU',
+                        title: '商品编号',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'ProductName',
+                        title: '商品名称',
+                        formatter: function (value) {
+                            return (value == 0 || value == "" || value == undefined) ? "" : @Model.Id== 0 ? $(this).cutString(value, 10) : "<a style='color:black; text-decoration:none;'  data-trigger='hover' title='' data-container='body' data-toggle='popover' data-placement='top' data-content='" + value + "'>" + $(this).cutString(value, 10) + "</a>";
+                        }
+					},
+                    {
+                        field: 'SubProductUnitQuantity',
+                        title: '子商品单位/数量',
+                        width: '100',
+                        align: 'center',
+                        formatter: function (value, row, index) {
+                                if (row.SubProductQuantity != null && typeof (row.SubProductQuantity) != 'undefined' && row.SubProductUnitName != null && typeof (row.SubProductUnitName) != 'undefined') {
+                                    return row.SubProductQuantity + "" + row.SubProductUnitName;
+                                }
+                                else {
+                                    return "";
+                                }
+                        }
+                    },
+                    {
+                        field: 'Quantity',
+                        align: 'center',
+                        title: '数量',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'CostPrice',
+                        align: 'right',
+                        title: '单位成本',
+                        formatter: $(this).formatFixed
+                    },
+                    {
+                        field: 'CostAmount',
+                        title: '成本金额',
+                        align: 'right',
+                        formatter: $(this).formatFixed
+                    },
+                    {
+						field: 'StockQuantityConversion',
+                        align: 'center',
+                        title: '库存',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'Remark',
+                        title: '备注',
+                        width: '200',
+                        formatter: $(this).formatIsNull
+                    }
+                ],
+				onClickCell: function (field, value, row, $element) {
+
+					if (field == "Operate") {
+						return false;
+					}
+
+                    var input = $($element).find("input");
+                    var select = $($element).find("select");
+                    if (input.length > 0 || select.length > 0)
+                        return false;
+
+                    //当前列所在行的索引
+                    var index = $element.parent().attr("data-index");
+
+					//审核、红冲后不能修改
+					if ("@Model.AuditedStatus" == "True" || "@Model.ReversedStatus" == "True") {
+						return false;
+					}
+
+                    if (field == "Remark") {
+                        var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+                        $($element).html(html);
+                        var inputObj = $("#" + $(html).attr("id"));
+                        inputObj.focus();
+                        inputObj.select();
+                        inputObj.bind("focusout", function () {
+                            $("#CombinationProductItems").bootstrapTable('updateRow', { index: index, row: { Remark: $(this).val() } });
+                            $($element).html("" + value + "");
+                        });
+                    }
+                }
+            });
+
+            //表单检查
+		    var formValidator = function () {
+            var isVaild = true;
+
+            var allTableData = $('#CombinationProductItems').bootstrapTable('getData');
+
+            if ($("#WareHouseId").val() == "" || $("#WareHouseId").val() == "0") {
+                $("#WareHouseId").focus();
+                $(this).showToastr("请选择出货仓库！");
+                return false;
+            }
+            else if ($("#ProductId").val() == "" || $("#ProductId").val() == "0") {
+                $("#ProductId").focus();
+                $(this).showToastr("请选择主商品！");
+                return false;
+            }
+            else if ($("#Quantity").val() == "" || $("#Quantity").val() == "0") {
+                $("#Quantity").focus();
+                $(this).showToastr("请输入数量,且数量必须大于1！");
+                return false;
+            }
+            else if (allTableData.length==0) {
+                $(this).showToastr("请先添加单据项目！");
+                return false;
+            }
+
+			return isVaild;
+		}
+
+            //保存服务器
+			var submitRemoteServer = function (showMessage, callback,loadingButton)
+            {
+                if (!formValidator()) {
+	                if(loadingButton != undefined){
+				       loadingButton.stop();
+			        }
+                    return false;
+                }
+
+                //获取表格的所有内容行
+                var allTableData = $('#CombinationProductItems').bootstrapTable('getData');
+                var serializeData = [];
+                $.each(allTableData, function (i, row)
+                {
+                    var tmpObj = {
+                        Id: (!row.Id || typeof (row.Id) == 'undefined' || row.Id == "") ? "0" : row.Id,
+                        ProductId: (!row.ProductId || typeof (row.ProductId) == 'undefined' || row.ProductId == "") ? "0" : row.ProductId,
+						//UnitId: (!row.UnitId || typeof (row.UnitId) == 'undefined' || row.UnitId == "") ? "0" : row.UnitId,
+						SubProductUnitId: (!row.SubProductUnitId || typeof (row.SubProductUnitId) == 'undefined' || row.SubProductUnitId == "") ? "0" : row.SubProductUnitId,
+                        SubProductQuantity: (!row.SubProductQuantity || typeof (row.SubProductQuantity) == 'undefined' || row.SubProductQuantity == "") ? "0" : row.SubProductQuantity,
+                        Quantity: (!row.Quantity || typeof (row.Quantity) == 'undefined' || row.Quantity == "") ? "0" : row.Quantity,
+                        CostPrice: (!row.CostPrice || typeof (row.CostPrice) == 'undefined' || row.CostPrice == "") ? "0" : row.CostPrice,
+                        CostAmount: (!row.CostAmount || typeof (row.CostAmount) == 'undefined' || row.CostAmount == "") ? "0" : row.CostAmount,
+                        Stock: (!row.Stock || typeof (row.Stock) == 'undefined' || row.Stock == "") ? "0" : row.Stock,
+                        Remark: (!row.Remark || typeof (row.Remark) == 'undefined' || row.Remark == "") ? "" : row.Remark,
+                    };
+                    if (tmpObj.ProductId != 0)
+                        serializeData.push(tmpObj);
+                });
+
+                //保存的数据
+                var postData = {
+                    WareHouseId: $("#WareHouseId").val(),
+                    ProductId: $("#ProductId").val(),
+                    Quantity: $("#Quantity").val(),
+                    ProductCost: $("#ProductCost").val(),
+                    ProductCostAmount: $("#ProductCostAmount").val(),
+                    CostDifference: $("#CostDifference").val(),
+                    Remark: $("#Remark").val(),
+                    Items: serializeData,
+                };
+
+                //保存服务器
+				$(this).remoteSubmit("post", "/CombinationProduct/CreateOrUpdate?billId=@(Model.Id)", postData, $("#CombinationProductItems"), callback, showMessage,loadingButton);
+            };
+
+           //保存单据项目
+            $("#FormSubmit").click(function () {
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+				loadingButton.start();
+                submitRemoteServer(null, function (data) {
+                    if (data.Success) {
+                        window.location.href = "/CombinationProduct/List";
+                    }
+                }, loadingButton);
+            });
+
+            //保存并继续
+            $("#FormSubmitContinue").click(function () {
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+				loadingButton.start();
+                submitRemoteServer(null,null,loadingButton);
+            });
+
+
+            //审核
+			$(document).on('click', "#btn_auditing", function () {
+	            //防止重复保存
+	            var loadingButton = Ladda.create(this);
+                loadingButton.start();
+                var returnUrl = "@Context.Request.Query["returnURL"]";
+                if (returnUrl.indexOf("AuditedStatus=") == -1) {
+                    if (returnUrl.indexOf("?") == -1) {
+                        returnUrl += "?";
+                    } else {
+                        returnUrl += "&";
+                    }
+                    returnUrl += "AuditedStatus=False";
+                } else {
+                    if (returnUrl.indexOf("AuditedStatus=False") == -1) {
+                        returnUrl = returnUrl.replace("AuditedStatus=", "AuditedStatus=False");
+                    }
+                }
+                returnUrl = returnUrl.replace(/amp;/g, "");
+                $(this).remoteSubmit("get", "/CombinationProduct/Auditing", { id: "@Model.Id" }, null, function () { location.href = returnUrl; },null,loadingButton);
+				@*submitRemoteServer(false, function () {
+                   $(this).remoteSubmit("get", "/CombinationProduct/Auditing", { id: "@Model.Id" }, null, function () { location.href = "/CombinationProduct/List"; }, null,loadingButton);
+                    },loadingButton);*@
+            });
+
+            //红冲
+			$(document).on('click', "#btn_reversed", function () {
+	            //防止重复保存
+				var loadingButton = Ladda.create(this);
+
+                WinMsg.confirm({ message: "确认要红冲吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+	                loadingButton.start();
+					$(this).remoteSubmit("get", "/CombinationProduct/Reverse", { id: "@Model.Id" }, null, function () { location.href = "/CombinationProduct/List"; }, null,loadingButton);
+				});
+			});
+
+		    //打印
+            $("#btn_print").click(function () {
+                //防止重复保存
+                var loadingButton = Ladda.create(this);
+                WinMsg.confirm({ message: "确认要打印吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    loadingButton.start();
+                    var setting = {}
+                    var LODOP = null;
+                    var rs = $(this).getSyncData("/ExchangeBill/PrintSetting", null, "get");
+                    if (rs.Success) {
+                        setting = rs.Data;
+                        loadCLodop(document, setting.PrintPort, () => {
+                            //判断页面是否已加载LODOP
+                            if (LODOP == null || LODOP == undefined) {
+                                LODOP = getLodopFirst(document);
+                                LODOP = getLodopSecond(document);
+                            }
+                            if (LODOP == null || LODOP == undefined) {
+                                loadingButton.stop();
+                                return;
+                            } else {
+                                $("#printData").html("");
+                            }
+                            $(this).remoteSubmit("get", "/CombinationProduct/Print", { selectData: "@Model.Id" }, null, function (result) {
+                                if (result.Success) {
+                                    var html = result.Data;
+                                    LODOP.PRINT_INIT("组合单");
+                                    if (!isNaN(setting.PaperWidth) && !isNaN(setting.PaperHeight)) {
+                                        LODOP.SET_PRINT_PAGESIZE(1, setting.PaperWidth + "mm", setting.PaperHeight + "mm");
+                                    }
+                                    if (setting.IsPrintPageNumber) {
+                                        LODOP.ADD_PRINT_HTM(1, 600, 300, 100, "总页号：<font color='#0000ff' format='ChineseNum'><span tdata='pageNO'>第##页</span>/<span tdata='pageCount'>共##页</span></font>");
+                                    }
+                                    if (!isNaN(setting.MarginTop) && !isNaN(setting.MarginLeft) && !isNaN(setting.MarginRight) && !isNaN(setting.MarginBottom)) {
+                                        LODOP.ADD_PRINT_HTM(setting.MarginTop + "mm", setting.MarginLeft + "mm", "RightMargin:" + setting.MarginRight + "mm", "BottomMargin:" + setting.MarginBottom + "mm", html);
+                                    }
+                                    LODOP.SET_PRINT_STYLEA(0, "Horient", 2);
+                                    LODOP.PREVIEW(true);
+                                    loadingButton.stop();
+                                }
+                                else {
+                                    $(this).showToastr(result.Message);
+                                }
+                            }, null, loadingButton);
+                        });
+                    }
+
+                });
+            });
+
+            //数量更改
+            $(document).on('click', "#Quantity", function () {
+                $(this).focus(); $(this).select();
+            });
+			$(document).on('change', "#Quantity", function () {
+
+				//var curInput = parseInt($(this).val());
+				if (!isNaN($(this).val())) {
+					if ($(this).val() == "") {
+						$(this).val(0);
+					}
+				} else {
+					$(this).val(0);
+				}
+				var curInput = parseInt($(this).val());
+
+				if (!isNaN($("#ProductCost").val())) {
+					if ($("#ProductCost").val() == "") {
+						$("#ProductCost").val(0);
+					}
+				} else {
+					$("#ProductCost").val(0);
+				}
+
+				//主商品成本金额
+				$("#ProductCostAmount").val(parseFloat(curInput * parseFloat($("#ProductCost").val())).toFixed(2));
+                //获取表格的所有内容行
+                var allTableData = $('#CombinationProductItems').bootstrapTable('getData');
+                //计算
+                var costAmountTotal = 0;
+                $.each(allTableData, function (index, row) {
+					if (curInput != 0) {
+						//子商品数量
+						if (row.SubProductQuantity == "" || row.SubProductQuantity == undefined) {
+							row.SubProductQuantity = 0;
+						}
+						row.Quantity = parseInt(row.SubProductQuantity) * curInput;
+						if (row.CostPrice == "" || row.CostPrice == undefined) {
+							row.CostPrice = 0;
+						}
+						row.CostAmount = parseFloat(row.Quantity) * parseFloat(row.CostPrice);
+                        costAmountTotal += row.CostAmount;
+                        $("#CombinationProductItems").bootstrapTable('updateRow', { index: index, row: row });
+                    }
+                });
+                //$("#CostDifference").val(parseFloat(parseFloat($("#Quantity").val() * $("#ProductCost").val()) - costAmountTotal).toFixed(2));
+				//成本差额 = 主商品成本金额 - 子商品成本金额
+				$("#CostDifference").val(parseFloat(parseFloat($("#ProductCostAmount").val()) - costAmountTotal).toFixed(2));
+            });
+
+            //主商品成本更改
+            $(document).on('click', "#ProductCost", function () {
+                $(this).focus(); $(this).select();
+            });
+            $(document).on('change', "#ProductCost", function () {
+                //var curInput = parseFloat($(this).val());
+				//var curQuantity = parseFloat($("#Quantity").val());
+				if (!isNaN($(this).val())) {
+					if ($(this).val() == "") {
+						$(this).val(0);
+					}
+				} else {
+					$(this).val(0);
+				}
+				var curInput = parseFloat($(this).val());
+
+				if (!isNaN($("#Quantity").val())) {
+					if ($("#Quantity").val() == "") {
+						$("#Quantity").val(0);
+					}
+				} else {
+					$("#Quantity").val(0);
+				}
+				var curQuantity = parseFloat($("#Quantity").val());
+
+				//主商品成本金额
+				$("#ProductCostAmount").val(parseFloat(curInput * curQuantity).toFixed(2));
+                //获取表格的所有内容行
+                var allTableData = $('#CombinationProductItems').bootstrapTable('getData');
+                //计算
+                var costAmountTotal = 0;
+                $.each(allTableData, function (index, row) {
+                    if (curInput != 0) {
+                        //row.CostPrice = parseFloat(row.Quantity) * parseFloat($("#ProductCost").val() != "" ? $("#ProductCost").val() : 0);
+                        //row.CostAmount = parseFloat(row.Quantity) * parseFloat($("#ProductCostAmount").val() != "" ? $("#ProductCostAmount").val() : 0);
+                        costAmountTotal += row.CostAmount;
+                        //$("#CombinationProductItems").bootstrapTable('updateRow', { index: index, row: row });
+                    }
+                });
+                //$("#CostDifference").val(parseFloat(parseFloat($("#Quantity").val() * $("#ProductCost").val()) - costAmountTotal).toFixed(2));
+				//成本差额 = 主商品成本金额 - 子商品成本金额
+				$("#CostDifference").val(parseFloat(parseFloat($("#ProductCostAmount").val()) - costAmountTotal).toFixed(2));
+            });
+
+   //         //主商品成本金额更改
+   //         $(document).on('click', "#ProductCostAmount", function () {
+   //             $(this).focus(); $(this).select();
+   //         });
+   //         $(document).on('change', "#ProductCostAmount", function () {
+   //             var curInput = parseFloat($(this).val());
+   //             //获取表格的所有内容行
+   //             var allTableData = $('#CombinationProductItems').bootstrapTable('getData');
+   //             //计算
+   //             var costAmountTotal = 0;
+   //             $.each(allTableData, function (index, row) {
+   //                 if (curInput != 0) {
+   //                     row.CostPrice = parseFloat(row.Quantity) * parseFloat($("#ProductCost").val() != "" ? $("#ProductCost").val() : 0);
+   //                     row.CostAmount = parseFloat(row.Quantity) * parseFloat($("#ProductCostAmount").val() != "" ? $("#ProductCostAmount").val() : 0);
+   //                     costAmountTotal += row.CostAmount;
+   //                     $("#CombinationProductItems").bootstrapTable('updateRow', { index: index, row: row });
+   //                 }
+   //             });
+   //             $("#CostDifference").val(parseFloat(parseFloat($("#Quantity").val() * $("#ProductCost").val()) - costAmountTotal).toFixed(2));
+			//});
+
+
+        });
+</script>

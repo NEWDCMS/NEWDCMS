@@ -1,0 +1,48 @@
+﻿
+@{
+    ViewBag.Title = "DCMS系经销商管理系统";
+}
+<header class="navbar navbar-fixed-top bg-primary">
+    <div class="navbar-branding">
+        <a class="navbar-brand" href="javascript:;">
+            <b>DCMS</b>管理系统
+        </a>
+        @*<a id="fixed_sidemenu_l" class="navbar-brand" href="javascript:;" style="width:30px;">
+                <span class="glyphicons glyphicons-nails" style="float:right;cursor:pointer;font-size:16px;line-height:58px;max-height:60px;width:30px;padding:0px 10px 0px 18px;text-align:center;user-select:none;"></span>
+            </a>*@
+        <a href="javascript:;">
+            <span id="toggle_sidemenu_l" class="glyphicons glyphicons-show_lines"></span>
+        </a>
+    </div>
+    <ul class="nav navbar-nav navbar-left">
+        <li>
+            <a href="javascript:;">
+                <span id="fixed_sidemenu_l" class="fa fa-unlock fs18 fixed_sidemenu_l" style="color:#fff;"></span>
+                <span class="fa fa-unlock-alt fs18 fixed_sidemenu_l" style="color:#fff;display:none;"></span>
+            </a>
+        </li>
+ @*       <li>
+            <a class="topbar-menu-toggle" href="#">
+                <span class="glyphicons glyphicons-magic fs16"></span>
+            </a>
+        </li>*@
+        <li>
+            <span id="toggle_sidemenu_l2" class="glyphicon glyphicon-log-in fa-flip-horizontal hidden"></span>
+        </li>
+        <li>
+            <a class="request-fullscreen toggle-active" href="#">
+                <span class="octicon octicon-screen-full fs18"></span>
+            </a>
+        </li>
+    </ul>
+
+    <form class="navbar-form navbar-left navbar-search ml5" role="search">
+        <div class="form-group">
+            <input type="text" class="form-control" placeholder="搜索..." value="搜索...">
+        </div>
+    </form>
+
+    @*@Html.Action("LoginStates", "Common")*@
+
+    @await Component.InvokeAsync("LoginStates")
+</header>

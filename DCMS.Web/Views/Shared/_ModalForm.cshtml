@@ -1,0 +1,55 @@
+﻿@*基本窗体*@
+<div id="@(ViewData["modalWindow"] != null ? ViewData["modalWindow"].ToString() : "modal-form")" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" style="width:@(ViewData["windowWidth"] != null ? ViewData["windowWidth"].ToString():"680px")">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <form id="@ViewData["formId"]" class="form-horizontal" method="@(ViewData["method"] != null ? "post":"get")" action="" enctype="@(ViewData["enctype"] != null ? ViewData["enctype"].ToString():"")">
+                    <!--Content-->
+                </form>
+            </div>
+            <div class="modal-footer">
+
+                @if ((bool)(ViewData["showSave"] != null))
+                {
+                    if (Convert.ToBoolean(ViewData["showSave"].ToString()))
+                    {
+                    <button type="button" id="btnSave@(ViewData["modalWindow"] != null ? '_' + ViewData["modalWindow"].ToString() : "")" class="btn btn-primary btn-sm"><i class="fa fa-floppy-o mr5"></i>保存 </button>
+                    }
+                }
+
+                @if ((bool)(ViewData["showAllSelect"] != null))
+                {
+                    <button type="button" id="btnAllSelect@(ViewData["modalWindow"] != null ? '_' + ViewData["modalWindow"].ToString() : "")" class="btn btn-primary btn-sm"><i class="fa fa-floppy-o mr5"></i>全选 </button>
+                }
+
+                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-undo mr5"></i>取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*嵌套窗体*@
+<div id="nestModalForm@(ViewData["modalWindow"] != null ? '_' + ViewData["modalWindow"].ToString() : "")" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="nestModalForm" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <form id="nestForm_@ViewData["formId"]" class="form-horizontal" action="">
+                    <!--Content-->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="nestbtnSave@(ViewData["modalWindow"] != null ? '_' + ViewData["modalWindow"].ToString() : "")" class="btn btn-primary btn-sm"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-undo mr5"></i>取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,159 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+
+@model PaymentReceiptBillModel
+
+
+<input asp-for="ManufacturerId" type="hidden" />
+<input asp-for="Id" type="hidden" />
+
+<div class="row">
+    <div class="col-sm-2">
+        <dcms-editor asp-for="StartTime" placeholder="开始日期..." />
+    </div>
+    <div class="col-sm-2">
+        <dcms-editor asp-for="EndTime" placeholder="结束日期..." />
+    </div>
+    <div class="col-sm-2">
+        <dcms-select asp-for="Draweer" asp-items="@Model.Draweers" asp-default="业务员" />
+    </div>
+    <div class="col-sm-2">
+        <dcms-select asp-for="BillTypeId" asp-items="@Model.BillTypes" asp-default="单据类型" />
+    </div>
+    <div class="col-sm-2">
+        <dcms-input asp-for="BillNumber" class="form-control" placeholder="单据编号..." />
+    </div>
+    <div class="col-sm-2">
+        <button id="btn_search_owecashbills" type="button" class="btn btn-primary btn-block">
+            <span class="glyphicon glyphicon-search"></span> 查询
+        </button>
+    </div>
+</div>
+
+<div class="row mt10">
+    <div class="col-sm-12">
+        <table class="table table-striped table-hover" id="owecashbills_datatable"></table>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(function () {
+
+        $("#StartTime").datetimepicker({
+            format: 'YYYY-MM-DD',
+            locale: moment.locale('zh-cn')
+        });
+
+        $("#EndTime").datetimepicker({
+            format: 'YYYY-MM-DD',
+            locale: moment.locale('zh-cn')
+        });
+
+        //商品列表
+        $("#owecashbills_datatable").bootstrapTable({
+            url: "/PaymentReceipt/AsyncLoadOwecashBills",
+            method: 'get',
+            striped: true,
+            cache: false,
+            pagination: true,
+            queryParams: function (params) {
+                var temp =
+                {
+                    startTime: $("#StartTime").val(),
+                    endTime: $("#EndTime").val(),
+                    payeer: $("#Payeer").val(),
+                    manufacturerId: $("#ManufacturerId").val(),
+                    billTypeId: $("#BillTypeId").val(),
+                    billNumber: $("#BillNumber").val(),
+                    terminalId: $("#CustomerId").val(),
+                    pageSize: params.limit,
+                    pageIndex: (params.offset / params.limit)
+                };
+                return temp;
+            },
+            sidePagination: "server",
+            idField: 'Id',
+            dataField: "rows",
+            totalField: "total",
+            pageNumber: 1,
+            pageSize: 10,
+            search: false,
+            strictSearch: true,
+            showRefresh: false,
+            clickToSelect: false,
+            uniqueId: "Id",
+            showToggle: false,
+            cardView: false,
+            detailView: false,
+            columns: [
+                { checkbox: true },//
+                { field: 'BillLink', visible: false },
+                { field: 'BillNumber', title: '单据号', width: '150' },
+                { field: 'BillTypeName', title: '单据类型' },
+                {
+                    field: 'MakeBillDate', title: '单据日期', width: '150',
+                    formatter: function (value, row, index) {
+                        return $(this).dateFtt('yyyy-MM-dd hh:ss:mm', new Date(value));
+                    }
+                },
+                {
+                    field: 'Amount',
+                    title: '单据金额',
+                    align: 'right',
+                    formatter: function (value, row, index) {
+                        return $(this).currencyFormat(value, 2);
+                    }
+                },
+                {
+                    field: 'DiscountAmount', title: '优惠金额',
+                    align: 'right',
+                    formatter: function (value, row, index) {
+                        return $(this).currencyFormat(value, 2);
+                    }
+                },
+                {
+                    field: 'PaymentedAmount', title: '已付金额',
+                    align: 'right',
+                    formatter: function (value, row, index) {
+                        return $(this).currencyFormat(value, 2);
+                    }
+                },
+                {
+                    field: 'ArrearsAmount', title: '尚欠金额',
+                    align: 'right',
+                    formatter: function (value, row, index) {
+                        return $(this).currencyFormat(value, 2);
+                    }
+                },
+                { field: 'Remark', title: '备注' },
+                {
+                    field: 'operate',
+                    title: '操作',
+                    align: 'center',
+                    width: '100',
+                    events: operateEventsPoploadOweCashBills,
+                    formatter: function (value, row, index) {
+                        return [
+                            '<button type="button" class="btn btn-sm btn-primary rowSelect"><i class="fa fa-check"></i>&nbsp;选择</button>'
+                        ].join('');
+                    }
+                }
+            ],
+            onPageChange: function (number, size) {
+                m_pagerow = (number - 1) * size;
+            },
+            onLoadSuccess: function (data) {
+                //alert($("#owecashbills_datatable").bootstrapTable('getData').length);
+            }
+        });
+
+        //查询
+        $("#btn_search_owecashbills").on('click', function () {
+            $("#owecashbills_datatable").bootstrapTable('refresh');
+        });
+
+    });
+</script>

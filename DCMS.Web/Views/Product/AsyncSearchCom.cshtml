@@ -1,0 +1,57 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Products;
+
+@model CombinationListModel
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="input-group mb5">
+            <input type="text" id="txt_SearchStr" class="form-control" placeholder="请输入商品名称、助记名..." onkeydown="if(event.keyCode==13){event.keyCode=0;event.returnValue=false;}">
+            <span class="input-group-btn">
+                <button id="btn_query" type="button" class="btn btn-primary" style="border:1px solid #dddddd;"><span class="glyphicon glyphicon-search"></span> 搜索</button>
+            </span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th class="bs-checkbox " style="text-align: center; vertical-align: middle; width: 36px; ">
+                        <div class="th-inner "><input name="btSelectAll" type="checkbox"></div>
+                    </th>
+                    <th><div class="th-inner">组合商品</div></th>
+                    <th><div class="th-inner">子商品</div></th>
+                    <th><div class="th-inner">状态</div></th>
+                    <th><div class="th-inner">操作</div></th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int index = 0;
+                    foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="bs-checkbox ">
+                                <input data-index="@index" name="btSelectItem" class="btSelectItem" type="checkbox" value="@item.Id">
+                            </td>
+                            <td>@item.ProductName</td>
+                            <td>@(string.Join(" + ", item.SubProducts.Select(p => p.ProductName + "(" + p.Quantity + p.UnitName + ")").ToList()))</td>
+                            <td class="text-center">
+                                @Html.Raw(item.Enabled ? "<span class=\"label label-success\">已启用</span>" : "<span class=\"label label-danger\">未启用</span>")
+                            </td>
+                            <td class="text-center">
+                                <a class="btn btn-sm btn-primary  selectCom" href="javascript:;" data-id="@item.ProductId" data-name="@item.ProductName" data-cost="@item.ProductCost" data-json="@item.JSONData" title="选择"><i class="glyphicon glyphicon-pencil mr5"></i> 选择</a>
+                            </td>
+
+                        </tr>
+                        index++;
+                    }
+
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

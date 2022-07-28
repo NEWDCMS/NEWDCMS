@@ -1,0 +1,608 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Campaigns;
+
+@model CampaignModel
+
+    <script type="text/javascript">
+    jQuery(document).ready(function () {
+        "use strict";
+
+        // Init Theme Core$(this).dateFtt
+        Core.init();
+
+        // Init Demo JS
+        Demo.init();
+
+        //日期选择控件初始
+        $('.datetimepicker').datetimepicker({ locale: 'zh-cn' });
+
+        $("#FormSubmit").click(function () {
+            //Ladda.bind($("#FormSubmit"), { timeout: 6000 } );
+            //防止重复保存
+            var loadingButton = Ladda.create(this);
+            loadingButton.start();
+            //loadingButton.stop();
+            submitRemoteServer(function (data) {
+                if (data.Success) {
+                    window.location.href = "/Campaign/List";
+                }
+            }, loadingButton);
+
+        });
+
+        //保存并继续
+        $("#FormSubmitContinue").click(function () {
+            //防止重复保存
+            var loadingButton = Ladda.create(this);
+            loadingButton.start();
+            if ("@Model.Id" == "0") {
+                submitRemoteServer(function (data) {
+                    if (data.Success) {
+                        window.location.href = "/Campaign/Edit?Id=" + data.Data.Code;
+                    }
+                    else {
+                        window.location.href = "/Campaign/Create";
+                    }
+                }, loadingButton);
+            }
+            else {
+                submitRemoteServer(function () { window.location.href = "/Campaign/Edit?Id=" + "@Model.Id"; }, loadingButton);
+            }
+        });
+        //保存服务器
+        var submitRemoteServer = function (callback, loadingButton) {
+
+            if (!formValidator()) {
+                if (loadingButton != undefined) {
+                    loadingButton.stop();
+                }
+                return false;
+            };
+            var reg = /^[0-9]+.?[0-9]*$/; //判断字符串是否为数字 ，判断正整数用/^[1-9]+[0-9]*]*$/
+
+            var selectedChannelIds = new Array();
+            $("input[name='SelectedChannelIds']:checkbox:checked").each(function () {
+                selectedChannelIds.push($(this).val());
+            });
+
+
+            //购买商品
+            var allBuyTableData = $('#CampaignBuyProducts').bootstrapTable('getData');
+            var campaignBuyProducts = [];
+            $.each(allBuyTableData, function (i, row) {
+                if (typeof (row.ProductId) != 'undefined' && row.ProductId != null && row.ProductId != '' && row.ProductId != 0) {
+                    var tmpObj = {
+                        "Id": typeof (row.Id) == 'undefined' ? "0" : row.Id,
+                        "ProductId": typeof (row.ProductId) == 'undefined' ? "0" : row.ProductId,
+                        "UnitId": typeof (row.UnitId) == 'undefined' ? "0" : row.UnitId,
+                        "Quantity": typeof (row.Quantity) == 'undefined' ? "0" : row.Quantity
+                    };
+                    campaignBuyProducts.push(tmpObj);
+                }
+            });
+
+            //赠送商品
+            //获取表格的所有内容行
+            var allGiveTableData = $('#CampaignGiveProducts').bootstrapTable('getData');
+            var campaignGiveProducts = [];
+            $.each(allGiveTableData, function (i, row) {
+                if (typeof (row.ProductId) != 'undefined' && row.ProductId != null && row.ProductId != '' && row.ProductId != 0) {
+                    var tmpObj = {
+                        "Id": typeof (row.Id) == 'undefined' ? "0" : row.Id,
+                        "ProductId": typeof (row.ProductId) == 'undefined' ? "0" : row.ProductId,
+                        "UnitId": typeof (row.UnitId) == 'undefined' ? "0" : row.UnitId,
+                        "Quantity": typeof (row.Quantity) == 'undefined' ? "0" : row.Quantity
+                    };
+                    campaignGiveProducts.push(tmpObj);
+                }
+            });
+
+            //保存的数据
+            var postData = {
+                //活动名称
+                Name: $("input[name='Name']").val(),
+                //开始日期
+                StartTime: $("input[name='StartTime']").val(),
+                //结束日期
+                EndTime: $("input[name='EndTime']").val(),
+                //渠道
+                SelectedChannelIds: selectedChannelIds,
+                //是否有效
+                Enabled: $("input[type='checkbox'],input[name='Enabled']").is(':checked') ? true : false,
+                //TPM协议编码
+                ProtocolNum: $("input[name='ProtocolNum']").val(),
+                //购买商品
+                CampaignBuyProducts: campaignBuyProducts,
+                //赠送商品
+                CampaignGiveProducts: campaignGiveProducts
+            };
+
+            console.log(postData);
+            //return false;
+
+            if ("@Model.Id" == "0") {
+                //保存服务器
+                $(this).remoteSubmit("post", "/Campaign/Create?billId=@(Model.Id)", postData, null, callback, null, loadingButton);
+            } else {
+                //保存服务器
+                $(this).remoteSubmit("post", "/Campaign/Edit?billId=@(Model.Id)", postData, null, callback, null, loadingButton);
+            }
+
+        }
+
+        //表单检查
+        var formValidator = function () {
+            var isVaild = true;
+
+            return isVaild;
+        }
+
+
+        //商品列表选择赋值
+        window.operateEventsPop = {
+            'click .rowSelect': function (e, value, row, index) {
+                var index = $(this).attr("data-id");
+                var target = $(this).attr("data-target");
+                var keys = Object.keys(row.Units);
+
+                var unitId = 0;
+                var unitName = "";
+
+                if (row.BigUnitId > 0) {
+                    unitId = row.BigUnitId;
+                    unitName = keys[2];
+                } else if (row.StrokeUnitId > 0) {
+                    unitId = row.StrokeUnitId
+                    unitName = keys[1];
+                } else {
+                    unitId = row.SmallUnitId;
+                    unitName = keys[0];
+                }
+
+                //console.log(target);
+                console.log(row);
+
+                //return;
+                if (target == "CampaignGiveProducts") {
+                    $("#CampaignGiveProducts").bootstrapTable('updateRow', {
+                        index: index,
+                        row:
+                        {
+                            ProductSKU: row.Sku,
+                            ProductId: row.Id,
+                            ProductName: row.Name,
+                            BarCode: row.SmallBarCode,
+                            UnitConversion: row.UnitConversion,
+                            Units: row.Units,
+                            UnitId: unitId,
+                            UnitName: unitName
+                        }
+                    });
+                }
+                else if (target == "CampaignBuyProducts") {
+                    $("#CampaignBuyProducts").bootstrapTable('updateRow', {
+                        index: index,
+                        row:
+                        {
+                            ProductSKU: row.Sku,
+                            ProductId: row.Id,
+                            ProductName: row.Name,
+                            BarCode: row.SmallBarCode,
+                            UnitConversion: row.UnitConversion,
+                            Units: row.Units,
+                            UnitId: unitId,
+                            UnitName: unitName
+                        }
+                    });
+                }
+                $('#ModalProductWindows').modal('hide');
+            }
+        };
+
+
+        //购买商品
+        $("#CampaignBuyProducts").bootstrapTable({
+               @Html.Raw(Model.CampaignBuyProducts.Count > 0 ? "url: '/Campaign/AsyncBuyProducts?campaignId=" + Model.Id + "'," : "length: 9,")
+            striped: true,
+            //toolbar: "#toolbar1",
+            cache: false,
+            pagination: true,
+            showPagination: false,
+            sidePagination: "server",
+            sortable: false,
+            sortOrder: "asc",
+            search: false,
+            strictSearch: false,
+            showColumns: false,
+            showRefresh: false,
+            buttonsClass: "sm btn-default",
+            clickToSelect: false,
+            uniqueId: "id",
+            showToggle: false,
+            editable: true,
+            cardView: false,
+            detailView: false,
+            showFooter: false,
+            onLoadSuccess: function (data) {
+                $(".fixed-table-pagination").hide();
+            },
+            columns: [
+                {
+                    title: '<i class="fa fa-gear fs18"></i>',
+                    align: 'center',
+                    width: '100',
+                    formatter: function (value, row, index) {
+                        return m_pagerow + index + 1;
+                    }
+                },
+                {
+                    field: 'UnitId',
+                    visible: false
+                },
+                {
+                    field: 'Units',
+                    visible: false
+                },
+                {
+                    field: 'ProductId',
+                    visible: false
+                },
+                {
+                    field: 'ProductName',
+                    title: '购买商品',
+                    class: 'editable',
+                    align: 'left',
+                    width: '200'
+                },
+                {
+                    field: 'BarCode',
+                    title: '条形码'
+                },
+                {
+                    field: 'UnitName',
+                    title: '单位',
+                    align: 'center'
+                },
+                {
+                    field: 'UnitConversion',
+                    title: '单位换算'
+                },
+                {
+                    field: 'Quantity',
+                    title: '购买数量',
+                    width:'100'
+                },
+                {
+                    field: 'Operate',
+                    title: '操作',
+                    align: 'center',
+                    width: '100',
+                    events: {
+                        'click .rowAppend': function (e, value, row, index) {// 添加
+                            var tmpRow = { id: 0 };
+                            var that = $('#CampaignBuyProducts').bootstrapTable('insert', tmpRow);
+                        },
+                        'click .rowCopy': function (e, value, row, index) {// 复制
+                            $('#CampaignBuyProducts').bootstrapTable('copying', row);
+                            //修改最后一条数据uniqueid,防止复制时uniqueid相同，删除时都删除
+                            var allTableData = $('#CampaignBuyProducts').bootstrapTable('getData');
+                            var maxuniqueid = 0;
+                            $.each(allTableData, function (i, row) {
+                                if (row.uniqueid > maxuniqueid) {
+                                    maxuniqueid = row.uniqueid;
+                                }
+                            });
+                            allTableData[allTableData.length - 1].uniqueid = maxuniqueid + 1;
+                        },
+                        'click .rowDel': function (e, value, row, index) {// 删除
+
+                            if (row.uniqueid == undefined) {
+                                $("#CampaignBuyProducts").bootstrapTable('remove', { field: "Id", values: [parseInt(row.Id)] });
+                            }
+                            else {
+                                $("#CampaignBuyProducts").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+                            }
+                        }
+                    },
+                    formatter: function (value, row, index) {
+                        return [
+                            '<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+                            '<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+                        ].join('');
+                    }
+                }
+            ],
+            onClickCell: function (field, value, row, $element) {
+
+                if (field == "Operate") {
+                    return false;
+                }
+
+                var input = $($element).find("input");
+                var select = $($element).find("select");
+                if (input.length > 0 || select.length > 0)
+                    return false;
+
+                //当前列所在行的索引
+                var index = $element.parent().attr("data-index");
+                //console.log(index);
+
+                if (field == "ProductName") {
+                    var html = '<div class="input-group">' +
+                        '<input type="text" class="form-control input-sm"  name="ProductName" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="buy_' + field + "_" + row.Id + '">' +
+                        '<span class="input-group-btn"><button type="button" class="btn btn-default btn-sm" id="buy_search_' + field + "_" + row.Id + '" data-index="' + index + '"><span class="glyphicon glyphicon-search"></span></button></span>' +
+                        '</div>';
+
+                    $($element).html(html);
+                    var inputObj = $("#buy_search_" + field + "_" + row.Id);
+                    inputObj.focus();
+                    inputObj.bind("focusout", function () {
+                        //$("#CampaignBuyProducts").bootstrapTable('updateRow', { index: index, row: { ProductName: $(this).val() } });
+                        $("#CampaignBuyProducts").bootstrapTable('updateRow', { index: index, row: { ProductName: value } });
+                        $($element).html("" + value + "");
+                    });
+
+                    //选择商品
+                    inputObj.bind("click", function () {
+                        $(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup?wareHouseId=0&stockQtyMoreThan=false", { Index: $(this).attr("data-index"), target: "CampaignBuyProducts" }, "选择商品", $("#ProductModalForm"), function () { }); return false;
+                    });
+                }
+                else if (field == "Quantity") {
+                    var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="buy_' + field + "_" + row.Id + '">';
+                    $($element).html(html);
+                    var inputObj = $("#" + $(html).attr("id"));
+                    inputObj.focus();
+                    inputObj.bind("focusout", function () {
+                        row[field] = $(this).val();
+                        $("#CampaignBuyProducts").bootstrapTable('updateRow', { index: index, row: row });
+                        $($element).html("" + value + "");
+                    });
+                }
+                else if (field == "UnitName") {
+
+                    console.log("Units:" + row.Units);
+
+                    if (row.Units == null) {
+                        $(this).showToastr('请选择商品');
+                        return;
+                    }
+
+                    console.log("UnitId:" + row.UnitId);
+
+                    var html = '<select name="' + field + '" id="buy_' + field + "_" + row.Id + '">';
+                    //var keys = Object.keys(row.Units);
+                    $.each(row.Units, function (key, unit) {
+                        //html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+                        if (unit > 0) {
+                            html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+                        }
+                    });
+                    html += '</select>';
+
+                    $($element).html(html);
+                    var inputObj = $("#" + $(html).attr("id"));
+                    inputObj.focus();
+                    inputObj.bind("focusout", function () {
+                        console.log(row.UnitId + "=" + inputObj.val());
+                        console.log(inputObj.find("option:selected").text());
+                        $($element).html("" + inputObj.find("option:selected").text() + "");
+                        $("#CampaignBuyProducts").bootstrapTable('updateRow', { index: index, row: { UnitName: inputObj.find("option:selected").text(), Units: row.Units } });
+                    });
+                    //单位选择
+                    inputObj.bind("change", function () {
+                        //用户当前选择的单位
+                        var unitId = $(this).val();
+                        $("#CampaignBuyProducts").bootstrapTable('updateRow', { index: index, row: { UnitId: unitId, UnitName: inputObj.find("option:selected").text() } });
+                    });
+                }
+                //debug
+                $.each($('#CampaignBuyProducts').bootstrapTable('getData'), function (i, row) {
+                    //console.log(row);
+                });
+            }
+        });
+
+        //赠送商品
+        $("#CampaignGiveProducts").bootstrapTable({
+               @Html.Raw(Model.CampaignGiveProducts.Count > 0 ? "url: '/Campaign/AsyncGiveProducts?campaignId="+Model.Id+"'," : "length: 9,")
+            striped: true,
+            //toolbar: "#toolbar2",
+            cache: false,
+            pagination: true,
+            showPagination: false,
+            sidePagination: "server",
+            sortable: false,
+            sortOrder: "asc",
+            search: false,
+            strictSearch: false,
+            showColumns: false,
+            showRefresh: false,
+            buttonsClass: "sm btn-default",
+            clickToSelect: false,
+            uniqueId: "id",
+            showToggle: false,
+            editable: true,
+            cardView: false,
+            detailView: false,
+            showFooter: false,
+            onLoadSuccess: function (data) {
+                $(".fixed-table-pagination").hide();
+            },
+            columns: [
+                {
+                    title: '<i class="fa fa-gear fs18"></i>',
+                    align: 'center',
+                    width: '100',
+                    formatter: function (value, row, index) {
+                        return m_pagerow + index + 1;
+                    }
+                },
+                {
+                    field: 'UnitId',
+                    visible: false
+                },
+                {
+                    field: 'Units',
+                    visible: false
+                },
+                {
+                    field: 'ProductId',
+                    visible: false
+                },
+                {
+                    field: 'ProductName',
+                    title: '赠送商品',
+                    class: 'editable',
+                    align: 'left',
+                    width: '200'
+                },
+                {
+                    field: 'BarCode',
+                    title: '条形码'
+                },
+                {
+                    field: 'UnitName',
+                    title: '单位',
+                    align: 'center'
+                },
+                {
+                    field: 'UnitConversion',
+                    title: '单位换算'
+                },
+                {
+                    field: 'Quantity',
+                    title: '赠送数量',
+                     width:'100'
+                },
+                {
+                    field: 'Operate',
+                    title: '操作',
+                    align: 'center',
+                    width: '100',
+                    events: {
+                        'click .rowAppend': function (e, value, row, index) {// 添加
+                            var tmpRow = { id: 0 };
+                            $('#CampaignGiveProducts').bootstrapTable('insert', tmpRow);
+                        },
+                        'click .rowCopy': function (e, value, row, index) {// 复制
+                            $('#CampaignGiveProducts').bootstrapTable('copying', row);
+                            //修改最后一条数据uniqueid,防止复制时uniqueid相同，删除时都删除
+                            var allTableData = $('#CampaignGiveProducts').bootstrapTable('getData');
+                            var maxuniqueid = 0;
+                            $.each(allTableData, function (i, row) {
+                                if (row.uniqueid > maxuniqueid) {
+                                    maxuniqueid = row.uniqueid;
+                                }
+                            });
+                            allTableData[allTableData.length - 1].uniqueid = maxuniqueid + 1;
+                        },
+                        'click .rowDel': function (e, value, row, index) {// 删除
+                            if (row.uniqueid == undefined) {
+                                $("#CampaignGiveProducts").bootstrapTable('remove', { field: "Id", values: [parseInt(row.Id)] });
+                            }
+                            else {
+                                $("#CampaignGiveProducts").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+                            }
+                        }
+                    },
+                    formatter: function (value, row, index) {
+                        return [
+                            '<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+                            '<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+                        ].join('');
+                    }
+                }
+            ],
+            onClickCell: function (field, value, row, $element) {
+
+                if (field == "Operate") {
+                    return false;
+                }
+
+                var input = $($element).find("input");
+                var select = $($element).find("select");
+                if (input.length > 0 || select.length > 0)
+                    return false;
+
+                //当前列所在行的索引
+                var index = $element.parent().attr("data-index");
+                //console.log(index);
+
+                if (field == "ProductName") {
+                    var html = '<div class="input-group">' +
+                        '<input type="text" class="form-control input-sm"  name="ProductName" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="give_' + field + "_" + row.Id + '">' +
+                        '<span class="input-group-btn"><button class="btn btn-default btn-sm" id="give_search_' + field + "_" + row.Id + '" data-index="' + index + '"><span class="glyphicon glyphicon-search"></span></button></span>' +
+                        '</div>';
+
+                    $($element).html(html);
+                    var inputObj = $("#give_search_" + field + "_" + row.Id);
+                    inputObj.focus();
+                    inputObj.bind("focusout", function () {
+                        //$("#CampaignGiveProducts").bootstrapTable('updateRow', { index: index, row: { ProductName: $(this).val() } });
+                        $("#CampaignGiveProducts").bootstrapTable('updateRow', { index: index, row: { ProductName: value } });
+                        $($element).html("" + value + "");
+                    });
+                    //选择商品
+                    inputObj.bind("click", function () {
+                        $(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup?wareHouseId=0&stockQtyMoreThan=false", { Index: $(this).attr("data-index"), target: "CampaignGiveProducts" }, "选择商品", $("#ProductModalForm"), function () { }); return false;
+                    });
+                }
+                else if (field == "Quantity") {
+                    var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="give_' + field + "_" + row.Id + '">';
+                    $($element).html(html);
+                    var inputObj = $("#" + $(html).attr("id"));
+                    inputObj.focus();
+                    inputObj.bind("focusout", function () {
+                        row[field] = $(this).val();
+                        $("#CampaignGiveProducts").bootstrapTable('updateRow', { index: index, row: row });
+                        $($element).html("" + value + "");
+                    });
+                }
+                else if (field == "UnitName") {
+
+                    console.log("Units:" + row.Units);
+
+                    if (row.Units == null) {
+                        $(this).showToastr('请选择商品');
+                        return;
+                    }
+
+                    console.log("UnitId:" + row.UnitId);
+
+                    var html = '<select name="' + field + '" id="give_' + field + "_" + row.Id + '">';
+                    //var keys = Object.keys(row.Units);
+                    $.each(row.Units, function (key, unit) {
+                        //html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+                        if (unit > 0) {
+                            html += '<option value="' + unit + '"  ' + (row.UnitId == unit ? "selected" : "") + '>' + key + '</option>';
+                        }
+                    });
+                    html += '</select>';
+
+                    $($element).html(html);
+                    var inputObj = $("#" + $(html).attr("id"));
+                    inputObj.focus();
+                    inputObj.bind("focusout", function () {
+                        console.log(row.UnitId + "=" + inputObj.val());
+                        console.log(inputObj.find("option:selected").text());
+                        $($element).html("" + inputObj.find("option:selected").text() + "");
+                        $("#CampaignGiveProducts").bootstrapTable('updateRow', { index: index, row: { UnitName: inputObj.find("option:selected").text(), Units: row.Units } });
+                    });
+                    //单位选择
+                    inputObj.bind("change", function () {
+                        //用户当前选择的单位
+                        var unitId = $(this).val();
+                        $("#CampaignGiveProducts").bootstrapTable('updateRow', { index: index, row: { UnitId: unitId, UnitName: inputObj.find("option:selected").text() } });
+                    });
+                }
+                //debug
+                $.each($('#CampaignGiveProducts').bootstrapTable('getData'), function (i, row) {
+                    //console.log(row);
+                });
+            }
+        });
+
+    });
+
+    </script>

@@ -1,0 +1,959 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Products;
+
+@model ProductModel
+
+<script type="text/javascript">
+
+        //初始化操作按钮的方法
+	window.operateEvents = {
+		'click .rowdel': function (e, value, row, index) {
+			var $tb = $("#datatable");
+            WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+				$(this).remoteSubmit("get", "/Product/FlavorDelete", { flavorId: row.Id, productId: row.ProductId }, $("#datatable"), null);
+			});
+		},
+		'click .rowedit': function (e, value, row, index) {
+			var actionUrl = "/Product/FlavorEditPopup";
+			var param = { id: row.Id };
+			//$(this).showModalV2($("#FlavorWindow"), actionUrl, param, "编辑口味", $("#FlavorForm"));
+			$(this).showModalV2($("#FlavorWindow"), actionUrl, param, "编辑口味", $("#FlavorForm"), function () {
+				$('#btnSave_' + $("#FlavorWindow").attr("id") + '').unbind("click").bind('click', function () {
+					var actionUrl = "/Product/FlavorEditPopup";
+					var param = { productId: $(this).val() };
+					var validator = $("#FlavorForm").validate({
+						/* @@validation states + elements
+						------------------------------------------- */
+						errorClass: "text-danger",
+						validClass: "text-success",
+						errorElement: "em",
+						/* @@validation rules
+						------------------------------------------ */
+						rules: {
+							Name: {
+								required: true
+							}
+						},
+						messages: {
+							Name: {
+								required: '请输入名称'
+							}
+						},
+						/* @@validation highlighting + error placement
+						---------------------------------------------------- */
+						highlight: function (element, errorClass, validClass) {
+							$(element).closest('.field').addClass(errorClass).removeClass(validClass);
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).closest('.field').removeClass(errorClass).addClass(validClass);
+						},
+						errorPlacement: function (error, element) {
+							if (element.is(":radio") || element.is(":checkbox")) {
+								element.closest('.option-group').after(error);
+							} else {
+								//error.insertAfter(element.parent());
+								element.parent().append(error);
+							}
+						},
+						submitHandler: function (form) {
+							//alert("submitted");
+							form.submit();
+						}
+					});
+					//保存保存
+					$(this).saveModalV2($("#FlavorWindow"), $("#datatable"), $("#FlavorForm"));
+
+				});
+			});
+		},
+
+
+
+		'click .comRowdel': function (e, value, row, index) {
+			var $tb = $("#combination_products");
+            WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+				if (!e) {
+					return;
+				}
+				$(this).remoteSubmit("get", "/Product/CombinationsDelete", { comId: row.Id }, $("#combination_products"), null);
+			});
+		},
+		'click .comRowedit': function (e, value, row, index) {
+			var actionUrl = "/Product/CombinationsEditPopup";
+			var param = { id: row.Id };
+			$(this).showModalV2($("#CombinationWindow"), actionUrl, param, "编辑子商品", $("#CombinationForm"));
+		}
+	};
+
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+			$(document).on('click', "#btn_search", function () {
+				var actionUrl = "/Brand/AsyncSearch";
+				$(this).showModalV2($("#BrandWindow"), actionUrl, { ids: "" }, "选择品牌", $("#BrandForm"), function (rows) { });
+			});
+
+			window.operateEventsPopBrand = {
+				'click .rowSelect': function (e, value, row, index) {
+					try {
+						$("input[name='BrandId']").val(row.Id);
+						$("#BrandName").val(row.Name);
+						$('#BrandWindow').modal('hide');
+					}
+					catch (err) {
+						console.log(err);
+						$(this).showToastr(err);
+						return;
+					}
+				}
+			};
+
+			//供应商搜索
+			$(document).on('click', "#btn_search_Supplier", function () {
+				var actionUrl = "/Manufacturer/AsyncSearchSelectPopup";
+				$(this).showModalV2($("#ManufacturerWindow"), actionUrl, { ids: "" }, "选择供应商", $("#ManufacturerForm"), function (rows) { });
+			});
+
+			window.operateEventsPopManufacturer = {
+				'click .rowSelect': function (e, value, row, index) {
+					try {
+						$("#Supplier").val(row.Id);
+						$("#SupplierName").val(row.Name);
+						$('#ManufacturerWindow').modal('hide');
+					}
+					catch (err) {
+						console.log(err);
+						$(this).showToastr(err);
+						return;
+					}
+				}
+			};
+
+            //计算价格
+            function calcPrice($that) {
+                var value = parseFloat($that.val());
+
+                //将价格列表中的数值均置为0
+                if (isNaN(value) || value==0) {
+                    value = 0;
+                    if ($that.attr("name") == "Small_TradePrice") {
+                        $("#Small_TradePrice").val(value);
+                        $("#Stroke_TradePrice").val(value);
+                        $("#Big_TradePrice").val(value);
+                    }
+                    else if ($that.attr("name") == "Small_RetailPrice") {
+                        $("#Small_RetailPrice").val(value);
+                        $("#Stroke_RetailPrice").val(value);
+                        $("#Big_RetailPrice").val(value);
+                    }
+                    else if ($that.attr("name") == "Small_FloorPrice") {
+                        $("#Small_FloorPrice").val(value);
+                        $("#Stroke_FloorPrice").val(value);
+                        $("#Big_FloorPrice").val(value);
+                    }
+                    else if ($that.attr("name") == "Small_PurchasePrice") {
+                        $("#Small_PurchasePrice").val(value);
+                        $("#Stroke_PurchasePrice").val(value);
+                        $("#Big_PurchasePrice").val(value);
+                    }
+                    else if ($that.attr("name") == "Small_CostPrice") {
+                        $("#Small_CostPrice").val(value);
+                        $("#Stroke_CostPrice").val(value);
+                        $("#Big_CostPrice").val(value);
+                    }
+                    else if ($that.attr("name") == "Small_SALE1") {
+                        $("#Small_SALE1").val(value);
+                        $("#Stroke_SALE1").val(value);
+                        $("#Big_SALE1").val(value);
+                    }
+                    else if ($that.attr("name") == "Small_SALE2") {
+                        $("#Small_SALE2").val(value);
+                        $("#Stroke_SALE2").val(value);
+                        $("#Big_SALE2").val(value);
+                    }
+                    else if ($that.attr("name") == "Small_SALE3") {
+                        $("#Small_SALE3").val(value);
+                        $("#Stroke_SALE3").val(value);
+                        $("#Big_SALE3").val(value);
+                    }
+                }
+                //计算价格
+                else {
+                    var flag = $that.attr("id").split('_')[0];
+
+                    //根据大单位计算
+                    if (flag == "Big") {
+                       var divmprice = parseInt(($("input[name='BigQuantity']").val() == null || $("input[name='BigQuantity']").val() == "") ? 0 : parseFloat($("input[name='BigQuantity']").val()));
+                        var tprice = (value / (divmprice == 0 ? 1 : divmprice)).toFixed(4);
+
+                        if ($that.attr("name") == "Big_TradePrice") {
+                            $("#Small_TradePrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Big_RetailPrice") {
+                            $("#Small_RetailPrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Big_FloorPrice") {
+                            $("#Small_FloorPrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Big_PurchasePrice") {
+                            $("#Small_PurchasePrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Big_CostPrice") {
+                            $("#Small_CostPrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Big_SALE1") {
+                            $("#Small_SALE1").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Big_SALE2") {
+                            $("#Small_SALE2").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Big_SALE3") {
+                            $("#Small_SALE3").val(tprice);
+                        }
+                    }
+                    //根据中单位计算
+                    else if (flag == "Stroke") {
+                        var divmprice = parseInt(($("input[name='StrokeQuantity']").val() == null || $("input[name='StrokeQuantity']").val() == "") ? 0 : parseFloat($("input[name='StrokeQuantity']").val()));
+                        var tprice = (value / (divmprice == 0 ? 1 : divmprice)).toFixed(4);
+
+                        if ($that.attr("name") == "Stroke_TradePrice") {
+                            if ($("#Small_TradePrice").val()=="0")
+                                $("#Small_TradePrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Stroke_RetailPrice") {
+                            if ($("#Small_RetailPrice").val() == "0")
+                                $("#Small_RetailPrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Stroke_FloorPrice") {
+                            if ($("#Small_FloorPrice").val()=="0")
+                                $("#Small_FloorPrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Stroke_PurchasePrice") {
+                            if ($("#Small_PurchasePrice").val()=="0")
+                                $("#Small_PurchasePrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Stroke_CostPrice") {
+                            if ($("#Small_CostPrice").val()=="0")
+                                $("#Small_CostPrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Stroke_SALE1") {
+                            if ($("#Small_SALE1").val()=="0")
+                                $("#Small_SALE1").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Stroke_SALE2") {
+                            if ($("#Small_SALE2").val()=="0")
+                                $("#Small_SALE2").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Stroke_SALE3") {
+                            if ($("#Small_SALE3").val()=="0")
+                                $("#Small_SALE3").val(tprice);
+                        }
+                    }
+                    //根据小单位计算
+                    else if (flag == "Small") {
+                        var divmprice = parseInt(($("input[name='BigQuantity']").val() == null || $("input[name='BigQuantity']").val() == "") ? 0 : parseFloat($("input[name='BigQuantity']").val()));
+                        var divtprice = parseInt(($("input[name='StrokeQuantity']").val() == null || $("input[name='StrokeQuantity']").val() == "") ? 0 : parseFloat($("input[name='StrokeQuantity']").val()));
+
+                        var mprice = (value * (divmprice == 0 ? 1 : divmprice)).toFixed(4);
+                        var tprice = (value * (divtprice == 0 ? 1 : divtprice)).toFixed(4);
+
+                        if ($that.attr("name") == "Small_TradePrice") {
+                            $("#Big_TradePrice").val(mprice);
+                            $("#Stroke_TradePrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Small_RetailPrice") {
+                            $("#Big_RetailPrice").val(mprice);
+                            $("#Stroke_RetailPrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Small_FloorPrice") {
+							$("#Big_FloorPrice").val(mprice);
+                            $("#Stroke_FloorPrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Small_PurchasePrice") {
+                            $("#Big_PurchasePrice").val(mprice);
+                            $("#Stroke_PurchasePrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Small_CostPrice") {
+                            $("#Big_CostPrice").val(mprice);
+                            $("#Stroke_CostPrice").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Small_SALE1") {
+                            $("#Big_SALE1").val(mprice);
+                            $("#Stroke_SALE1").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Small_SALE2") {
+                            $("#Big_SALE2").val(mprice);
+                            $("#Stroke_SALE2").val(tprice);
+                        }
+                        else if ($that.attr("name") == "Small_SALE3") {
+                            $("#Big_SALE3").val(mprice);
+                            $("#Stroke_SALE3").val(tprice);
+                        }
+                    }
+                }
+            }
+
+            $('select[name="SmallUnitId"]').change(function () {
+                var value = $(this).children('option:selected').val()
+                var txt = $(this).children('option:selected').text();
+
+                if (value == "0") {
+                    $("input[name='Small_UnitId']").val(value);
+                    $("#SmallOptionBox").hide();
+                    $("#StrokeQuantityBox").hide();
+                    $("#BigQuantityBox").hide();
+                }
+                else {
+                    if (txt ==$('select[name="StrokeUnitId"] option:selected').text()) {
+                        $(this).showToastr('商品小单位和中单位不可以相同');
+                        return;
+                    } else if (txt == $('select[name="BigUnitId"] option:selected').text()) {
+                        $(this).showToastr('商品小单位和大单位不可以相同');
+                        return;
+                    }
+                    $("input[name='Small_UnitId']").val(value);
+                    $("#SmallOptionBox").show();
+                    $(".SmallName").html(txt);
+                }
+            });
+
+            $('select[name="StrokeUnitId"]').change(function () {
+                var value = $(this).children('option:selected').val();
+                if (value == "0") {
+                    $("input[name='Stroke_UnitId']").val(value);
+                    $("#StrokeOptionBox").hide();
+                    $("#StrokeQuantityBox").hide();
+                }
+                else {
+                    var txt = $(this).children('option:selected').text();
+                    if (txt ==  $('select[name="SmallUnitId"] option:selected').text()) {
+                        $(this).showToastr('商品小单位和中单位不可以相同');
+                        return;
+                    } else if (txt == $('select[name="BigUnitId"] option:selected').text()) {
+                        $(this).showToastr('商品中单位和大单位不可以相同');
+                        return;
+                    }
+                    $("input[name='Stroke_UnitId']").val(value);
+                    $(".StrokeName").html(txt);
+                    $("#StrokeOptionBox").show();
+                    $("#StrokeQuantityBox").show();
+                }
+
+            });
+
+            $('select[name="BigUnitId"]').change(function () {
+                var value = $(this).children('option:selected').val();
+                if (value == "0") {
+                    $("input[name='Big_UnitId']").val(value);
+                    $("#BigOptionBox").hide();
+                    $("#BigQuantityBox").hide();
+                }
+                else {
+                    var txt = $(this).children('option:selected').text();
+                    if (txt == $('select[name="SmallUnitId"] option:selected').text()) {
+                        $(this).showToastr('商品小单位和大单位不可以相同');
+                        return;
+                    } else if (txt == $('select[name="StrokeUnitId"] option:selected').text()) {
+                        $(this).showToastr('商品中单位和大单位不可以相同');
+                        return;
+                    }
+
+                    $("input[name='Big_UnitId']").val(value);
+                    $(".BigName").html(txt);
+                    $("#BigOptionBox").show();
+                    $("#StrokeUnitBox").show();
+                    $("#BigQuantityBox").show();
+                }
+            });
+
+            $('#StrokeQuantity').change(function () {
+                $("#pricesTable .priceinput").each(function (i,obj) {
+                    calcPrice($(obj));
+                });
+            });
+
+            $('#BigQuantity').change(function () {
+                $("#pricesTable .priceinput").each(function (i, obj) {
+                    calcPrice($(obj));
+                });
+            });
+
+            $("#BigQuantity").blur(function () {
+                if ($(this).val() == $("#StrokeQuantity").val()) {
+                    $(this).showToastr('商品小单位和大单位换算数量不能相同');
+                }
+            });
+            $("#StrokeQuantity").blur(function () {
+                if ($(this).val() == $("#BigQuantity").val()) {
+                    $(this).showToastr('商品小单位和大单位换算数量不能相同');
+                }
+            });
+
+            $(".priceinput").keyup(function () {
+                $(this).val($(this).val().replace(/[^0-9.]/g, '0'));
+            }).bind("paste", function () {  //CTR+V事件处理
+                $(this).val($(this).val().replace(/[^0-9.]/g, '0'));
+            }).css("ime-mode", "disabled"); //CSS设置输入法不可用
+
+            $(".priceinput").on("focus", function (e) {
+                $(this).select();
+            });
+
+            $(".priceinput").bind("change", function ()
+            {
+                var obj = $(this);
+                if ($(this).attr("id").split('_')[0] != "Small" && $("#Small_" + $(this).attr("id").split('_')[1]).val() != "0")
+                {
+                    WinMsg.confirm({ message: "修改价格会导致商品单价变动，确定要修改吗？" }).on(function (e) {
+                        if (!e) {
+                            return;
+                        }
+                        calcPrice(obj);
+                        parseFloat(obj.val()).toFixed(4);
+                    });
+                }
+                else {
+                    calcPrice(obj);
+                    parseFloat(obj.toFixed(4));
+                }
+            });
+
+            $(".textprice").bind("change", function () {
+                if (parseFloat($(this).val()).toString() == "NaN")
+                {
+                    $(this).showToastr('请输入数字');
+                    return false;
+                } else {
+                    return true;
+                }
+            });
+
+            $(".textprice").blur(function () {
+                var value = parseFloat($(this).val());
+                var sprice = (value).toFixed(2);
+                $(this).val(sprice);
+            });
+
+              //得到表格查询的参数
+            var dbQueryParams = function (params) {
+                  var param = {
+                      productId: '@Model.Id',
+
+                };
+                return param;
+            };
+
+            $("#FormSubmit").click(function () {
+                if ($("#StrokeUnitId").val() !== "" && $("#StrokeUnitId").val() !== "0"  && parseInt($("#StrokeQuantity").val()) == 0) {
+                    $(this).showToastr('商品中单位量不能为空!');
+                    $("#StrokeQuantity").select();
+                    return false;
+                }
+
+                if ($("#BigUnitId").val() !== "" && $("#BigUnitId").val() !== "0" && parseInt($("#BigQuantity").val()) == 0) {
+                    $(this).showToastr('商品大单位量不能为空!');
+                    $("#BigQuantity").select();
+                    return false;
+                }
+
+                //表单验证
+                jQuery.validator.addMethod("notZero", function (value, element, param) {
+                    return this.optional(element) || (value != 0);
+                }, "请确保输入的值不为零");
+
+                var validator = $("#ProductForm").validate({
+                    /* @@validation states + elements
+                    ------------------------------------------- */
+                    errorClass: "text-danger",
+                    validClass: "text-success",
+                    errorElement: "em",
+                    /* @@validation rules
+                    ------------------------------------------ */
+                    rules: {
+                        Name: {
+                            required: true
+                        },
+                        CategoryId: {
+                            required: true
+                        },
+                        SmallUnitId: {
+                            required: true
+                        },
+                        MnemonicCode: {
+                            required: true,
+                            maxlength: 100
+                        },
+                        BrandId: {
+                            required: true
+                        },
+                    },
+                    messages: {
+                        Name: {
+                            required: '请输入商品名称'
+                        },
+                        CategoryId: {
+                            required: '请选择商品类别'
+                        },
+                        SmallUnitId: {
+                            required: '请选择最小单位'
+                        },
+                        MnemonicCode: {
+                            required: '请输入助记码',
+                            maxlength: "助记码最大长度为100"
+                        },
+                        BrandId: {
+                            required: '请选择品牌'
+                        }
+                    },
+                    /* @@validation highlighting + error placement
+                    ---------------------------------------------------- */
+                    highlight: function (element, errorClass, validClass) {
+                        $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                    },
+                    unhighlight: function (element, errorClass, validClass) {
+                        $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                    },
+                    errorPlacement: function (error, element) {
+                        if (element.is(":radio") || element.is(":checkbox")) {
+                            element.closest('.option-group').after(error);
+                        } else {
+                            element.parent().append(error);
+                        }
+                    },
+                    submitHandler: function (form) {
+                        form.submit();
+                    }
+                });
+            });
+
+            //初始化口味表格
+            $("#datatable").bootstrapTable({
+                url: "/Product/FlavorList",  //请求后台的URL（*）
+                method: 'get',                      //请求方式（*）
+                toolbar: '#toolbar',                //工具按钮用哪个容器
+                striped: true,                      //是否显示行间隔色
+                cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                pagination: true,                   //是否显示分页（*）
+                sortable: true,                     //是否启用排序
+                sortOrder: "asc",                   //排序方式
+                queryParams: dbQueryParams,         //传递参数（*）
+                sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                pageNumber: 1,                       //初始化加载第一页，默认第一页
+                pageSize: 25,                       //每页的记录行数（*）
+                pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                search: false,                      //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+                strictSearch: true,
+                showColumns: false,                  //是否显示所有的列
+                showRefresh: false,                  //是否显示刷新按钮
+                clickToSelect: false,                //是否启用点击选中行
+                uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                showToggle: false,                    //是否显示详细视图和列表视图的切换按钮
+                cardView: false,                    //是否显示详细视图
+                detailView: false,                   //是否显示父子表
+                columns: [
+                    {
+                        field: 'check', checkbox: true, formatter: function (value, row, index) {
+                            if (row.check == true) {
+                                //设置选中
+                                return { checked: true };
+                            }
+                        }
+                    },
+                    { field: 'id', title: '编号' },
+                    { field: 'Name', title: '口味'},
+                    { field: 'SmallUnitBarCode', title: '小单位条码' },
+                    { field: 'StrokeUnitBarCode', title: '大单位条码' },
+                    { field: 'BigUnitBarCode', title: '中单位条码' },
+                    {
+                        field: 'Operate',
+                        title: '操作',
+                        align: 'center',
+                        width: '250',
+                        events: operateEvents,
+                        formatter: function (value, row, index) {
+                            return [
+                                '<button type="button" class="btn btn-sm btn-info mr15 rowedit"><i class="fa fa-pencil-square-o" ></i>&nbsp;修改</button>',
+                                //'<button type="button" class="btn btn-sm btn-danger mr15 rowdel"><i class="fa fa-trash-o" ></i>&nbsp;删除</button>'
+                            ].join('');
+                        }
+                    }
+                ]
+            });
+
+            //初始化组合商品表格
+            $("#combination_products").bootstrapTable({
+                url: "/Product/CombinationsList",  //请求后台的URL（*）
+                method: 'get',                      //请求方式（*）
+                toolbar: '#toolbar',                //工具按钮用哪个容器
+                striped: true,                      //是否显示行间隔色
+                cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                pagination: true,                   //是否显示分页（*）
+                sortable: true,                     //是否启用排序
+                sortOrder: "asc",                   //排序方式
+                queryParams:  function (params) {
+                  var param = {
+                      combinationId: '@Model.CombinationId',
+                  };
+                return param;
+                },
+                sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                pageNumber: 1,                       //初始化加载第一页，默认第一页
+                pageSize: 25,                       //每页的记录行数（*）
+                pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                search: false,                      //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+                strictSearch: true,
+                showColumns: false,                  //是否显示所有的列
+                showRefresh: false,                  //是否显示刷新按钮
+                clickToSelect: false,                //是否启用点击选中行
+                uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                showToggle: false,                    //是否显示详细视图和列表视图的切换按钮
+                cardView: false,                    //是否显示详细视图
+                detailView: false,                   //是否显示父子表
+                columns: [
+                    {
+                        field: 'check', checkbox: true, formatter: function (value, row, index) {
+                            if (row.check == true) {
+                                //设置选中
+                                return { checked: true };
+                            }
+                        }
+                    },
+                    { field: 'id', title: '编号' },
+                    { field: 'ProductName', title: '商品名称' },
+                    { field: 'UnitName', title: '单位' },
+                    { field: 'Quantity', title: '数量' },
+                    { field: 'DisplayOrder', title: '排序' },
+                    {
+                        field: 'Operate', title: '操作', align: 'center', width: '250', events: operateEvents,
+                        formatter: function (value, row, index) {
+                            return [
+                                '<button type="button" class="btn btn-sm btn-info mr15 comRowedit"><i class="fa fa-pencil-square-o" ></i>&nbsp;修改</button>',
+                                '<button type="button" class="btn btn-sm btn-danger mr15 comRowdel"><i class="fa fa-trash-o" ></i>&nbsp;删除</button>'
+                            ].join('');
+                        } },
+                ]
+            });
+
+            //添加口味
+            $("#subFormSubmit").click(function () {
+                var actionUrl = "/Product/FlavorCreatePopup";
+                //var param = { productId: $(this).val() };
+                var param = { parentId: $(this).val() };
+    //            $(this).showModalAndSubmit($("#FlavorWindow"), actionUrl, param, "添加口味", $("#FlavorForm"), function ()
+				//{
+
+
+
+    //                var validator = $("#FlavorForm").validate({
+    //                    /* @@validation states + elements
+    //                    ------------------------------------------- */
+    //                    errorClass: "text-danger",
+    //                    validClass: "text-success",
+    //                    errorElement: "em",
+    //                    /* @@validation rules
+    //                    ------------------------------------------ */
+    //                    rules: {
+    //                        Name: {
+    //                            required: true
+    //                        }
+    //                    },
+    //                    messages: {
+    //                        Name: {
+    //                            required: '请输入名称'
+    //                        }
+    //                    },
+    //                    /* @@validation highlighting + error placement
+    //                    ---------------------------------------------------- */
+    //                    highlight: function (element, errorClass, validClass) {
+    //                        $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+    //                    },
+    //                    unhighlight: function (element, errorClass, validClass) {
+    //                        $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+    //                    },
+    //                    errorPlacement: function (error, element) {
+    //                        if (element.is(":radio") || element.is(":checkbox")) {
+    //                            element.closest('.option-group').after(error);
+    //                        } else {
+    //                            //error.insertAfter(element.parent());
+    //                            element.parent().append(error);
+    //                        }
+    //                    },
+    //                    submitHandler: function (form) {
+    //                        //alert("submitted");
+    //                        form.submit();
+    //                    }
+    //                });
+    //                //保存保存
+    //                $(this).saveModalV2($("#FlavorWindow"), $("#datatable"), $("#FlavorForm"));
+    //            });
+
+				$(this).showModalV2($("#FlavorWindow"), actionUrl, param, "添加口味", $("#FlavorForm"), function () {
+					$('#btnSave_' + $("#FlavorWindow").attr("id") + '').unbind("click").bind('click', function () {
+
+						var validator = $("#FlavorForm").validate({
+							/* @@validation states + elements
+							------------------------------------------- */
+							errorClass: "text-danger",
+							validClass: "text-success",
+							errorElement: "em",
+							/* @@validation rules
+							------------------------------------------ */
+							rules: {
+								Name: {
+									required: true
+								}
+							},
+							messages: {
+								Name: {
+									required: '请输入名称'
+								}
+							},
+							/* @@validation highlighting + error placement
+							---------------------------------------------------- */
+							highlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').addClass(errorClass).removeClass(validClass);
+							},
+							unhighlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').removeClass(errorClass).addClass(validClass);
+							},
+							errorPlacement: function (error, element) {
+								if (element.is(":radio") || element.is(":checkbox")) {
+									element.closest('.option-group').after(error);
+								} else {
+									//error.insertAfter(element.parent());
+									element.parent().append(error);
+								}
+							},
+							submitHandler: function (form) {
+								//alert("submitted");
+								form.submit();
+							}
+						});
+						//保存保存
+						$(this).saveModalV2($("#FlavorWindow"), $("#datatable"), $("#FlavorForm"));
+
+					});
+				});
+
+
+
+            });
+
+            //保存组合商品
+			$("#subProductAdd").click(function () {
+				var actionUrl = "/Product/CombinationsCreatePopup";
+				var param = { productId: $(this).val() };
+				//$(this).showModalAndSubmit($("#CombinationWindow"), actionUrl, param, "添加子商品", $("#CombinationForm"), function () {
+
+				//	//表单验证
+				//	jQuery.validator.addMethod("notZero", function (value, element, param) {
+				//		return this.optional(element) || (value != 0);
+				//	}, "请确保输入的值不为零");
+
+				//	var validator = $("#CombinationForm").validate({
+				//        /* @@validation states + elements
+				//        ------------------------------------------- */
+				//		errorClass: "text-danger",
+				//		validClass: "text-success",
+				//		errorElement: "em",
+				//        /* @@validation rules
+				//        ------------------------------------------ */
+				//		rules: {
+				//			ProductId: {
+				//				required: true
+				//			},
+				//			Quantity: {
+				//				required: true,
+				//				notZero: true
+				//			},
+				//			UnitId: {
+				//				required: true,
+				//				notZero: true
+				//			}
+				//		},
+				//		messages: {
+				//			ProductId: {
+				//				required: '子商品不能为空'
+				//			},
+				//			Quantity: {
+				//				notZero: '数量不能为零',
+				//				required: '数量不能为空'
+
+				//			},
+				//			UnitId: {
+				//				required: '最小单位不能为空',
+				//				notZero: '最小单位不能为空'
+				//			},
+				//		},
+				//        /* @@validation highlighting + error placement
+				//        ---------------------------------------------------- */
+				//		highlight: function (element, errorClass, validClass) {
+				//			$(element).closest('.field').addClass(errorClass).removeClass(validClass);
+				//		},
+				//		unhighlight: function (element, errorClass, validClass) {
+				//			$(element).closest('.field').removeClass(errorClass).addClass(validClass);
+				//		},
+				//		errorPlacement: function (error, element) {
+				//			if (element.is(":radio") || element.is(":checkbox")) {
+				//				element.closest('.option-group').after(error);
+				//			} else {
+				//				//error.insertAfter(element.parent());
+				//				element.parent().append(error);
+				//			}
+				//		},
+				//		submitHandler: function (form) {
+				//			//alert("submitted");
+				//			form.submit();
+				//		}
+				//	});
+
+				//	//保存保存
+				//	$(this).saveModalV2($("#CombinationWindow"), $("#combination_products"), $("#CombinationForm"));
+
+				//});
+
+
+				$(this).showModalV2($("#CombinationWindow"), actionUrl, param, "添加组合商品", $("#CombinationForm"), function () {
+					$('#btnSave_' + $("#CombinationWindow").attr("id") + '').unbind("click").bind('click', function () {
+						//表单验证
+						jQuery.validator.addMethod("notZero", function (value, element, param) {
+							return this.optional(element) || (value != 0);
+						}, "请确保输入的值不为零");
+
+						var validator = $("#CombinationForm").validate({
+							/* @@validation states + elements
+							------------------------------------------- */
+							errorClass: "text-danger",
+							validClass: "text-success",
+							errorElement: "em",
+							/* @@validation rules
+							------------------------------------------ */
+							rules: {
+								ProductId: {
+									required: true,
+									notZero: true
+								},
+								Quantity: {
+									required: true,
+									notZero: true
+								},
+								UnitId: {
+									required: true,
+									notZero: true
+								}
+							},
+							messages: {
+								ProductId: {
+									required: '子商品不能为空'
+								},
+								Quantity: {
+									notZero: '数量不能为零',
+									required: '数量不能为空'
+
+								},
+								UnitId: {
+									required: '最小单位不能为空',
+									notZero: '最小单位不能为空'
+								},
+							},
+							/* @@validation highlighting + error placement
+							---------------------------------------------------- */
+							highlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').addClass(errorClass).removeClass(validClass);
+							},
+							unhighlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').removeClass(errorClass).addClass(validClass);
+							},
+							errorPlacement: function (error, element) {
+								if (element.is(":radio") || element.is(":checkbox")) {
+									element.closest('.option-group').after(error);
+								} else {
+									//error.insertAfter(element.parent());
+									element.parent().append(error);
+								}
+							},
+							submitHandler: function (form) {
+								//alert("submitted");
+								form.submit();
+							}
+						});
+
+						//保存保存
+						$(this).saveModalV2($("#CombinationWindow"), $("#combination_products"), $("#CombinationForm"));
+					});
+				});
+
+
+
+			});
+
+            //添加选择商品(组合商品)
+            $(document).on('click', "#AsyncSearchSelectPopup", function () {
+                var actionUrl = "/Product/AsyncSearchSelectPopup";
+                var param = {
+                    productId: $(this).attr("data-id"),
+                    targetForm: "CombinationModalForm",
+                    targetDoms: "ProductId,ProductName",
+                };
+                $(this).productSelectShowModal($("#ModalProductWindows"), actionUrl, param, "选择商品", $("#ProductModalForm"), null);
+            });
+
+            
+            //添加选择商品(口味)
+            $(document).on('click', "#FlavorAsyncSearchSelectPopup", function () {
+                var actionUrl = "/Product/AsyncSearchSelectPopup";
+                var param = {
+                    productId: $(this).attr("data-id"),
+                    targetForm: "FlavorModalForm",
+                    targetDoms: "ProductId,ProductName",
+                };
+                $(this).productSelectShowModal($("#ModalProductWindows"), actionUrl, param, "选择商品", $("#ProductModalForm"), null);
+            });
+
+            //选择赋值
+            window.operateEventsPop = {
+                'click .rowSelect': function (e, value, row, index)
+                {
+
+					var targetfrom = $(this).attr("data-targetform");
+                    //组合商品
+                    if (targetfrom == "CombinationModalForm")
+                    {
+
+						$("#CombinationForm #ProductId").val(row.Id);
+						$("#CombinationForm #ProductName").val(row.Name);
+
+						//清空单位选择
+						$('#CombinationForm #UnitId').empty();
+						//添加单位
+						$.each(row.Units, function (key, unit) {
+							if (unit != "" && unit > 0) {
+								$('#CombinationForm #UnitId').append("<option value= '" + unit + "'>" + key + "</option>");
+							}
+						});
+						//$('#CombinationForm #UnitId').append("<option value= '0'>请选择</option>");
+					}
+					else if (targetfrom == "FlavorModalForm") {
+                        $("#FlavorForm #ProductId").val(row.Id);
+						$("#FlavorForm #ProductName").val(row.Name);
+					}
+                    $('#ModalProductWindows').modal('hide');
+                }
+            };
+
+        });
+
+
+</script>

@@ -1,0 +1,298 @@
+﻿@using DCMS.Core
+@using DCMS.Web.Framework.UI;
+@{
+    
+    //Theme CSS
+    Html.AddCssFileParts("~/assets/skin/default_skin/css/theme.css");
+    //Admin Panels CSS
+    Html.AddCssFileParts("~/assets/admin-tools/admin-plugins/admin-panels/adminpanels.css");
+    //Admin Forms CSS
+    Html.AddCssFileParts("~/assets/admin-tools/admin-forms/css/admin-forms.css");
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <title>雪花晋陕DCMS系统管理平台</title>
+    <meta name="keywords" content="@(Html.DCMSTitle(true))" />
+    <meta name="description" content="@(Html.DCMSMetaDescription())">
+    <meta name="author" content="DCMS">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @*头部Css样式*@
+    @Html.DCMSCssFiles(ResourceLocation.Head)
+    @*头部Script脚本*@
+    @Html.DCMSScripts(ResourceLocation.Head)
+
+    <style>
+
+        .flow {
+            width: 80%;
+            margin: 30px auto;
+            height: 50px;
+            padding: 20px 0 0;
+            position: relative
+        }
+
+        .flowList {
+            float: left;
+            height: 2px;
+            border: 2px solid #ccc;
+            background: #ccc
+        }
+
+        .flowListBox {
+            position: absolute;
+            width: 100%;
+            left: 0;
+            top: 10px
+        }
+
+            .flowListBox .flowList {
+                float: left;
+                text-align: right
+            }
+
+                .flowListBox .flowList em {
+                    margin-top: -22px;
+                    display: inline-block;
+                    width: 40px;
+                    height: 40px;
+                    -moz-border-radius: 100%;
+                    -webkit-border-radius: 100%;
+                    border-radius: 100%;
+                    background: #ccc;
+                    text-align: center;
+                    line-height: 40px;
+                    font-style: normal;
+                    font-weight: 700;
+                    vertical-align: middle;
+                    color: #fff;
+                    box-shadow: 0 0 2px 2px rgba(255,255,255,.56);
+                    cursor: pointer
+                }
+
+                .flowListBox .flowList strong {
+                    display: inline-block;
+                    height: 40px;
+                    line-height: 40px;
+                    font-weight: 400;
+                    cursor: pointer
+                }
+
+            .flowListBox .for-cur em {
+                margin-top: -20px;
+                width: 40px;
+                height: 40px;
+                font-size: 14px;
+                line-height: 40px
+            }
+
+        .foot-btn {
+            width: 100%;
+            height: 58px;
+            border-top: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px
+        }
+
+        .successs {
+            text-align: center;
+            padding: 20px 0 60px
+        }
+
+            .successs h3 {
+                padding: 20px;
+                font-size: 25px
+            }
+
+        .for-cur:last-child {
+            background-color: #c96;
+            border: 2px solid #c96
+        }
+
+        .contentList {
+            display: none
+        }
+
+        .wrapper {
+            overflow: hidden;
+            min-height: 100%;
+            height: auto;
+        }
+
+        .btn-default {
+            border-radius: 0;
+            padding: 7px 25px 6px;
+            background: #ffffff;
+            font-size: 16px;
+        }
+
+            .btn-default:hover {
+                background-color: #f5f5f5;
+                border-color: #dfdede;
+            }
+
+        .margin-t-10 {
+            margin-top: 10px;
+        }
+
+        .margin-t-30 {
+            margin-top: 30px;
+        }
+
+        .margin-l-5 {
+            margin-left: 5px;
+        }
+
+        .wrapper {
+            width: 960px;
+            margin: 0 auto;
+        }
+
+        .content-header {
+            color: #ffffff;
+            padding: 0;
+        }
+
+            .content-header > h1 {
+                margin-bottom: 15px;
+                text-align: center;
+                font-size: 35px;
+            }
+
+        .language-selector {
+            margin: 10px 0;
+        }
+
+
+        .form-group input[type=checkbox] {
+            margin-top: 11px;
+        }
+
+        .form-group .checkbox input[type=checkbox] {
+            margin-top: 4px;
+        }
+
+        .panel {
+            box-shadow: none;
+            margin-bottom: 0;
+        }
+
+            .panel > .panel-heading {
+                background-color: #fff;
+                font-size: 23px;
+                padding: 0;
+                margin-bottom: 10px;
+            }
+
+        .panel-body {
+            padding: 10px;
+        }
+
+        .credentials {
+            background: #eeeeee;
+            padding: 22px 10px 7px;
+            margin-bottom: 15px;
+            margin-top: 20px;
+        }
+
+        .content-footer {
+            padding: 20px;
+        }
+
+        .validation-summary-errors {
+            color: red;
+        }
+
+            .validation-summary-errors ul {
+                padding-left: 0;
+                list-style: none;
+            }
+
+        .throbber-header {
+            font-size: 145%;
+        }
+
+        .throbber {
+            display: none;
+        }
+
+            .throbber .curtain {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: #10171b;
+                opacity: 0.7;
+                filter: alpha(opacity=70);
+            }
+
+            .throbber .curtain-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+                .throbber .curtain-content div {
+                    text-align: center;
+                    padding: 250px;
+                    color: #FFF;
+                }
+    </style>
+</head>
+
+<body class="external-page sb-l-c sb-r-c">
+    <!-- Start: Main -->
+    <div class="animated fadeIn">
+        <!-- Start: Content -->
+        <section id="content_wrapper">
+            <!-- Begin: Content -->
+            @RenderBody()
+            <!-- End: Content -->
+        </section>
+        <!-- End: Content-Wrapper -->
+    </div>
+    <!-- End: Main -->
+    @*尾部部Css样式*@
+    @Html.DCMSCssFiles(ResourceLocation.Footer)
+
+    @if (IsSectionDefined("NewDefinFrameWorkScripts"))
+    {
+        @RenderSection("NewDefinFrameWorkScripts", false)
+    }
+    else
+    {
+        <!-- jQuery -->
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery-1.11.1.min.js", order: 99);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery_ui/jquery-ui.min.js", order: 99);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/bootstrap.min.js", order: 99);
+    }
+
+    @{
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/utility.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/main.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/demo.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-plugins/admin-panels/json2.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-plugins/admin-panels/jquery.ui.touch-punch.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-plugins/admin-panels/adminpanels.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/pages/widgets.js");
+    }
+    @*尾部Script脚本*@
+    @Html.DCMSScripts(ResourceLocation.Footer, false)
+    @if (IsSectionDefined("CurPageScripts"))
+    {
+        @RenderSection("CurPageScripts", false)
+    }
+    <!-- END: PAGE SCRIPTS -->
+    <!-- END: PAGE SCRIPTS -->
+</body>
+
+</html>
+
+
+

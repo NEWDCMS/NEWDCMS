@@ -1,0 +1,47 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Products;
+
+@model SpecificationAttributeModel
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-warning alert-dismissable mt10">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+<input asp-for="Id" type="hidden" />
+
+
+<div class="form-group">
+    <label asp-for="Name" asp-postfix=":" class="col-lg-3 control-label"/>
+    <div class="col-lg-4">
+        <input asp-for="Name" class = "form-control" placeholder = "属性名..."/>
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Name)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="DisplayOrder" asp-postfix=":" class="col-lg-3 control-label"/>
+    <div class="col-lg-4">
+        <input asp-for="DisplayOrder" class = "form-control" placeholder = "排序..."/>
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.DisplayOrder)
+    </div>
+</div>
+
+<div class="form-group">
+    <lable class="col-lg-3 control-label"></lable>
+    <div class="col-lg-8">
+        <button class="btn btn-primary" type="submit" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+        <button class="btn btn-info" type="submit" id="FormSubmitContinue" name="save-continue" value="保存并编辑"><i class="fa fa-clipboard mr5"></i>保存并编辑</button>
+        <a class="btn btn-warning" href="@Url.Action("List")"><i class="fa fa-undo mr5"></i> 返回</a>
+    </div>
+</div>

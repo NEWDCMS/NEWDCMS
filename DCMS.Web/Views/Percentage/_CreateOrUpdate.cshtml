@@ -1,0 +1,380 @@
+﻿@using DCMS.ViewModel.Models.Plan;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+@using DCMS.Core.Domain.Common;
+
+
+@model PercentageModel
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="CatagoryId" type="hidden" />
+<input asp-for="ProductId" type="hidden" />
+
+<div class="form-group">
+    <label asp-for="Name" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-9">
+        <input asp-for="Name" class="form-control" placeholder="..." />
+    </div>
+</div>
+
+<div class="form-group" id="Box_PercentageCalCulateMethod">
+    <label asp-for="CalCulateMethodId" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-9">
+        <select asp-for="CalCulateMethodId" asp-items="@Model.CalCulateMethods" class="control-label">
+            <option selected="selected" value="">请选择</option>
+        </select>
+    </div>
+</div>
+<div class="form-group" id="Box_QuantityCalCulateMethod" @(Model.QuantityCalCulateMethodId == 0 ? "hidden" : "")>
+    <label asp-for="QuantityCalCulateMethodId" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-9">
+        <select asp-for="QuantityCalCulateMethodId" asp-items="@Model.QuantityCalCulateMethods" class="control-label">
+            <option selected="selected" value="">请选择</option>
+        </select>
+    </div>
+</div>
+<div class="form-group" id="Box_CostingCalCulateMethod" @(Model.CostingCalCulateMethodId == 0 ? "hidden" : "")>
+    <label asp-for="CostingCalCulateMethodId" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-9">
+        <select asp-for="CostingCalCulateMethodId" asp-items="@Model.CostingCalCulateMethods" class="control-label">
+            <option selected="selected" value="">请选择</option>
+        </select>
+    </div>
+</div>
+
+
+
+<div class="form-group">
+    <label asp-for="IsReturnCalCulated" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-sm-9">
+        <label class="checkbox-inline">
+            @Html.CheckBoxFor(model => model.IsReturnCalCulated, new { @class = "mt5" })
+        </label>
+    </div>
+</div>
+<div class="form-group" id="Box_IsGiftCalCulated" @((Model.CalCulateMethodId == 4 || Model.CalCulateMethodId == 5 || Model.CalCulateMethodId == 6 || Model.CalCulateMethodId == 7 || Model.CalCulateMethodId == 8 || Model.CalCulateMethodId == 9) ? "" : "hidden")>
+    <label asp-for="IsGiftCalCulated" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-sm-9">
+        <label class="checkbox-inline">
+            @Html.CheckBoxFor(model => model.IsGiftCalCulated, new { @class = "mt5" })
+        </label>
+    </div>
+</div>
+
+<div class="form-group" id="Box_SalesPercent" @((Model.CalCulateMethodId == 0 || Model.CalCulateMethodId == 1 || Model.CalCulateMethodId == 7) ? "" : "hidden")>
+    <label asp-for="SalesPercent" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-9">
+        <div class="input-group">
+            <input asp-for="SalesPercent" class="form-control" placeholder="..."  />
+            <span class="input-group-addon">%</span>
+        </div>
+    </div>
+</div>
+<div class="form-group" id="Box_ReturnPercent" @((Model.CalCulateMethodId == 0 || Model.CalCulateMethodId == 1 || Model.CalCulateMethodId == 7) ? "" : "hidden")>
+    <label asp-for="ReturnPercent" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-9">
+        <div class="input-group">
+            <input asp-for="ReturnPercent" class="form-control" placeholder="..." />
+            <span class="input-group-addon">%</span>
+        </div>
+    </div>
+</div>
+
+<div class="form-group" id="Box_SalesAmount" @((Model.CalCulateMethodId == 4) ? "" : "hidden")>
+    <label asp-for="SalesAmount" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-9">
+        <div class="input-group">
+            <input asp-for="SalesAmount" class="form-control" placeholder="..." />
+            <span class="input-group-addon">元</span>
+        </div>
+    </div>
+</div>
+<div class="form-group" id="Box_ReturnAmount" @((Model.CalCulateMethodId == 4) ? "" : "hidden")>
+    <label asp-for="ReturnAmount" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-9">
+        <div class="input-group">
+            <input asp-for="ReturnAmount" class="form-control" placeholder="..." />
+            <span class="input-group-addon">元</span>
+        </div>
+    </div>
+</div>
+
+
+<div class="form-group" id="Box_PercentageRangeOption" @((Model.CalCulateMethodId == 2 || Model.CalCulateMethodId == 3 || Model.CalCulateMethodId == 5 || Model.CalCulateMethodId == 6 || Model.CalCulateMethodId == 7 || Model.CalCulateMethodId == 8 || Model.CalCulateMethodId == 9) ? "" : "hidden")>
+    <div class="col-lg-3"></div>
+    <div class="col-lg-9">
+        <table id="PercentageRangeOption" class="table table-striped table-bordered table-hover"></table>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    $(function ()
+    {
+        $(document).on('click', ".form-control", function () {
+            $(this).focus();
+            $(this).select();
+        });
+
+        function saleorderOperateFormatter(value, row, index) {
+            return [
+                '<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+                '<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+            ].join('');
+        }
+
+        //添加，复制，删除
+        window.operateEvents = {
+            'click .rowAppend': function (e, value, row, index) {
+                var len = $('#PercentageRangeOption').bootstrapTable('getData').length;
+                var data = { id: len + 1, NetSalesRange: 0, SalesPercent: 0, ReturnPercent: 0 };
+                var that = $('#PercentageRangeOption').bootstrapTable('append', data);
+            },
+            'click .rowCopy': function (e, value, row, index) {
+                $('#PercentageRangeOption').bootstrapTable('append', row);
+            },
+            'click .rowDel': function (e, value, row, index) {
+                $("#PercentageRangeOption").bootstrapTable('remove', { field: "id", values: [parseInt(row.Id)] });
+            },
+            'blur input[name="NetSalesRange"]': function (e, value, row, index) {
+                $("#PercentageRangeOption").bootstrapTable('updateRow', { index: $(this).attr("data-index"), row: { NetSalesRange: $(this).val() } });
+            },
+            'blur input[name="SalesPercent"]': function (e, value, row, index) {
+                $("#PercentageRangeOption").bootstrapTable('updateRow', { index: $(this).attr("data-index"), row: { SalesPercent: $(this).val() } });
+            },
+            'blur input[name="ReturnPercent"]': function (e, value, row, index) {
+                $("#PercentageRangeOption").bootstrapTable('updateRow', { index: $(this).attr("data-index"), row: { ReturnPercent: $(this).val() } });
+            }
+        };
+
+        //按利润区间范围计算提成
+        $("#PercentageRangeOption").bootstrapTable({
+            @Html.Raw(Model.Rangs.Count > 0 ? "url: '/Percentage/AsyncOptionList?percentageId="+Model.Id+"'," : "length: 0,")
+            striped: true,
+            cache: false,
+            pagination: true,
+            showPagination: false,
+            sidePagination: "server",
+            sortable: false,
+            sortOrder: "asc",
+            search: false,
+            strictSearch: false,
+            showColumns: false,
+            showRefresh: false,
+            clickToSelect: false,
+            uniqueId: "id",
+            showToggle: false,
+            editable: true,
+            cardView: false,
+            detailView: false,
+            showFooter: false,
+            onClickRow: function (row, $element) {
+                curRow = row;
+            },
+            onLoadSuccess: function (data) {
+                $(".fixed-table-pagination").hide();
+            },
+            columns: [{
+                            field: 'NetSalesRange',
+                title: '净销售额区间范围',
+                class: 'editable',
+                align: 'right',
+                events: operateEvents,
+                formatter: function (value, row, index) {
+                    return '<div class="input-group">' +
+                        '<input type="text" class="form-control input-sm" id="NetSalesRange_' + index + '" name="NetSalesRange" data-index="' + index + '" value="' + parseFloat(typeof (value) == 'undefined' ? '0' : value).toFixed(2) + '">' +
+                        '<span class="input-group-addon pn">≤</span>' +
+                        '</div>';
+                }
+            },
+            {
+                field: 'SalesPercent',
+                align: 'right',
+                class: 'editable',
+                title: '销售提成(%)',
+                events: operateEvents,
+                formatter: function (value, row, index) {
+                    return '<input type="text" class="form-control input-sm" id="SalesPercent_' + index + '" name="SalesPercent" data-index="' + index + '" value="' + parseFloat(typeof (value) == 'undefined' ? '0' : value).toFixed(2) + '">';
+                }
+            },
+            {
+                field: 'ReturnPercent',
+                title: '退货提成(%)',
+                class: 'editable',
+                align: 'right',
+                events: operateEvents,
+                formatter: function (value, row, index) {
+                    return '<input type="text" class="form-control input-sm" id="ReturnPercent_' + index + '" name="ReturnPercent"  data-index="' + index + '" value="' + parseFloat(typeof (value) == 'undefined' ? '0' : value).toFixed(2) + '">';
+                }
+            },
+            {
+                field: 'Operate',
+                title: '操作',
+                align: 'center',
+                width: '100',
+                events: operateEvents,
+                formatter: saleorderOperateFormatter
+            }
+            ]
+        });
+
+
+
+        //$("#IsReturnCalCulated").change(function () {
+        $("input[type='checkbox'],input[name='IsReturnCalCulated']").change(function () {
+            var checked = $(this).prop("checked");
+            //var calMethodId = $("#CalCulateMethodId").val();
+            var calMethodId = $("select[name=CalCulateMethodId]").val();
+            if (!checked) {
+                if (calMethodId == 1 || calMethodId == 7) {
+                    $("#Box_ReturnPercent").hide();
+                }
+                else if (calMethodId == 2 || calMethodId == 3 || calMethodId == 5 || calMethodId == 6 || calMethodId == 8 || calMethodId == 9) {
+                    $('#PercentageRangeOption').bootstrapTable('hideColumn', 'ReturnPercent');
+                }
+                else {
+                    $("#Box_ReturnAmount").hide();
+                }
+            }
+            else {
+                if (calMethodId == 1 || calMethodId == 7) {
+                    $("#Box_ReturnPercent").show();
+                } else if (calMethodId == 2 || calMethodId == 3 || calMethodId == 5 || calMethodId == 6 || calMethodId == 8 || calMethodId == 9) {
+                    $('#PercentageRangeOption').bootstrapTable('showColumn', 'ReturnPercent');
+                }
+                else {
+                    $("#Box_ReturnAmount").show();
+                }
+
+            }
+        });
+        function change(value) {
+            if (value.length != 0) {
+                var reg = /^[1-9]\d*(\.[0-9]+)?|0(\.[0-9]+)?$/;
+                    if (!reg.test(value)) {
+                        $(this).showToastr("请输入数字");
+                        return;
+                        }
+                 }
+        }
+        $('input[name="SalesPercent"]').on('change', function () {
+            change(this.value);
+        });
+        $('input[name="ReturnPercent"]').on('change', function () {
+            change(this.value);
+        });
+        $('input[name="NetSalesRange"]').on('change', function () {
+            change(this.value);
+        });
+
+        //$("#CalCulateMethodId").change(function () {
+        $("select[name=CalCulateMethodId]").change(function ()
+        {
+            var value = $(this).val();
+            $("#PercentageRangeOption").bootstrapTable('removeAll');
+            $('#PercentageRangeOption').bootstrapTable('append', { id: 1, NetSalesRange: 0, SalesPercent: 0, ReturnPercent: 0 });
+            switch (value) {
+                case "1":
+                    $("#Box_SalesPercent").show();
+                    $("#Box_ReturnPercent").show();
+
+                    $("#Box_PercentageRangeOption").hide();
+                    $("#Box_SalesAmount").hide();
+                    $("#Box_ReturnAmount").hide();
+                    $("#Box_IsGiftCalCulated").hide();
+                    $("#Box_CostingCalCulateMethod").hide();
+                    $("#Box_QuantityCalCulateMethod").show();
+                    break;
+                case "2":
+                    $("#Box_PercentageRangeOption").show();
+
+                    $("#Box_SalesPercent").hide();
+                    $("#Box_ReturnPercent").hide();
+                    $("#Box_SalesAmount").hide();
+                    $("#Box_ReturnAmount").hide();
+                    break;
+                case "3":
+                    $("#Box_PercentageRangeOption").show();
+
+                    $("#Box_SalesPercent").hide();
+                    $("#Box_ReturnPercent").hide();
+                    $("#Box_SalesAmount").hide();
+                    $("#Box_ReturnAmount").hide();
+                    $("#Box_IsGiftCalCulated").hide();
+                    break;
+                case "4":
+                    $("#Box_PercentageRangeOption").hide();
+                    $("#Box_SalesPercent").hide();
+                    $("#Box_ReturnPercent").hide();
+                    $("#Box_CostingCalCulateMethod").hide();
+
+                    $("#Box_QuantityCalCulateMethod").show();
+                    $("#Box_SalesAmount").show();
+                    $("#Box_ReturnAmount").show();
+                    $("#Box_IsGiftCalCulated").show();
+                    break;
+                case "5":
+                    $("#Box_PercentageRangeOption").show();
+                    $("#Box_SalesPercent").hide();
+                    $("#Box_ReturnPercent").hide();
+                    $("#Box_QuantityCalCulateMethod").show();
+                    $("#Box_SalesAmount").hide();
+                    $("#Box_ReturnAmount").hide();
+                    $("#Box_IsGiftCalCulated").show();
+                    break;
+                case "6":
+                    $("#Box_PercentageRangeOption").show();
+                    $("#Box_SalesPercent").hide();
+                    $("#Box_ReturnPercent").hide();
+                    $("#Box_QuantityCalCulateMethod").show();
+                    $("#Box_SalesAmount").hide();
+                    $("#Box_ReturnAmount").hide();
+                    $("#Box_IsGiftCalCulated").show();
+                    break;
+                case "7":
+                    $("#Box_CostingCalCulateMethod").show();
+                    $("#Box_IsGiftCalCulated").show();
+                    $("#Box_QuantityCalCulateMethod").hide();
+                    $("#Box_SalesPercent").show();
+                    $("#Box_ReturnPercent").show();
+                    $("#Box_SalesAmount").hide();
+                    $("#Box_ReturnAmount").hide();
+                    $("#Box_PercentageRangeOption").hide();
+                    break;
+                case "8":
+                    $("#Box_CostingCalCulateMethod").show();
+                    $("#Box_IsGiftCalCulated").show();
+                    $("#Box_QuantityCalCulateMethod").hide();
+                    $("#Box_SalesPercent").hide();
+                    $("#Box_ReturnPercent").hide();
+                    $("#Box_SalesAmount").hide();
+                    $("#Box_ReturnAmount").hide();
+                    $("#Box_PercentageRangeOption").show();
+                    break;
+                case "9":
+                    $("#Box_CostingCalCulateMethod").val(3).show();
+                    $("#Box_IsGiftCalCulated").show();
+                    $("#Box_QuantityCalCulateMethod").hide();
+                    $("#Box_SalesPercent").hide();
+                    $("#Box_ReturnPercent").hide();
+                    $("#Box_SalesAmount").hide();
+                    $("#Box_ReturnAmount").hide();
+                    $("#Box_PercentageRangeOption").show();
+                    break;
+                default:
+                    $("#Box_SalesPercent").show();
+                    $("#Box_ReturnPercent").show();
+                    $("#Box_CostingCalCulateMethod").hide();
+                    $("#Box_IsGiftCalCulated").hide();
+                    $("#Box_QuantityCalCulateMethod").hide();
+                    $("#Box_SalesPercent").hide();
+                    $("#Box_ReturnPercent").hide();
+                    $("#Box_SalesAmount").hide();
+                    $("#Box_ReturnAmount").hide();
+                    $("#Box_PercentageRangeOption").hide();
+                    break;
+            }
+        });
+    });
+</script>

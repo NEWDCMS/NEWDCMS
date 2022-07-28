@@ -1,0 +1,674 @@
+﻿@using System.Collections.Generic;
+@using System.Linq;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model FinanceSettingModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">首页</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="dashboard.html">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">系统配置</a>
+                </li>
+                <li class="crumb-trail">财务设置</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span> 财务设置
+                        </span>
+                    </div>
+                    <div class="panel-body p10">
+
+                        <form asp-action="Finances" asp-controller="Setting" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="SettingForm">
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+
+                                <div class="alert alert-warning alert-dismissable mt10">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                    <div asp-validation-summary="All"></div>
+                                </div>
+                            }
+
+                            @*销售单(收款账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label">销售单(收款账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="Sale_AccountingOption_@option.Id" @(Model.SaleFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="Sale_AccountingOption_Default" @(Model.SaleFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="Sale_AccountingOption_Debit" @(Model.SaleFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="Sale_AccountingOption_Credit" @(Model.SaleFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                            @*销售定单(收款账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label">销售订单(收款账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="SaleReservationBill_AccountingOption_@option.Id" @(Model.SaleReservationBillFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="SaleReservationBill_AccountingOption_Default" @(Model.SaleReservationBillFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="SaleReservationBill_AccountingOption_Debit" @(Model.SaleReservationBillFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="SaleReservationBill_AccountingOption_Credit" @(Model.SaleReservationBillFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+                            @*退货单(收款账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label">退货单(付款账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="Return_AccountingOption_@option.Id" @(Model.ReturnFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="Return_AccountingOption_Default" @(Model.ReturnFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="Return_AccountingOption_Debit" @(Model.ReturnFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="Return_AccountingOption_Credit" @(Model.ReturnFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                            @*退货定单(收款账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label">退货订单(付款账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="ReturnReservation_AccountingOption_@option.Id" @(Model.ReturnReservationFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="ReturnReservation_AccountingOption_Default" @(Model.ReturnReservationFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="ReturnReservation_AccountingOption_Debit" @(Model.ReturnReservationFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="ReturnReservation_AccountingOption_Credit" @(Model.ReturnReservationFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+                            @*采购单(付款账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label">采购单(付款账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="Purchase_AccountingOption_@option.Id" @(Model.PurchaseFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="Purchase_AccountingOption_Default" @(Model.PurchaseFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="Purchase_AccountingOption_Debit" @(Model.PurchaseFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="Purchase_AccountingOption_Credit" @(Model.PurchaseFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                            @*采购退货单(付款账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label">采购退货单(付款账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="PurchaseReturn_AccountingOption_@option.Id" @(Model.PurchaseReturnFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="PurchaseReturn_AccountingOption_Default" @(Model.PurchaseReturnFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="PurchaseReturn_AccountingOption_Debit" @(Model.PurchaseReturnFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="PurchaseReturn_AccountingOption_Credit" @(Model.PurchaseReturnFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+
+                            @*盘点盈亏单(盘点盈亏账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label" for="DefaultAccountingOption">盘点盈亏单(盘点盈亏账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="InventoryProfitLoss_AccountingOption_@option.Id" @(Model.InventoryProfitLossFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="InventoryProfitLoss_AccountingOption_Default" @(Model.InventoryProfitLossFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="InventoryProfitLoss_AccountingOption_Debit" @(Model.InventoryProfitLossFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="InventoryProfitLoss_AccountingOption_Credit" @(Model.InventoryProfitLossFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+                            @*报损单(报损账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label" for="DefaultAccountingOption">报损单(报损账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="ScrapProduct_AccountingOption_@option.Id" @(Model.ScrapProductFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="ScrapProduct_AccountingOption_Default" @(Model.ScrapProductFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="ScrapProduct_AccountingOption_Debit" @(Model.ScrapProductFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="ScrapProduct_AccountingOption_Credit" @(Model.ScrapProductFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+
+                            @*收款单(收款账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label" for="DefaultAccountingOption">收款单(收款账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="Receipt_AccountingOption_@option.Id" @(Model.ReceiptFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="Receipt_AccountingOption_Default" @(Model.ReceiptFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="Receipt_AccountingOption_Debit" @(Model.ReceiptFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="Receipt_AccountingOption_Credit" @(Model.ReceiptFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+                            @*付款单(付款账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label">付款单(付款账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="Payment_AccountingOption_@option.Id" @(Model.PaymentFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="Payment_AccountingOption_Default" @(Model.PaymentFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="Payment_AccountingOption_Debit" @(Model.PaymentFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="Payment_AccountingOption_Credit" @(Model.PaymentFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+                            @*预收款单(收款账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label" for="DefaultAccountingOption">预收款单(收款账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="AdvanceReceipt_AccountingOption_@option.Id" @(Model.AdvanceReceiptFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="AdvanceReceipt_AccountingOption_Default" @(Model.AdvanceReceiptFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="AdvanceReceipt_AccountingOption_Debit" @(Model.AdvanceReceiptFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="AdvanceReceipt_AccountingOption_Credit" @(Model.AdvanceReceiptFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+                            @*预付款单(付款账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label">预付款单(付款账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="AdvancePayment_AccountingOption_@option.Id" @(Model.AdvancePaymentFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="AdvancePayment_AccountingOption_Default" @(Model.AdvancePaymentFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="AdvancePayment_AccountingOption_Debit" @(Model.AdvancePaymentFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="AdvancePayment_AccountingOption_Credit" @(Model.AdvancePaymentFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+                            @*费用支出(支出账户)*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label">费用支出(支出账户)</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="CostExpenditure_AccountingOption_@option.Id" @(Model.CostExpenditureFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="CostExpenditure_AccountingOption_Default" @(Model.CostExpenditureFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="CostExpenditure_AccountingOption_Debit" @(Model.CostExpenditureFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="CostExpenditure_AccountingOption_Credit" @(Model.CostExpenditureFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+                            @*财务收入（收款账户）*@
+                            <div class="form-group">
+                                <label class="col-lg-3 control-label">财务收入（收款账户）</label>
+                                <div class="col-lg-9 pt10">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <tr>
+                                            <th class="text-center">科目</th>
+                                            <th class="text-center">启用</th>
+                                            <th class="text-center">默认</th>
+                                            @*<th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>*@
+                                        </tr>
+                                        @foreach (var option in Model.Options)
+                                        {
+
+                                            <tr>
+
+                                                <td class="text-center">@option.Name</td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" value="@option.Id" name="FinancialIncome_AccountingOption_@option.Id" @(Model.FinancialIncomeFinanceAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" value="@option.Id" name="FinancialIncome_AccountingOption_Default" @(Model.FinancialIncomeFinanceAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                </td>
+                                                @*<td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="FinancialIncome_AccountingOption_Debit" @(Model.FinancialIncomeFinanceAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="FinancialIncome_AccountingOption_Credit" @(Model.FinancialIncomeFinanceAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>*@
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+                            @*费用合同（会计科目） 暂时不用*@
+                            @*<div class="form-group">
+                                    <label class="col-lg-3 control-label">费用合同（会计科目）</label>
+                                    <div class="col-lg-9 pt10">
+                                        <table class="table table-striped table-bordered table-hover">
+                                            <tr>
+                                                <th class="text-center">科目</th>
+                                                <th class="text-center">启用</th>
+                                                <th class="text-center">默认</th>
+                                                <th class="text-center">借方</th>
+                                                <th class="text-center">贷方</th>
+                                            </tr>
+                                            @foreach (var option in Model.Options)
+                                            {
+
+                                                <tr>
+
+                                                    <td class="text-center">@option.Name</td>
+                                                    <td class="text-center">
+                                                        <input type="checkbox" value="@option.Id" name="CostContract_AccountingOption_@option.Id" @(Model.CostContractAccountingMap.Options.Select(o => o.Id).Contains(option.Id) ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="CostContract_AccountingOption_Default" @(Model.CostContractAccountingMap.DefaultOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="CostContract_AccountingOption_Debit" @(Model.CostContractAccountingMap.DebitOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input type="radio" value="@option.Id" name="CostContract_AccountingOption_Credit" @(Model.CostContractAccountingMap.CreditOption == option.Id ? "checked" : "") />
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </table>
+                                    </div>
+                                </div>*@
+
+                            <div class="form-group">
+                                <lable class="col-lg-3 control-label"></lable>
+                                <div class="col-lg-8">
+                                    <button class="btn btn-primary" type="submit" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } }); }
+
+
+
+
+
+@{ @*Html.AddCssFileParts(ResourceLocation.Head, "~/Content/Common.css");*@}
+
+@section CurPageScripts
+{
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+
+            // Init Demo JS
+
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+
+        });
+    </script>
+}

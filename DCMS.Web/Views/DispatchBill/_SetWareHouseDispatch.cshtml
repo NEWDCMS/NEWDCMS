@@ -1,0 +1,22 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Sales;
+
+@model DispatchSetWareHouseModel
+
+
+<input asp-for="SelectDatas" type="hidden" />
+
+
+<div class="form-group">
+    <label asp-for="WareHouseName" asp-postfix=":" class="col-lg-3 control-label"  title="没有仓库信息订单只能设置一次仓库，请慎重选择。"/>
+    <div class="col-lg-4">
+        <dcms-select asp-for="WareHouseId" asp-items="@Model.WareHouses" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.WareHouseId)
+    </div>
+</div>
+

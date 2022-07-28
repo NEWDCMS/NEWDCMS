@@ -1,0 +1,43 @@
+﻿@using DCMS.ViewModel.Models.Common;
+
+@model CheckBoxModel
+@{
+    /**/
+
+    int currentKeyId = Model.KeyId;
+}
+
+@if (Model.Data.Count > 0)
+{
+    <div>
+        <input type="hidden" id="keyId" name="keyId" value="@currentKeyId" />
+        <div class="form-group">
+            @foreach (var item in Model.Data)
+            {
+                <div class="checkbox icheck col-sm-4 col-xs-6">
+                    <label>
+                        <input class="myCheck" checked="@item.IsChecked" type="checkbox" name="SelectedIds" value="@item.Value">@item.Discription
+                    </label>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning alert-micro">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <i class="fa fa-warning pr10"></i>
+        <strong>警告!</strong> 数据未绑定或者为空.
+    </div>
+
+}
+<script>
+                        //$(function () {
+                        //    $('input.myCheck').iCheck({
+                        //        checkboxClass: 'icheckbox_square-blue',
+                        //        radioClass: 'iradio_square-blue',
+                        //        increaseArea: '20%' // optional
+                        //    });
+                        //});
+</script>

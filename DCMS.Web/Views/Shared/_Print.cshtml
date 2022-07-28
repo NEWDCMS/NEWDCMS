@@ -1,0 +1,26 @@
+﻿@using DCMS.Core
+@inject DCMS.Core.Domain.Common.CommonSettings commonSettings
+@inject IWorkContext workContext;
+@*<!DOCTYPE html>
+    <html @Html.DCMSPageCssClasses()>
+    <head>
+        <title>@Html.DCMSTitle()</title>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+        <link href="@Url.Content($"~/Themes/{themeName}/Content/css/print.css")" rel="stylesheet" type="text/css" />
+        <script src="@Url.Content("~/lib/jquery/jquery-3.3.1.min.js")"></script>
+        @if (commonSettings.JqueryMigrateScriptLoggingActive)
+        {
+            <script src="@Url.Content("~/lib/jquery-migrate/jquery-migrate-3.0.1.js")"></script>
+        }
+        else
+        {
+            <script src="@Url.Content("~/lib/jquery-migrate/jquery-migrate-3.0.1.min.js")"></script>
+        }
+        @Html.DCMSInlineScripts(ResourceLocation.Head)
+    </head>
+    <body>
+        @RenderBody()
+        @Html.DCMSInlineScripts(ResourceLocation.Footer)
+    </body>
+    </html>*@
+@RenderBody()

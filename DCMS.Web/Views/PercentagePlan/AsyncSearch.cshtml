@@ -1,0 +1,65 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Plan;
+
+@model PercentagePlanListModel
+
+<div class="row">
+
+    <div class="col-md-12">
+
+        <div class="input-group mb5">
+            <input type="text" id="txt_SearchStr" class="form-control" placeholder="品牌关键字..." onkeydown="if(event.keyCode==13){event.keyCode=0;event.returnValue=false;}">
+            <span class="input-group-btn">
+                <button id="btn_query" type="button" class="btn btn-primary" style="border:1px solid #dddddd;"><span class="glyphicon glyphicon-search"></span> 搜索</button>
+            </span>
+        </div>
+
+        <table class="table table-striped table-hover" id="datatable">
+            <thead>
+                <tr>
+                    <th class="bs-checkbox " style="text-align: center; vertical-align: middle; width: 36px; " data-field="id"><div class="th-inner "><input name="btSelectAll" type="checkbox"></div></th>
+                    <th data-field="Name"><div class="th-inner">方案名称</div></th>
+                    <th data-field="Status" data-align="center" class="text-center"><div class="th-inner">按回款提成</div></th>
+                    <th data-field="Operator" data-align="center" class="text-right"><div class="th-inner">操作</div></th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int index = 0;
+                    foreach (var plan in Model.Items)
+                    {
+                        <tr>
+                            <td class="bs-checkbox ">
+                                <input data-index="@index" name="btSelectItem" class="btSelectItem" type="checkbox" value="@plan.Id">
+                            </td>
+                            <td>@plan.Name</td>
+                            <td class="text-center">
+                                <div class="switch switch-primary">
+                                    <input id="StatusRadioSwitch_@plan.Id" type="radio" name="StatusRadioSwitch_@plan.Id" checked="@plan.IsByReturn">
+                                    <label for="StatusRadioSwitch_@plan.Id" class="mbn" />
+                                </div>
+                            </td>
+                            <td class="text-right">
+                                <a class="btn btn-sm btn-primary btn_addselect" data-id="@plan.Id" data-name="@plan.Name" href="javascript:;" title="选择"><i class="glyphicon glyphicon-pencil mr5"></i> 选择</a>
+                            </td>
+
+                        </tr>
+                        index++;
+                    }
+
+                }
+            </tbody>
+        </table>
+        @{
+            var pager = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+        }
+
+        @if (!pager.IsEmpty())
+        {
+            <div class="fixed-table-pagination" style="display: block;">
+                @Html.Raw(pager.ToString())
+            </div>
+        }
+    </div>
+</div>

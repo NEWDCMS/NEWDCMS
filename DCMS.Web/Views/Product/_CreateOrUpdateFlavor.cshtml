@@ -1,0 +1,61 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Products;
+
+@model ProductFlavorModel
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="ParentId" type="hidden" />
+@*<input asp-for="ProductId" type="hidden" />*@
+
+<div class="form-group">
+	<label asp-for="Name" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-8">
+		<input asp-for="Name" class="form-control" placeholder="名称..." />
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="SmallUnitBarCode" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-8">
+		<input asp-for="SmallUnitBarCode" class="form-control" placeholder="条码..." />
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="StrokeUnitBarCode" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-8">
+		<input asp-for="StrokeUnitBarCode" class="form-control" placeholder="条码..." />
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="BigUnitBarCode" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-8">
+		<input asp-for="BigUnitBarCode" class="form-control" placeholder="条码..." />
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="Quantity" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-8">
+		<input asp-for="Quantity" class="form-control" placeholder="数量..." />
+	</div>
+</div>
+
+<div class="form-group">
+	<label asp-for="ProductId" asp-postfix=":" class="col-lg-3 control-label" />
+	@Html.HiddenFor(model => model.ProductId)
+	<div class="col-lg-8">
+		<div class="input-group">
+			<input asp-for="ProductName" class="form-control" placeholder="商品..." readonly="@(Model.Id>0)" />
+			<span class="input-group-btn">
+				<button id="FlavorAsyncSearchSelectPopup" type="button" class="btn btn-default" data-id="@Model.ProductId" @(Model.Id > 0 ? "disabled" : "")>
+					<span class="glyphicon glyphicon-search"></span>
+				</button>
+			</span>
+		</div>
+	</div>
+</div>

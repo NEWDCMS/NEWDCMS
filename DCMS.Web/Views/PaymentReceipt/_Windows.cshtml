@@ -1,0 +1,10 @@
+﻿@{
+    //经销商选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ManufacturerSelectForm" }, { "modalWindow", "ManufacturerSelectModalWindow" }, { "showSave", "true" } });
+    //科目选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "AccountingForm" }, { "modalWindow", "AccountingModalWindow" }, { "showSave", "true" } });
+    //商品选择
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ProductModalForm" }, { "modalWindow", "ModalProductWindows" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+    //欠款单据
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "OweCashBillsForm" }, { "modalWindow", "OweCashBillsWindows" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+}

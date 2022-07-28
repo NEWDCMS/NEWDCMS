@@ -1,0 +1,91 @@
+﻿@using System.Reflection;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.Core.Domain.Products;
+@using DCMS.ViewModel.Models.Products;
+
+@model ProductModel
+
+@{
+
+    int index = 0;
+
+    <div class="panel">
+        <div class="panel-heading">
+            <span class="panel-title">
+                <span class="glyphicons glyphicons-table"></span> 配置方案
+            </span>
+            <div class="pull-right">
+
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>方案</th>
+                            <th>单位换算</th>
+                            <th class="text-right pr25">小单位价格</th>
+                            <th class="text-right pr25">中单位价格</th>
+                            <th class="text-right pr25">大单位价格</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.ProductTierPrices != null)
+                        {
+                            foreach (var price in Model.ProductTierPrices)
+                            {
+                                if (price != null)
+                                {
+                                    <tr>
+                                        <td>@price.PriceTypeName</td>
+                                        <td><span class="label label-default">@(Model.UnitName)</span></td>
+                                        <td class="pr30">
+                                            <div class="form-group mbn">
+                                                <div class="input-group">
+                        
+                                                    <input name="@((PriceType)price.PriceTypeId + "_" + price.PricesPlanId + "_SmallUnitPrice")" id="@((PriceType)price.PriceTypeId + "_" + price.PricesPlanId + "_SmallUnitPrice")" class="form-control text-right textprice" placeholder="价格..." value="@((price.SmallUnitPrice??0).ToString("0.00"))"/>
+                                                    <span class="input-group-addon">
+                                                        @("元/" + (Model.smallOption != null ? Model.smallOption.Name : ""))
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="pr30">
+                                            <div class="form-group mbn">
+                                                <div class="input-group">
+                                                    <input name="@((PriceType)price.PriceTypeId + "_" + price.PricesPlanId + "_StrokeUnitPrice")" id="@((PriceType)price.PriceTypeId + "_" + price.PricesPlanId + "_StrokeUnitPrice")" class="form-control text-right textprice" placeholder="价格..." value="@((price.StrokeUnitPrice??0).ToString("0.00"))"/>
+                                                    <span class="input-group-addon">
+                                                        @("元/" + (Model.strokeOption != null ? Model.strokeOption.Name : ""))
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="pr30">
+                                            <div class="form-group mbn">
+                                                <div class="input-group">
+                                    
+                                                    <input name="@((PriceType)price.PriceTypeId + "_" + price.PricesPlanId + "_BigUnitPrice")" id="@((PriceType)price.PriceTypeId + "_" + price.PricesPlanId + "_BigUnitPrice")" class="form-control text-right textprice" placeholder="价格..." value="@((price.BigUnitPrice??0).ToString("0.00"))" />
+                                                    <span class="input-group-addon">
+                                                        @("元/" + (Model.bigOption != null ? Model.bigOption.Name : ""))
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    index++;
+                                }
+                            }
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+}
+

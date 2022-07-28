@@ -1,0 +1,48 @@
+﻿@using DCMS.Web.Framework.UI;
+<!-- Global text popup -->
+<div id="modal-toastr" class="popup-basic p25 mfp-with-anim mfp-hide">
+    <ul class="fs18 list-unstyled list-spacing-10 mb10 pl5">
+        <li>
+            <i class="fa fa-exclamation-circle text-warning fa-lg pr10"></i>
+            <span id="toastr-content"></span>
+        </li>
+    </ul>
+</div>
+
+@*@{
+
+        //成功提示
+        var successMessages = new List<string>();
+        if (TempData[string.Format("dcms.notifications.{0}", NotifyType.Success)] != null)
+        {
+            successMessages.AddRange(TempData[string.Format("dcms.notifications.{0}", NotifyType.Success)] as IList<string>);
+        }
+        if (ViewData[string.Format("dcms.notifications.{0}", NotifyType.Success)] != null)
+        {
+            successMessages.AddRange(ViewData[string.Format("dcms.notifications.{0}", NotifyType.Success)] as IList<string>);
+        }
+
+        //错误提示
+        var errorMessages = new List<string>();
+        if (TempData[string.Format("dcms.notifications.{0}", NotifyType.Error)] != null)
+        {
+            errorMessages.AddRange(TempData[string.Format("dcms.notifications.{0}", NotifyType.Error)] as IList<string>);
+        }
+
+        if (ViewData[string.Format("dcms.notifications.{0}", NotifyType.Error)] != null)
+        {
+            errorMessages.AddRange(ViewData[string.Format("dcms.notifications.{0}", NotifyType.Error)] as IList<string>);
+
+        foreach (var message in successMessages)
+        {
+            @Html.Raw("<div class='alert alert-success alert-dismissable' style='z-index:1500;position:absolute;width:100%;text-align:center;'><button class='close' aria-hidden='true' type='button' data-dismiss='alert'>×</button><strong>" + message + "</strong></div>");
+        }
+
+        foreach (var message in errorMessages)
+        {
+            @Html.Raw("<div class='alert alert-danger alert-dismissable' style='z-index:1500;position:absolute;width:100%;text-align:center;'><button class='close' aria-hidden='true' type='button' data-dismiss='alert'>×</button><strong>" + message + "</strong></div>");
+        }
+    }*@
+
+
+

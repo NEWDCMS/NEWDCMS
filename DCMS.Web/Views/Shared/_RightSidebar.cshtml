@@ -1,0 +1,63 @@
+﻿@using DCMS.Web.Framework.UI
+
+<aside id="sidebar_right" class="nano">
+    <div class="sidebar_right_content nano-content">
+        <div class="tab-block sidebar-block br-n">
+            <div class="tab-content br-n">
+                <div id="sidebar-right-tab1" class="tab-pane active" style="overflow-y:auto;overflow-x:hidden;">
+                </div>
+                <div id="sidebar-right-tab2" class="tab-pane">
+
+                </div>
+                <div id="sidebar-right-tab3" class="tab-pane"></div>
+                @*<div id="timeline" overflow-y:scroll;"></div>*@
+            </div>
+            <!-- end: .tab-content -->
+        </div>
+    </div>
+</aside>
+
+@*template-user-events*@
+<script id="template-news-detail" type="text/x-tmpl">
+    {% if(o.data[0].Count>0){ %}
+    <a class="btn btn-danger btn-sm mr5 pull-right" id="hidenAllNews" href="javascript:;" style="text-decoration:none;">
+        清除
+    </a>
+    {% for (var i=0,demo;demo=o.data[i]; i++) { %}
+    {% if(demo.children.length>0){ %}
+    <h5 class="title-divider text-muted mb10">
+        {%=demo.children[0].Title%}
+    </h5>
+    {% for (var j=0,item;item=demo.children[j]; j++) { %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="media-body mb5">
+                <div class="media pb10">
+                    <a class="pull-left" href="#">
+                        <span class="text-primary mn pl5"><i class="fa fa-info-circle" aria-hidden="true"></i></span>
+                        <small style="margin-left:5px;color:#999;">{%=item.Date%}</small>
+                    </a>
+                    {% if(item.Id!=0){ %}
+                    <a class="pull-right hidenNews" href="javascript:;" data-id="{%=JSON.stringify(item.Id)%}" style="text-decoration:none;">
+                        <span class="text-danger mn pl10">
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                        </span>
+                    </a>
+                    {% } %}
+                    <div class="media-body mb5">
+                        <p style="color:#999;min-width:225px;">{%=item.Content%}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% } %}
+    {% } %}
+    {% } %}
+    {% } else{ %}
+    <div class="alert alert-warning alert-dismissable">
+        <i class="fa fa-warning pr10"></i>
+        <strong>未接收到任何消息！</strong>
+    </div>
+    {% } %}
+</script>

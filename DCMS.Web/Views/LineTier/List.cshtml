@@ -1,0 +1,586 @@
+﻿@using System.Linq;
+@using System.Collections.Generic;
+@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Visit;
+
+@model LineTierListModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">档案</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">员工相关</a>
+                </li>
+                <li class="crumb-trail">制定线路</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="pull-left">
+                            线路类别
+                        </div>
+                        <div class="pull-right">
+                            <a id="btn_add_line" href="javascript:;" class="mr5"><span class="glyphicon glyphicon-plus"></span></a>
+                            <a id="btn_edit_line" href="javascript:;" class="mr5"><span class="glyphicon glyphicon-pencil"></span></a>
+                            <a id="btn_del_line" href="javascript:;" class="mr5"><span class="glyphicon glyphicon-trash"></span></a>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="tree"> </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-10">
+                @*Toolbar*@
+                <div class="row mb10">
+                    <div class="col-md-11">
+                        <button class="btn btn-danger" type="button" id="FormMatching" value="匹配"><i class="fa fa-refresh mr5"></i>匹配</button>
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-primary btn-block" type="button" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                    </div>
+                </div>
+
+                @*GridView*@
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span>线路设置
+                        </span>
+                    </div>
+                    <div class="panel-body p5">
+                        <table id="lineTierOption" class="table table-striped table-bordered table-hover"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End: Content -->
+    <input id="hid_lineTierId" type="hidden" value="" />
+</section>
+
+@{
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "lineTierForm" }, { "modalWindow", "lineTierWindow" }, { "windowWidth", "680px" }, { "showSave", "true" } });
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", true } });
+}
+
+@section CurPageScripts
+{
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            //====================================================线路类别开始==========================================================================
+            //左侧线路类别树
+            $("#tree").fancytree({
+                extensions: ["dnd", "edit"],
+                //titlesTabbable: true,
+                debugLevel: 2,
+                source: toTree(@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LineTiers))),
+                dnd: {
+                    autoExpandMS: 400,
+                    focusOnClick: true,
+                    preventVoidMoves: true, // Prevent dropping nodes 'before self', etc.
+                    preventRecursiveMoves: true, // Prevent dropping nodes on own descendants
+                    dragStart: function (node, data) { return true; },
+                    dragEnter: function (node, data) { return true; },
+                    dragDrop: function (node, data) { data.otherNode.moveTo(node, data.hitMode); }
+                },
+                activate: function (event, data) {
+                    //alert("activate " + data.node);
+                },
+                lazyLoad: function (event, data) {
+                    //data.result = [{ "title": "Sub item", "lazy": true }, { "title": "Sub folder", "folder": true, "lazy": true }]
+                    //[{ "title": "Sub item", "lazy": true }, { "title": "Sub folder", "folder": true, "lazy": true }]
+                },
+                click: function (event, data) {
+                    $("#hid_lineTierId").val(data.node.key);
+                    $("#lineTierOption").bootstrapTable('refresh', { url: "/LineTier/LineTierOptionList", silent: true, query: { lineTierId: data.node.key } });
+                }
+            });
+            //数组转树结构
+            function toTree(data) {
+                var newdata = [{ title: "线路类别名称", key: -1, pid: 0, expanded: true, folder: true }];
+                data.forEach(function (item) {
+                    var tempdata = { title: item.Name, key: item.Id, pid: -1, expanded: true, folder: false };
+                    newdata.push(tempdata);
+                });
+
+                // 删除 所有 children,以防止多次调用
+                newdata.forEach(function (item) {
+                    delete item.children;
+                });
+                // 将数据存储为 以 id 为 KEY 的 map 索引数据列
+                var map = {};
+                newdata.forEach(function (item) {
+                    map[item.key] = item;
+                });
+                //        console.log(map);
+                var val = [];
+                newdata.forEach(function (item) {
+                    // 以当前遍历项，的pid,去map对象中找到索引的id
+                    var parent = map[item.pid];
+                    if (parent) {
+                        var temp = (parent.children || (parent.children = []));
+                        temp.push(item);
+                        if (temp.length > 0) parent.folder = true;
+                    } else {
+                        //如果没有在map中找到对应的索引ID,那么直接把 当前的item添加到 val结果集中，作为顶级
+                        item.folder = true;
+                        val.push(item);
+                    }
+                });
+                return val;
+            }
+
+            //匹配导入终端
+            $("#FormMatching").click(function () {
+                var lineId = $("#hid_lineTierId").val();
+                if (lineId == null || lineId == 0) {
+                    $(this).showToastr("请先选择要匹配线路！");
+                    return false;
+                }
+                $("#lineTierOption").bootstrapTable('refresh', { url: "/LineTier/LineTierOptionList", silent: true, query: { lineTierId: lineId, macthing: true } });
+            });
+
+
+            //弹出(新增)线路窗口
+            $("#btn_add_line").click(function () {
+                var actionUrl = "/LineTier/AddLineTier";
+                $(this).showModalAndSubmit($("#lineTierWindow"), actionUrl, null, "新增线路类别", $("#lineTierForm"), function () {
+                    //表单验证
+                    jQuery.validator.addMethod("notZero", function (value, element, param) {
+                        return this.optional(element) || (value != 0);
+                    }, "请确保输入的值不为零");
+                    var validator = $("#lineTierForm").validate({
+                        errorClass: "text-danger", validClass: "text-success", errorElement: "em",
+                        rules: {
+                            Name: {
+                                required: true
+                            }
+                        },
+                        messages: {
+                            Name: {
+                                required: '线路类别名称不能为空'
+                            }
+                        },
+                        highlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                        },
+                        unhighlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                        },
+                        errorPlacement: function (error, element) {
+                            if (element.is(":radio") || element.is(":checkbox")) {
+                                element.closest('.option-group').after(error);
+                            } else {
+                                //error.insertAfter(element.parent());
+                                element.parent().append(error);
+                            }
+                        },
+                        submitHandler: function (form) {
+                            //alert("submitted");
+                            form.submit();
+                        }
+                    });
+
+                    if (!$("#lineTierForm").valid()) {
+                        return false;
+                    }
+                    var modalForm = $("#lineTierForm").serializeJson();
+                    modalForm.Enabled = modalForm.Enabled[0];
+                    $(this).remoteSubmit("post", actionUrl, { model: modalForm }, null, function () {
+                        location.href = "/LineTier/List";
+                    });
+
+                });
+            });
+
+
+            //弹出(修改)线路窗口
+            $("#btn_edit_line").click(function () {
+                if ($("#hid_lineTierId").val() == "" || $("#hid_lineTierId").val() == "-1")
+                    return $(this).showToastr("请选择线路类别");
+                var param = { lineTierId: $("#hid_lineTierId").val() };
+                var actionUrl = "/LineTier/EditLineTier";
+                $(this).showModalAndSubmit($("#lineTierWindow"), actionUrl, param, "编辑线路类别", $("#lineTierForm"), function () {
+
+                    //表单验证
+                    jQuery.validator.addMethod("notZero", function (value, element, param) {
+                        return this.optional(element) || (value != 0);
+                    }, "请确保输入的值不为零");
+                    var validator = $("#lineTierForm").validate({
+                        errorClass: "text-danger", validClass: "text-success", errorElement: "em",
+                        rules: {
+                            Name: {
+                                required: true
+                            }
+                        },
+                        messages: {
+                            Name: {
+                                required: '线路类别名称不能为空'
+                            }
+                        },
+                        highlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                        },
+                        unhighlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                        },
+                        errorPlacement: function (error, element) {
+                            if (element.is(":radio") || element.is(":checkbox")) {
+                                element.closest('.option-group').after(error);
+                            } else {
+                                //error.insertAfter(element.parent());
+                                element.parent().append(error);
+                            }
+                        },
+                        submitHandler: function (form) {
+                            //alert("submitted");
+                            form.submit();
+                        }
+                    });
+
+                    if (!$("#lineTierForm").valid()) {
+                        return false;
+                    }
+                    var modalForm = $("#lineTierForm").serializeJson();
+                    modalForm.Enabled = modalForm.Enabled[0];
+                    $(this).remoteSubmit("post", actionUrl, { model: modalForm }, null, function () {
+                        location.href = "/LineTier/List";
+                    });
+                });
+            });
+
+
+            //删除线路
+            $("#btn_del_line").click(function () {
+                var lineTierId = $("#hid_lineTierId").val();
+                if (lineTierId == "") {
+                    $(this).showToastr('请选择一条线路类别！');
+                    return false;
+                }
+                WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    $(this).remoteSubmit("post", "/LineTier/DeleteLineTier", { lineTierId: lineTierId }, null, function () {
+                        location.href = "/LineTier/List";
+                    });
+                });
+            });
+
+            $("#btnSave_TerminalSelectModalWindow", $("#TerminalSelectModalWindow")).click(function () {
+                debugger;
+                var arrselections = [];
+                $.each($('#popterminal_datatable').bootstrapTable('getSelections'), function (i, row) {
+                    arrselections.push(row);
+                });
+
+                if (arrselections.length <= 0) {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                if (arrselections.length > 1) {
+                    $(this).showToastr('只能选择一条数据');
+                    return;
+                }
+                //console.log("arrselections:" + arrselections);
+                //data: JSON.stringify({ terminalIds: arrselections.toString() }),
+                var row = arrselections[0];
+                var index = $("#hid_selectIndex").val();
+                $("#lineTierOption").bootstrapTable('updateRow',
+                    {
+                        index: index,
+                        row: {
+                            TerminalId: row.Id,
+                            TerminalName: row.Name,
+                            TerminalAddress: row.Address,
+                            BossName: row.BossName,
+                            BossCall: row.BossCall
+                        }
+                    });
+                $('#TerminalSelectModalWindow').modal('hide');
+            });
+            window.operateEventsPopTerminal = {
+                'click .rowSelect': function (e, value, row, index) {
+                    try {
+                        var index = $(this).attr("data-id");
+                        $("#lineTierOption").bootstrapTable('updateRow',
+                            {
+                                index: index,
+                                row: {
+                                    Order: parseInt(index) + 1,
+                                    TerminalId: row.Id,
+                                    TerminalName: row.Name,
+                                    TerminalAddress: row.Address,
+                                    BossName: row.BossName,
+                                    BossCall: row.BossCall
+                                }
+                            });
+
+                        $('#TerminalSelectModalWindow').modal('hide');
+                    }
+                    catch (err) {
+                        console.log(err);
+                        $(this).showToastr(err);
+                        return;
+                    }
+                }
+            };
+
+            $("#lineTierOption").bootstrapTable({
+               @Html.Raw(Model.LineTierOptions.Count > 0 ? "url: '/LineTier/LineTierOptionList'," : "length: 9,")
+                striped: true,
+                cache: false,
+                pagination: true,
+                showPagination: false,
+                sidePagination: "server",
+                sortable: false,
+                sortOrder: "asc",
+                search: false,
+                strictSearch: false,
+                showColumns: false,
+                showRefresh: false,
+                clickToSelect: false,
+                uniqueId: "id",
+                showToggle: false,
+                editable: true,
+                cardView: false,
+                detailView: false,
+                showFooter: false,
+                onLoadSuccess: function (data) {
+                    $(".fixed-table-pagination").hide();
+                },
+                columns: [
+                    {
+                        title: '<i class="fa fa-gear fs18"></i>', align: 'center', width: '60', formatter: function (value, row, index) {
+                            return m_pagerow + index + 1;
+                        }
+                    },
+                    {
+                        field: 'Order', align: 'center', title: '拜访顺序', width: '80',
+                        formatter: $(this).formatIsNull
+                    },
+                    { field: 'TerminalId', visible: false },
+                    {
+                        field: 'TerminalName', align: 'left', title: '终端名称', class: 'editable', width: '280',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'TerminalAddress', align: 'left', title: '终端地址',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'BossName', align: 'left', title: '老板姓名',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'BossCall', align: 'left', title: '老板电话',
+                        formatter: $(this).formatIsNull
+                    },
+                    {
+                        field: 'Operate', title: '操作', align: 'center', width: '100',
+                        events: {
+                            'click .rowAppend': function (e, value, row, index) {// 添加
+                                //var len = $('#lineTierOption').bootstrapTable('getData').length;
+                                //var data = { Id: len + 1, Amount: 0, Remark: "" };
+                                var newrow = {};
+                                $('#lineTierOption').bootstrapTable('insert', newrow);
+                            },
+                            'click .rowDel': function (e, value, row, index) {// 删除
+
+                                console.log(row.Id)
+                                console.log(row.TerminalId)
+                                console.log(row)
+
+                                if (row.TerminalId != "" && row.Id > 0) {
+                                    WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                                        if (!e) {
+                                            return;
+                                        }
+                                        $(this).remoteSubmit("post", "/LineTier/DeleteLineTierOption", { lineTierOptionId: row.Id }, null, function () {
+                                            $("#lineTierOption").bootstrapTable('remove', { field: "id", values: [parseInt(row.Id)] });
+                                            $("#lineTierOption").bootstrapTable('refresh', { url: "/LineTier/LineTierOptionList", silent: true });
+                                        });
+                                    });
+                                }
+                                else
+                                {
+                                    if (row.uniqueid == undefined) {
+
+                                        if (row.Id == 0) {
+                                            $("#lineTierOption").bootstrapTable('refresh');
+                                        }
+
+                                        $("#lineTierOption").bootstrapTable('remove', { field: "id", values: [parseInt(row.Id)] });
+                                    }
+                                    else {
+                                        $("#lineTierOption").bootstrapTable('remove', { field: "uniqueid", values: [parseInt(row.uniqueid)] });
+                                    }
+                                }
+                            }
+                        },
+                        formatter: function (value, row, index) {
+                            return [
+                                '<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+                                '<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+                            ].join('');
+                        }
+                    }
+                ],
+                onClickCell: function (field, value, row, $element) {
+
+                    if (field == "Operate") {
+                        return false;
+                    }
+
+                    var input = $($element).find("input");
+                    var select = $($element).find("select");
+                    if (input.length > 0 || select.length > 0)
+                        return false;
+
+                    //当前列所在行的索引
+                    var index = $element.parent().attr("data-index");
+                    //console.log(index);
+
+                    if (field == "TerminalName") {
+                        //var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+                        var html = '<div class="input-group">' +
+                            '<input type="text" class="form-control input-sm"  name="TerminalName" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">' +
+                            '<span class="input-group-btn"><button class="btn btn-default btn-sm searchproduct" id="search_' + field + "_" + row.Id + '" data-index="' + index + '"><span class="glyphicon glyphicon-search"></span></button></span>' +
+                            '</div>';
+
+                        $($element).html(html);
+                        var inputObj = $("#search_" + field + "_" + row.Id);
+                        inputObj.focus();
+                        inputObj.bind("focusout", function () {
+                            //$("#lineTierOption").bootstrapTable('updateRow', { index: index, row: { TerminalName: $(this).val() } });
+                            $("#lineTierOption").bootstrapTable('updateRow', { index: index, row: { TerminalName: value } });
+                            $($element).html("" + value + "");
+                        });
+                        //选择终端
+                        inputObj.bind("click", function () {
+                            var selectIndex = $(this).attr("data-index");
+                            var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+                            debugger;
+                            $(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { Index: $(this).attr("data-index") }, "选择终端", $("#TerminalSelectForm"), "popterminal_datatable", function (rows) {
+                                debugger;
+                                $("#lineTierOption").bootstrapTable('updateRow', {
+                                    //index: selectIndex, row: { TerminalId: rows[0].Id, TerminalName: rows[0].Name }
+                                    index: selectIndex, row: { TerminalId: rows.id, TerminalName: rows.name }
+                                });
+                            });
+                            return false;
+                        });
+                    }
+                    else if (field == "Order") {
+                        var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "" : value) + '" id="' + field + "_" + row.Id + '">';
+                        $($element).html(html);
+                        var inputObj = $("#" + $(html).attr("id"));
+                        inputObj.focus();
+                        inputObj.bind("focusout", function () {
+                            $("#lineTierOption").bootstrapTable('updateRow', { index: index, row: { Order: $(this).val() } });
+                            $($element).html("" + value + "");
+                        });
+                    }
+                    //debug
+                    $.each($('#lineTierOption').bootstrapTable('getData'), function (i, row) {
+                        //console.log(row);
+                    });
+                }
+            });
+
+            //保存线路访问
+            $("#FormSubmit").click(function () {
+                if ($("#hid_lineTierId").val() == "") {
+                    $(this).showToastr("请选择线路");
+                    return false;
+                }
+
+                //获取表格的所有内容行
+                var serializeData = [];
+                $.each($('#lineTierOption').bootstrapTable('getData'), function (i, row) {
+                    var tmpObj = {
+                        "Id": typeof (row.Id) == 'undefined' ? "0" : row.Id,
+                        "LineTierId": $("#hid_lineTierId").val(),
+                        "TerminalId": typeof (row.TerminalId) == 'undefined' ? "0" : row.TerminalId,
+                        "TerminalName": typeof (row.TerminalName) == 'undefined' ? "" : row.TerminalName,
+                        "Order": typeof (row.Order) == 'undefined' ? "0" : row.Order
+                    };
+                    if (typeof (row.TerminalId) != 'undefined')
+                        serializeData.push(tmpObj);
+                });
+
+                //保存的数据
+                var postData = {
+
+                    //线路项目
+                    Items: serializeData
+
+                };
+
+                //console.log(JSON.stringify(serializeData));
+                $(this).remoteSubmit("post", "/LineTier/UpdateLineTierOptions?lineTierId=" + $("#hid_lineTierId").val(), postData, null, function () {
+                    $("#lineTierOption").bootstrapTable('refresh', { url: "/LineTier/LineTierOptionList", silent: true, query: { lineTierId: $("#hid_lineTierId").val() } });
+                });
+            });
+        });
+    </script>
+}

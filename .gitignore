@@ -1,0 +1,103 @@
+DCMS.Manage/wwwroot/lib/
+DCMS.Web/wwwroot/lib/
+DCMS.Manage/obj/
+DCMS.Core/obj/
+DCMS.Web/bin/
+DCMS.Manage/bin/
+DCMS.Web/App_Data/
+Tests/DCMS.Core.Tests/obj/
+DCMS.Data/obj/
+DCMS.Services/obj/
+DCMS.Data/bin/
+DCMS.Services/bin/
+Tests/DCMS.Services.Tests/obj/
+DCMS.ViewModel/obj/
+DCMS.ViewModel/bin/
+Tests/DCMS.Tests/obj/
+DCMS.Core/bin/
+DCMS.Web/obj/
+DCMS.Web.Framework/obj/
+Tests/DCMS.Web.MVC.Tests/obj/
+.vs/DCMS.V2/
+DCMS.Web.Framework/bin/
+DCMS.Web/appsettings.json
+DCMS.Resources/obj/
+DCMS.Services/Sales/SaleReservationBillService - 副本.cs
+DCMS.Web/Controllers/Sales/SaleReservationBillController - 副本.cs
+DCMS.Api/obj/
+DCMS.Api/bin/
+DCMS.Api/appsettings.json
+DCMS.Resources/bin/
+DCMS.Manage/App_Data/
+Tests/DCMS.Services.Tests/bin/
+DCMS.Web/web.config
+DCMS.Manage/appsettings.json
+DCMS.Manage/web.config
+Tests/DCMS.Core.Tests/bin/
+Tests/DCMS.Web.MVC.Tests/bin/
+Tests/DCMS.Tests/bin/
+DCMS.Api/DCMS.Api.csproj.user
+Publish/
+DCMS.Api/appsettings.json.rej
+DCMS.Services/Security/PermissionService.cs.rej
+DCMS.Web/Properties/launchSettings.json
+DCMS.Manage/Properties/launchSettings.json
+DCMS.Api/Properties/launchSettings.json
+DCMS.Web/Controllers/TestController.cs
+DCMS.Core/Domain/Finances/FinanceBill.cs
+archive.zip
+DCMS.Resources/Properties/
+DCMS.Manage/
+DCMS.Resources/wwwroot/appupdater/com.dcms.client.apk
+DCMS.Api/appsettings-2 - 复制.2.json.rej
+DCMS.Api/appsettings-2 - 复制.2.json
+DCMS.Api/appsettings-2 - 复制.2.Development.json
+DCMS.Api/App_Data/DataProtectionKeys/key-fe4a179d-e238-4a60-a6a4-a90a66fb8174.xml
+.vs/DCMS.V3/v16/Server/sqlite3/storage.ide-wal
+.vs/DCMS.V3/v16/Server/sqlite3/storage.ide-shm
+.vs/DCMS.V3/v16/Server/sqlite3/storage.ide
+.vs/DCMS.V3/v16/Server/sqlite3/db.lock
+.vs/DCMS.V3/DesignTimeBuild/.dtbcache
+.vs/DCMS.V3/config/applicationhost.config
+.vs/DCMS.V3/DesignTimeBuild/.dtbcache.v2
+DCMS.Api/web.config
+DCMS.Api/appsettings -dev.Development.json
+DCMS.Api/appsettings -dev.json
+DCMS.Api/appsettings -dev.json.rej
+DCMS.Api/appsettings.Development.json
+DCMS.Web/appsettings - dev.json
+.vs/DCMS.V3/v16/.suo
+DCMS.Resources/wwwroot/vendor/plugins/datepicker/js/bootstrap-datetimepicker - 副本.js
+DCMS.Resources/.config/dotnet-tools.json
+DCMS.Api/appsettings.Development.json
+DCMS.Api/appsettings -dev.Development.json
+DCMS.Api/web.config~master
+DCMS.Api/appsettings-local.json
+DCMS.Documents/node_modules/
+.vs/config/applicationhost.config
+.vs/DCMS.V3/v15/.suo
+.vs/DCMS.V3/v15/Server/sqlite3/db.lock
+.vs/DCMS.V3/v15/Server/sqlite3/storage.ide
+.vs/DCMS.V3/v15/Server/sqlite3/storage.ide-shm
+.vs/DCMS.V3/v15/Server/sqlite3/storage.ide-wal
+.vs/DCMS.V3/v16/TestStore/0/000.testlog
+.vs/DCMS.V3/v16/TestStore/0/testlog.manifest
+DCMS.Data/DCMS.Data.csproj.user
+DCMS.Web.Framework/DCMS.Web.Framework.csproj.user
+DCMS.Web/Views/Shared/AccessDeniedView.cshtml
+DCMS.Web/Views/Terminal/BatchAssignDistrict-bak.cshtml
+DCMS.WebApp_Data/TempUploads/终端档案 (1).xlsx
+Tests/DCMS.Web.MVC.Tests/Install/InstallControllersTest.cs
+DCMS.Web/wwwroot/
+DCMS.Web/localhost.pfx
+DCMS.Web/localhost.cer
+DCMS.Web/certificate.pfx
+DCMS.Web/certificate.json
+ca.pfx
+168.14.pfx
+192-168-1-14-iis-0419101752.pfx
+DCMS.Api/appsettings - 复制.json
+DCMS.Api/Properties/PublishProfiles/LocalFileSystem.pubxml
+DCMS.Web/Properties/PublishProfiles/FolderProfile.pubxml
+.vs/
+DCMS.Api/appsettings - 复制(2).json

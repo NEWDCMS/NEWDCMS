@@ -1,0 +1,162 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model ProductSettingModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">首页</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="dashboard.html">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">系统配置</a>
+                </li>
+                <li class="crumb-trail">高级配置</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span> 商品设置
+                        </span>
+                    </div>
+                    <div class="panel-body p5">
+
+                        <form asp-action="Product" asp-controller="Setting" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="form-horizontal" id="SettingForm">
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+
+                                <div class="alert alert-warning alert-dismissable mt10">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                    <div asp-validation-summary="All"></div>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <label asp-for="SmallUnitSpecificationAttributeOptionsMapping" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    <dcms-select asp-for="SmallUnitSpecificationAttributeOptionsMapping" asp-items="@Model.SmallUnits" class="form-control" />
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.SmallUnitSpecificationAttributeOptionsMapping)
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="StrokeUnitSpecificationAttributeOptionsMapping" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    <dcms-select asp-for="StrokeUnitSpecificationAttributeOptionsMapping" asp-items="@Model.StrokeUnits" class="form-control" />
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.StrokeUnitSpecificationAttributeOptionsMapping)
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label asp-for="BigUnitSpecificationAttributeOptionsMapping" asp-postfix=":" class="col-lg-3 control-label" />
+                                <div class="col-lg-4">
+                                    <dcms-select asp-for="BigUnitSpecificationAttributeOptionsMapping" asp-items="@Model.BigUnits" class="form-control" />
+                                </div>
+                                <div class="col-lg-4">
+                                    @Html.DCMSValidationMessageFor(model => model.BigUnitSpecificationAttributeOptionsMapping)
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <lable class="col-lg-3 control-label"></lable>
+                                <div class="col-lg-8">
+                                    <button class="btn btn-primary" type="submit" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } }); }
+
+
+
+
+@section CurPageScripts
+{
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+
+            // Init Demo JS
+
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+
+        });
+    </script>
+}

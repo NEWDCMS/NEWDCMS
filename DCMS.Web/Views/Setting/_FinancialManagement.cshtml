@@ -1,0 +1,45 @@
+﻿
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model CompanySettingModel
+
+
+<div class="form-group">
+	<label asp-for="ReferenceCostPrice" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-2">
+		@*@Html.RadioButtonFor(m => m.ReferenceCostPrice, Model.ReferenceCostPrices)*@
+		@Html.RadioButtonFor(m => m.ReferenceCostPrice, 1, new { @id = "ReferenceCostPrice1", @name = "ReferenceCostPrice", @class = "mt15" })预设进价
+		@Html.RadioButtonFor(m => m.ReferenceCostPrice, 2, new { @id = "ReferenceCostPrice2", @name = "ReferenceCostPrice", @class = "mt15" })平均进价
+	</div>
+	<div class="col-lg-7">
+		1.预设进价:以商品档案中预设的进价为参考成本价。<br />
+		2.平均进价:以历史进货价的平均价为参考成本价。
+	</div>
+</div>
+
+
+
+<div class="form-group">
+	<label asp-for="AveragePurchasePriceCalcNumber" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-2">
+		<div class="input-group">
+			<input asp-for="AveragePurchasePriceCalcNumber" class="form-control" />
+			<span class="input-group-addon">次</span>
+		</div>
+	</div>
+</div>
+
+
+<div class="form-group">
+	<label asp-for="AllowNegativeInventoryMonthlyClosure" asp-postfix=":" class="col-lg-3 control-label" />
+	<div class="col-lg-2">
+		@Html.CheckBoxFor(model => model.AllowNegativeInventoryMonthlyClosure, new { @class = "mt15" })
+	</div>
+	<div class="col-lg-7">
+
+	</div>
+</div>

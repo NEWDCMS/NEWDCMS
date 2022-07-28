@@ -1,0 +1,36 @@
+﻿
+<div id="toolbar" class="btn-group mb10">
+    <a href="@Url.Action("Create","Allocation")"  class="btn btn-primary btn-sm mr5">
+        <span class="glyphicon glyphicon-plus mr5"></span>添加
+    </a>
+    <div class="btn-group mr5">
+        <button type="button" id="btn_export" class="btn btn-info btn-sm dropdown-toggle ladda-button" data-toggle="dropdown" aria-expanded="false">
+            <span class="glyphicon glyphicon-print"></span>
+            导出
+            <span class="caret ml5"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li>
+                <a id="export_select" href="#">导出选择</a>
+            </li>
+            <li>
+                <a id="export_all" href="#">导出全部</a>
+            </li>
+        </ul>
+    </div>
+    <div class="btn-group">
+        <button type="button" id="btn_print" class="btn btn-alert btn-sm dropdown-toggle ladda-button" data-toggle="dropdown" aria-expanded="false">
+            <span class="glyphicon glyphicon-print"></span>
+            打印
+            <span class="caret ml5"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li>
+                <a id="print_select" href="#">打印选择</a>
+            </li>
+            <li>
+                <a id="print_all" href="#">打印全部</a>
+            </li>
+        </ul>
+    </div>
+</div>

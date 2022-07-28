@@ -1,0 +1,734 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Products;
+
+@model BrandListModel
+
+<section id="content_wrapper">
+
+	<!-- Start: Topbar-Dropdown -->
+	<div id="topbar-dropmenu">
+		<div id="topbar-dropmenu">
+			@await Html.PartialAsync("_ToolBox")
+		</div>
+	</div>
+	<!-- End: Topbar-Dropdown -->
+	<!-- Start: Topbar -->
+	<header id="topbar">
+		<div class="topbar-left">
+			<ol class="breadcrumb">
+				<li class="crumb-active">
+					<a href="#">档案</a>
+				</li>
+				<li class="crumb-icon">
+					<a href="@Url.RouteUrl("HomePage")">
+						<span class="glyphicon glyphicon-home"></span>
+					</a>
+				</li>
+				<li class="crumb-link">
+					<a href="#">商品相关</a>
+				</li>
+				<li class="crumb-trail">品牌档案</li>
+			</ol>
+		</div>
+		<div class="topbar-right">
+			<div class="ml15 ib va-m" id="toggle_sidemenu_r">
+				<a href="#" class="pl5">
+					<i class="fa fa-sign-in fs22 text-primary"></i>
+					<span class="badge badge-hero badge-danger">3</span>
+				</a>
+			</div>
+		</div>
+	</header>
+	<!-- End: Topbar -->
+	<!-- Begin: Content -->
+	<section id="content" class="formSection">
+
+		<div class="special-alerts">
+			<div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+				<i class="fa fa-info pr10"></i>
+				<strong>您没有被授权此操作!</strong>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-12">
+
+
+				<form asp-action="List" asp-controller="Brand" method="get" id="formSearch" class="form-horizontal" novalidate="novalidate">
+					<div class="panel panel-default" id="panel0">
+						<div class="panel-heading">
+							<span class="glyphicon glyphicon-search"></span> 高级搜索
+							<a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedSearch"><i class="fa fa-angle-double-right"></i></a>
+						</div>
+						<div class="panel-body p10">
+
+							<div class="row">
+
+								<div class="col-sm-2">
+									<input asp-for="Name" class="form-control" placeholder="品牌关键字..." />
+								</div>
+								<div class="col-sm-10">
+									<button id="btn_query" type="submit" class="btn btn-primary btn-block">
+										<span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+									</button>
+								</div>
+							</div>
+
+						</div>
+					</div>
+
+				</form>
+
+				@*<div class="panel">
+						<div class="panel-heading">
+							<div class="panel-title">
+								<span class="glyphicon glyphicon-tasks"></span> 销售订单（示例）
+							</div>
+						</div>
+						<div class="panel-body p10">
+							<table class="table table-striped table-bordered table-hover" id="saleorder_datatable"></table>
+						</div>
+					</div>*@
+
+
+
+				@*<div class="panel">
+						<div class="panel-heading">
+							<div class="panel-title">
+								<span class="glyphicon glyphicon-tasks"></span> 行内编辑（示例）
+							</div>
+						</div>
+						<div class="panel-body p10">
+							<table class="table table-striped table-bordered table-hover" id="brand_datatable"></table>
+						</div>
+					</div>*@
+
+
+
+
+				<div class="panel">
+					<div class="panel-heading">
+						<div class="panel-title">
+							<span class="glyphicon glyphicon-tasks"></span> 品牌列表
+						</div>
+					</div>
+					<div class="panel-body p10">
+
+
+                        <div class="bootstrap-table">
+                            <div class="fixed-table-toolbar">
+                                <div class="bs-bars pull-left">
+                                    <div class="btn-group">
+                                        <a id="btn_add" class="btn btn-primary btn-sm">
+                                            <span class="glyphicon glyphicon-plus mr5" aria-hidden="true"></span>添加
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="columns columns-right btn-group pull-right">
+                                    <a class="btn btn-default" href="@Url.Action("List")" id="btn_refresh" name="refresh" aria-label="refresh" title="刷新"><i class="glyphicon glyphicon-refresh icon-refresh"></i></a>
+                                </div>
+                            </div>
+                            <div class="fixed-table-container">
+                                <table class="table table-striped table-bordered table-hover" id="datatable">
+                                    <thead>
+                                        <tr>
+                                            @*<th class="bs-checkbox " style="text-align: center; vertical-align: middle; width: 36px; " data-field="id"><div class="th-inner "><input name="btSelectAll" type="checkbox"></div></th>*@
+                                            <th class="text-center" data-field="Id"><div class="th-inner">序号</div></th>
+                                            <th class="text-left" data-field="Name"><div class="th-inner">品牌名称</div></th>
+                                            <th class="text-center" data-field="DisplayOrder"><div class="th-inner">排序</div></th>
+                                            <th class="text-center" data-field="Status" data-align="center"><div class="th-inner">状态</div></th>
+                                            <th class="text-center" data-field="CreatedOnUtc" data-align="center" data-sortable="true"><div class="th-inner">创建时间</div></th>
+                                            <th data-field="Operator" data-align="center" class="text-center w200"><div class="th-inner">操作</div></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            int index = 0;
+                                            foreach (var brand in Model.Items)
+                                            {
+                                                <tr>
+                                                    @*<td class="bs-checkbox ">
+                                    <input data-index="@index" name="btSelectItem" class="btSelectItem" type="checkbox" value="@brand.Id">
+                                </td>*@
+                                                    <td class="text-center">@brand.Id</td>
+                                                    <td class="text-left">@brand.Name</td>
+                                                    <td class="text-center">@brand.DisplayOrder</td>
+                                                    <td class="text-center">
+                                                        <div class="switch switch-primary">
+                                                            <input id="StatusRadioSwitch_@brand.Id" type="radio" name="StatusRadioSwitch_@brand.Id" checked="@brand.Status">
+                                                            <label for="StatusRadioSwitch_@brand.Id" class="mbn" />
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">@(brand.CreatedOnUtc.ToString("yyyy-MM-dd hh:mm:ss"))</td>
+                                                    <td class="text-center">
+                                                        <a class="btn btn-sm btn-primary btn_editbrand" data-id="@brand.Id" title="编辑"><i class="glyphicon glyphicon-pencil mr5"></i> 编辑</a>
+                                                        <a class="btn btn-sm btn-danger btn_deletebrand" data-id="@brand.Id" title="删除"><i class="glyphicon glyphicon-remove mr5"></i> 删除</a>
+                                                    </td>
+
+                                                </tr>
+                                                index++;
+                                            }
+
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @{
+                                var pager = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+                            }
+
+                            @if (!pager.IsEmpty())
+                            {
+                                <div class="fixed-table-pagination" style="display: block;">
+                                    @Html.Raw(pager.ToString())
+                                </div>
+                            }
+
+                        </div>
+
+						<div class="clearfix"></div>
+					</div>
+				</div>
+
+
+			</div>
+		</div>
+
+
+	</section>
+
+	<!-- End: Content -->
+	<input id="hid_CategoryId" type="hidden" value="" />
+	<input id="hid_CategoryPId" type="hidden" value="" />
+</section>
+
+@{
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } });
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "BrandForm" }, { "modalWindow", "BrandWindow" }, { "showSave", "true" } });
+
+}
+
+@section CurPageScripts
+{
+
+	<script type="text/javascript">
+		jQuery(document).ready(function () {
+			"use strict";
+
+			// Init Theme Core
+			Core.init({
+				sbm: "sb-l-c",
+			});
+
+			// Init Demo JS
+			Demo.init();
+
+			//权限提示
+			if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+				$('#alert-demo-2').fadeToggle();
+				setTimeout(function () {
+					$('#alert-demo-2').fadeToggle();
+				}, 3000);
+			}
+
+			//全选
+			$("input[name='btSelectAll']").click(function () {
+				var selectStatus = $(this).is(':checked')
+				if (selectStatus) {
+					$("input[name='btSelectItem']").each(function (i, n) {
+						n.checked = true;
+					});
+				} else {
+					$("input[name='btSelectItem']").each(function (i, n) {
+						n.checked = false;
+					});
+				}
+			});
+
+			//高级搜索
+			$("#panel0 #AdvancedSearch").click(function () {
+				var ico = $(this).find(".fa");
+				if (ico.hasClass('fa-angle-double-right'))
+					ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+				else
+					ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+				$("#panel0").find(".panel-body").toggleClass("hidden fadeIn");
+			});
+
+			var curRow = {};
+
+			//行内编辑（示例）
+			$("#brand_datatable").bootstrapTable({
+				url: "/Brand/AsyncList",
+				method: 'get',
+				toolbar: '#toolbar',
+				striped: true,
+				cache: false,
+				pagination: true,
+				sortable: true,
+				sortOrder: "asc",
+				queryParams: function (params) {
+					var temp =
+						{
+							name: "",
+							pageSize: params.limit,   //页面显示行数
+							pagenumber: (params.offset / params.limit)  //页码
+						};
+					return temp;
+				},
+				sidePagination: "server",
+				pageNumber: 1,
+				search: false,
+				strictSearch: true,
+				showColumns: false,
+				showRefresh: false,
+				clickToSelect: false,
+				uniqueId: "Id",
+				showToggle: false,
+				cardView: false,
+				detailView: false,
+				onClickRow: function (row, $element) {
+					curRow = row;
+				},
+				onEditableSave: function (field, row, oldValue, $el) {
+					//在这里异步保存编辑
+					console.log(row);
+					//$.ajax({
+					//    type: "post",
+					//    url: "/Edit/",
+					//    data: row,
+					//    dataType: 'JSON',
+					//    success: function (data) {
+					//        console.log(data)
+					//    },
+					//    error: function (err) {
+					//        console.log(err)
+					//    },
+					//    complete: function () {
+					//    }
+					//});
+				},
+				columns: [
+					{
+						field: 'check', checkbox: true, formatter: function (value, row, index) {
+							if (row.check == true) {
+								return { checked: true };
+							}
+						}
+					},
+					{ field: 'id', title: '编号' },
+					{
+						field: 'Name',
+						title: '品牌名称',
+						editable: {
+							type: 'text',
+							title: '品牌名称',
+							validate: function (v) {
+								if (v == "") return '不能为空';
+							}
+						}
+
+					},
+					{
+						field: 'DisplayOrder',
+						title: '排序',
+						editable: {
+							type: 'text',
+							title: '排序',
+							mode: "inline",
+							validate: function (v) {
+								if (isNaN(v)) return '必须是数字';
+								var status = parseInt(v);
+								if (status < 0) return '必须是正整数';
+							}
+						}
+
+					},
+					{
+						field: 'StoreId',
+						title: '经销商',
+						editable: {
+							type: 'select',
+							title: '经销商',
+							mode: "popup",
+							source: [{ value: 1, text: "经销商1" }, { value: 2, text: "经销商2" }, { value: 3, text: "经销商3" }],
+							validate: function (v) {
+								if (!$.trim(v)) {
+									return '不能为空';
+								}
+							}
+						}
+
+					},
+					{
+						field: 'Status',
+						title: '状态',
+						editable: {
+							type: 'checklist',//编辑框的类型，支持text|textarea|select|date|checklist等
+							title: '状态',
+							mode: "popup",   //编辑框的模式：支持popup和inline两种模式，默认是popup
+							source: [{ value: 1, text: "状态1" }, { value: 2, text: "状态2" }, { value: 3, text: "状态3" }],
+							validate: function (v) {
+								if (!$.trim(v)) {
+									return '不能为空';
+								}
+							}
+						}
+
+					},
+					{ field: 'Operate', title: '操作', align: 'center', width: '250', events: operateEvents, formatter: operateFormatter },
+				]
+			});
+
+
+			//销售订单（示例）
+			$("#saleorder_datatable").bootstrapTable({
+				length: 5,
+				striped: true,
+				cache: false,
+				pagination: false,
+				smartDisplay: true,
+				sidePagination: "server",
+				sortable: true,
+				sortOrder: "asc",
+				search: false,
+				strictSearch: true,
+				showColumns: true,
+				showRefresh: false,
+				clickToSelect: false,
+				uniqueId: "id",
+				showToggle: false,
+				editable: true,//开启编辑模式
+				cardView: false,
+				detailView: false,
+				showFooter: true,
+				onClickRow: function (row, $element) {
+					curRow = row;
+				},
+				onLoadSuccess: function (data) {
+					$(".fixed-table-pagination").hide();
+				},
+				columns: [
+					{
+						field: 'check',
+						checkbox: true,
+						formatter: function (value, row, index) {
+							if (row.check == true) {
+								return { checked: true };
+							}
+						}
+					},
+					{
+						field: 'sNumber',
+						title: '<i class="fa fa-gear fs18"></i>',
+						align: 'right',
+						width: '62px',
+						sortable: true,
+						formatter: function (value, row, index) {
+							return m_pagerow + index + 1;
+						},
+						footerFormatter: function (value) {
+							return '总计';
+						}
+					},
+					{
+						field: 'Name',
+						align: 'right',
+						width: '250px',
+						title: '品牌名称',
+						sortable: true,
+						formatter: function () {
+							return '<div class="input-group">' +
+								'<input type="text" class="form-control input-sm">' +
+								'<span class="input-group-btn">' +
+								'<button type="submit" class="btn btn-default btn-sm editable-submit"><i class="fa fa-search"></i></button>' +
+								'</span>' +
+								'</div>';
+						},
+						footerFormatter: function (value) {
+							var count = 0;
+							var datas = $('#saleorder_datatable').bootstrapTable('getData');
+							var len = datas.length,
+								i, row;
+							//console.log(len);
+							if (len > 1) {
+								for (i = len - 1; i >= 0; i--) {
+									row = datas[i];
+									console.log(row);
+									count += (row.Id + 1);
+								}
+							}
+							else {
+								for (var i in value) {
+									count += (value[i].id + 1);
+								}
+							}
+							return count;
+						}
+					},
+					{
+						field: 'DisplayOrder',
+						title: '排序',
+						class: 'editable'
+
+					},
+					{
+						field: 'StoreId',
+						title: '经销商',
+						class: 'editable'
+					},
+					{
+						field: 'Operate1',
+						title: '操作1',
+						align: 'center',
+						width: '250',
+						events: operateEvents,
+						formatter: saleorderOperateFormatter1
+					},
+					{
+						field: 'Operate',
+						title: '操作',
+						align: 'center',
+						width: '250',
+						events: operateEvents,
+						formatter: saleorderOperateFormatter
+					}
+				]
+			});
+
+			function saleorderOperateFormatter1(value, row, index) {
+				return [
+					'<button type="button" class="btn btn-sm btn-default saveRow1" disabled title="保存"><i class="fa fa-edit" ></i> 保存</button>',
+					'<button type="button" class="btn btn-sm btn-default editRow1" title="编辑"><i class="fa fa-edit" ></i> 编辑</button>',
+					'<button type="button" class="btn btn-sm btn-default delRow1" title="删除"><i class="fa fa-trash-o"></i> 删除</button>'
+				].join('');
+			}
+
+			function saleorderOperateFormatter(value, row, index) {
+				return [
+					'<button type="button" class="btn btn-sm btn-default rowAppend" title="添加"><i class="fa fa-plus" ></i></button>',
+					'<button type="button" class="btn btn-sm btn-default rowCopy" title="复制"><i class="fa fa-copy" ></i></button>',
+					'<button type="button" class="btn btn-sm btn-default rowDel" title="删除"><i class="fa fa-trash-o"></i></button>'
+				].join('');
+			}
+
+
+			// 格式化按钮
+			function operateFormatter(value, row, index) {
+				return [
+					'<button type="button" class="btn btn-sm btn-info rowedit"><i class="fa fa-pencil-square-o mr5" ></i>编辑</button>',
+					'<button type="button" class="btn btn-sm btn-danger rowdel"><i class="fa fa-trash-o mr5" ></i>删除</button>'
+				].join('');
+			};
+
+			$("#btn_add").click(function () {
+                
+				var actionUrl = "/Brand/Create";
+				//var param = { productId: $(this).val() };
+
+				$(this).showModalV2($("#BrandWindow"), actionUrl, null, "添加品牌", $("#BrandForm"), function () {
+					$('#btnSave_' + $("#BrandWindow").attr("id") + '').unbind("click").bind('click', function () {
+						//表单验证
+						jQuery.validator.addMethod("notZero", function (value, element, param) {
+							return this.optional(element) || (value != 0);
+						}, "请确保输入的值不为零");
+
+						var validator = $("#BrandForm").validate({
+							/* @@validation states + elements
+							------------------------------------------- */
+							errorClass: "text-danger",
+							validClass: "text-success",
+							errorElement: "em",
+							/* @@validation rules
+							------------------------------------------ */
+							rules: {
+								Name: {
+									required: true
+								}
+							},
+							messages: {
+								Name: {
+									required: '品牌名称不能为空'
+								}
+							},
+							/* @@validation highlighting + error placement
+							---------------------------------------------------- */
+							highlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').addClass(errorClass).removeClass(validClass);
+							},
+							unhighlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').removeClass(errorClass).addClass(validClass);
+							},
+							errorPlacement: function (error, element) {
+								if (element.is(":radio") || element.is(":checkbox")) {
+									element.closest('.option-group').after(error);
+								} else {
+									//error.insertAfter(element.parent());
+									element.parent().append(error);
+								}
+							},
+							submitHandler: function (form) {
+								//alert("submitted");
+								form.submit();
+							}
+						});
+
+						//$(this).saveModalV2($("#BrandWindow"), $("#datatable"), $("#BrandForm"));
+						$(this).saveModalV3($("#BrandWindow"), "/Brand/List", $("#BrandForm"));
+					});
+				});
+
+			});
+
+			$(".btn_editbrand").click(function () {
+				var actionUrl = "/Brand/Edit";
+				var param = { id: $(this).attr("data-id") };
+
+				$(this).showModalV2($("#BrandWindow"), actionUrl, param, "编辑品牌", $("#BrandForm"), function () {
+					$('#btnSave_' + $("#BrandWindow").attr("id") + '').unbind("click").bind('click', function () {
+						//表单验证
+						jQuery.validator.addMethod("notZero", function (value, element, param) {
+							return this.optional(element) || (value != 0);
+						}, "请确保输入的值不为零");
+
+						var validator = $("#BrandForm").validate({
+							/* @@validation states + elements
+							------------------------------------------- */
+							errorClass: "text-danger",
+							validClass: "text-success",
+							errorElement: "em",
+							/* @@validation rules
+							------------------------------------------ */
+							rules: {
+								Name: {
+									required: true
+								}
+							},
+							messages: {
+								Name: {
+									required: '品牌名称不能为空'
+								}
+							},
+							/* @@validation highlighting + error placement
+							---------------------------------------------------- */
+							highlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').addClass(errorClass).removeClass(validClass);
+							},
+							unhighlight: function (element, errorClass, validClass) {
+								$(element).closest('.field').removeClass(errorClass).addClass(validClass);
+							},
+							errorPlacement: function (error, element) {
+								if (element.is(":radio") || element.is(":checkbox")) {
+									element.closest('.option-group').after(error);
+								} else {
+									//error.insertAfter(element.parent());
+									element.parent().append(error);
+								}
+							},
+							submitHandler: function (form) {
+								//alert("submitted");
+								form.submit();
+							}
+						});
+
+						//保存保存
+						//$(this).saveModalV2($("#BrandWindow"), $("#datatable"), $("#BrandForm"));
+						$(this).saveModalV3($("#BrandWindow"), "/Brand/List", $("#BrandForm"));
+
+					});
+				});
+
+
+			});
+
+			//删除
+			$(".btn_deletebrand").click(function ()
+            {
+				var id = $(this).attr("data-id");
+                WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+					}
+                    location.href = "@Url.Action("Delete")?ids=" + id;
+                    //$(this).remoteSubmit("post", "/Brand/Delete", { ids: id }, $("#datatable"), null);
+                    //location.href = "@Url.Action("/list")?name=&pagenumber = 0";
+                    //$("#datatable").bootstrapTable('refresh');
+                });
+            });
+
+			//防止重复查询
+			var queryNumber = 1;
+			$("#btn_query").click(function () {
+				if (queryNumber > 1) {
+					return false;
+				}
+				queryNumber = queryNumber + 1;
+			});
+
+
+		});
+
+
+		//添加，复制，删除
+		window.operateEvents = {
+			'click .rowAppend': function (e, value, row, index) {
+				var len = $('#saleorder_datatable').bootstrapTable('getData').length;
+				var data = { id: len + 1 };
+				var that = $('#saleorder_datatable').bootstrapTable('append', data);
+				$("#saleorder_datatable tr:last-child td.editable").each(function () {
+					$(this).html("<input class='form-control input-sm'>");
+				});
+				//$.each($('#saleorder_datatable').bootstrapTable('getData'), function (i, row) {
+				//    console.log(i);
+				//});
+			},
+			'click .rowCopy': function (e, value, row, index) {
+				$('#saleorder_datatable').bootstrapTable('append', row);
+			},
+			'click .rowDel': function (e, value, row, index) {
+                //$("#saleorder_datatable").bootstrapTable('remove', { field: "id", values: [parseInt(row.Id)] });
+                WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                     $(this).remoteSubmit("post", "/Brand/Delete", { ids: row.Id }, $("#datatable"), null);
+                });
+                $("#datatable").bootstrapTable('refresh');
+				//$("#saleorder_datatable").bootstrapTable('removeAll');
+			},
+			'click .saveRow1': function (e, value, row, index) {
+				var obj = $("#saleorder_datatable tr:nth-child(" + (index + 1) + ") td.editable");
+				var attrValue = obj.first().find("input").val().trim();
+				var sellPrice = obj.last().find("input").val().trim();
+				var newData = {
+					attrValue: attrValue,
+					sellPrice: sellPrice
+				};
+				$("#saleorder_datatable").bootstrapTable('updateRow', {
+					index: index,
+					row: newData
+				});
+				obj.find("input").remove();
+			},
+			'click .editRow1': function (e, value, row, index) {
+				$(this).prevAll().each(function () {
+					if ($(this).hasClass("saveRow1")) {
+						$(this).removeAttr("disabled");
+						$(this).removeClass("btn-default").addClass("btn-primary");
+						return;
+					}
+				});
+				$("#saleorder_datatable tr:nth-child(" + (index + 1) + ") td.editable").each(function () {
+					var value = $(this).text();
+					$(this).html("<input value='" + value + "' class='form-control input-sm'>");
+				});
+			},
+			//'click .delRow1': function (e, value, row, index) {
+			//	$("#saleorder_datatable").bootstrapTable('removeByUniqueId', value);
+			//},
+		};
+	</script>
+}

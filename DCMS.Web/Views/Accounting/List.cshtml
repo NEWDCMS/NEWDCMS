@@ -1,0 +1,525 @@
+﻿@using System.Linq;
+@using System.Collections.Generic;
+@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Configuration;
+
+@model AccountingTypeListModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">配置</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">会计科目</a>
+                </li>
+                <li class="crumb-trail">科目管理</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="pull-left">
+                            科目类别
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="ui-draggable-handle">
+                            <ul class="ui-fancytree fancytree-container fancytree-ext-edit" tabindex="0">
+                                <li class="fancytree-lastsib">
+                                    <span class="fancytree-node fancytree-expanded fancytree-folder fancytree-has-children fancytree-lastsib fancytree-exp-el fancytree-ico-ef"><span class="fancytree-expander"></span><span class="fancytree-icon"></span><span class="fancytree-title">全部</span></span>
+                                    <input type="hidden" value="@Model.AccountingTypeId" id="AccountingTypeId" name="AccountingTypeId" />
+                                    <ul>
+                                        @foreach (var type in Model.AccountingTypes)
+                                        {
+                                            <li class="" data-id="@type.Id">
+                                                <a href="@Url.Action("List", new { typeId = type.Id })">
+                                                    <span class="fancytree-node fancytree-expanded fancytree-exp-n fancytree-ico-e" style="@((type.Id==Model.AccountingTypeId)?"background-color:#CBE8F6;border-color:#26A0DA":"")">
+                                                        <span class="fancytree-expander"></span><span class="fancytree-icon"></span><span class="fancytree-title">@type.Name</span>
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        }
+
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-10">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span> 科目
+                        </span>
+                    </div>
+                    <div class="panel-body p10">
+                        <div class="btn-group" id="toolbar">
+                            <a id="btn_addroot" href="javascript:;" class="btn btn-primary btn-sm mr5">
+                                <span class="glyphicon glyphicon-plus mr5" aria-hidden="true"></span>添加
+                            </a>
+                            <a @*id="btn_update"*@ href="javascript:;" @*href="@Url.Action("InitOption")"*@ class="btn btn-success btn-sm disabled">
+                                <span class="fa fa-pencil-square-o mr5" aria-hidden="true"></span>科目修复
+                            </a>
+                        </div>
+                        <table id="AccountingOptions" class="table table-striped table-bordered table-hover"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+@{
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "AccountingForm" }, { "modalWindow", "AccountingWindow" }, { "showSave", "true" } });
+}
+
+
+@{
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Content/Common.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/assets/skin/default_skin/css/theme.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Toastr/toastr.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Tables/bootstrap-table.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Tables/jquery.treegrid.min.css");
+//Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/fancytree/skin-win8/ui.fancytree.min.css");
+}
+
+@section NewDefinFrameWorkScripts
+{
+    @{
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery-1.11.1.min.js", order: 999);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery_ui/jquery-ui.min.js", order: 999);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/bootstrap.min.js", order: 999);
+    }
+}
+
+
+
+@section CurPageScripts
+{
+    @*@{
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.unobtrusive.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/jquery.treegrid.min.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table-1.0.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/locale/bootstrap-table-zh-CN.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Tables/bootstrap-table-treeview.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/fancytree/jquery.fancytree-all.min.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+
+    }*@
+
+    <script type="text/javascript">
+
+
+
+        jQuery(document).ready(function () {
+            "use strict";
+
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+
+			//权限提示
+			if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+				$('#alert-demo-2').fadeToggle();
+				setTimeout(function () {
+					$('#alert-demo-2').fadeToggle();
+				}, 3000);
+			}
+
+            $("#AccountingOptions").bootstrapTable({
+                toolbar:"#toolbar",
+                url: "/Accounting/AsyncGetList",
+                pagination: false,
+                //queryParams: dbQueryParams,
+                sidePagination: "server",
+                idField: 'id',
+				pageNumber: 1,                       //初始化加载第一页，默认第一页
+				pageSize: 100,                       //每页的记录行数（*）
+				pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                dataType: 'json',
+                treeView: true,
+                treeId: "number",
+                treeField: "name",
+                treeCollapseAll: false,
+                formatNoMatches: function () {
+                    return '没有找到匹配的记录，请尝试选择科目类别！';
+                },
+                rowAttributes: function (row, index) {
+                    return {
+                        xx: index
+                    };
+                },
+                queryParams: function (params) {
+                    var param = {
+						typeId: $("#AccountingTypeId").val()
+                    };
+                    return param;
+                },
+                columns: [
+                    {
+                        field: 'check', checkbox: true, formatter: function (value, row, index) {
+                            if (row.check == true) {
+                                // console.log(row.serverName);
+                                //设置选中
+                                return { checked: true };
+                            }
+                        }
+                    },
+                    {
+                        field: 'name',
+                        title: '科目名称',
+                        width: '200',align: 'left'
+
+                    },
+                    {
+                        field: 'code',
+                        title: '科目代码',
+                        sortable: false,
+                        align: 'left',
+                        width: '100'
+                    },
+                    {
+                        field: 'accountCodeTypeId',
+                        title: '科目枚举',
+                        sortable: false,
+                        align: 'left',
+                        width: '100'
+                    },
+                    {
+                        field: 'parentId',
+                        title: '父',
+                        sortable: false,
+                        align: 'left',
+                        width: '100'
+                    },
+                    //{
+                    //    field: 'parentId',
+                    //    visible: false
+                    //},
+                    {
+                        field: 'enabled',
+                        title: '状态',
+                        sortable: false,
+                        align: 'center',
+                        formatter: function (value, row, index) {
+                        if(value) {
+                            return '<span class="label label-success">正常</span>';
+                        } else {
+                            return '<span class="label label-default">锁定</span>';
+                        }
+                        }
+                    },
+                    {
+                        field: 'isCustom',
+                        visible: false
+                    },
+                    {
+                        field: 'operate',
+                        title: '操作',
+                        align: 'right',
+                        width: '250',
+                        events: {
+                            'click .rowadd': function (e, value, row, index)
+                            {
+                                if (row.level < 2) {
+                                    var actionUrl = "/Accounting/Create?typeid=@Model.AccountingTypeId";
+                                    var param = { typeid: $("#AccountingTypeId").val(), id: row.Id };
+                                    $(this).showModalAndSubmit($("#AccountingWindow"), actionUrl, param, "新增子科目", $("#AccountingForm"), function () {
+
+                                        var validator = $("#AccountingForm").validate({
+                                            /* @@validation states + elements
+                                            ------------------------------------------- */
+                                            errorClass: "text-danger",
+                                            validClass: "text-success",
+                                            errorElement: "em",
+                                            /* @@validation rules
+                                            ------------------------------------------ */
+                                            rules: {
+                                                Name: {
+                                                    required: true
+                                                },
+                                                Code: {
+                                                    required: true
+                                                }
+                                                //ParentId: {
+                                                //    required: true
+                                                //}
+                                            },
+                                            messages: {
+                                                Name: {
+                                                    required: '请输入科目名称'
+                                                },
+                                                Code: {
+                                                    required: '请输入科目代码'
+                                                }
+                                                //ParentId: {
+                                                //    required: '请选择根',
+                                                //}
+                                            },
+                                            /* @@validation highlighting + error placement
+                                            ---------------------------------------------------- */
+                                            highlight: function (element, errorClass, validClass) {
+                                                $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                                            },
+                                            unhighlight: function (element, errorClass, validClass) {
+                                                $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                                            },
+                                            errorPlacement: function (error, element) {
+                                                if (element.is(":radio") || element.is(":checkbox")) {
+                                                    element.closest('.option-group').after(error);
+                                                } else {
+                                                    //error.insertAfter(element.parent());
+                                                    element.parent().append(error);
+                                                }
+                                            },
+                                            submitHandler: function (form) {
+                                                //alert("submitted");
+                                                form.submit();
+                                            }
+                                        });
+
+                                        if (!$("#AccountingForm").valid()) {
+                                            return false;
+                                        }
+
+                                        $(this).saveModalV2($("#AccountingWindow"), $("#AccountingOptions"), $("#AccountingForm"));
+                                    });
+                                }
+                            },
+                            'click .rowdel': function (e, value, row, index) {
+								var $tb = $("#AccountingOptions");
+								var actionUrl = "/Accounting/Delete?id=" + row.Id;
+                                $(this).signDelete($tb, row.Id, actionUrl, $("#AccountingForm"));
+                            },
+                            'click .rowedit': function (e, value, row, index) {
+                                var actionUrl = "/Accounting/Edit?typeid=@Model.AccountingTypeId";
+                                var param = { typeid: $("#AccountingTypeId").val(),id: row.Id };
+                                $(this).showModalAndSubmit($("#AccountingWindow"), actionUrl, param, "编辑科目", $("#AccountingForm"), function () {
+
+                                    var validator = $("#AccountingForm").validate({
+                                        /* @@validation states + elements
+                                        ------------------------------------------- */
+                                        errorClass: "text-danger",
+                                        validClass: "text-success",
+                                        errorElement: "em",
+                                        /* @@validation rules
+                                        ------------------------------------------ */
+                                        rules: {
+                                            Name: {
+                                                required: true
+                                            },
+                                            Code: {
+                                                required: true
+                                            }
+                                            //ParentId: {
+                                            //    required: true
+                                            //}
+                                        },
+                                        messages: {
+                                            Name: {
+                                                required: '请输入科目名称'
+                                            },
+                                            Code: {
+                                                required: '请输入科目代码'
+                                            }
+                                            //ParentId: {
+                                            //    notZero: '请选择根',
+                                            //}
+                                        },
+                                        /* @@validation highlighting + error placement
+                                        ---------------------------------------------------- */
+                                        highlight: function (element, errorClass, validClass) {
+                                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                                        },
+                                        unhighlight: function (element, errorClass, validClass) {
+                                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                                        },
+                                        errorPlacement: function (error, element) {
+                                            if (element.is(":radio") || element.is(":checkbox")) {
+                                                element.closest('.option-group').after(error);
+                                            } else {
+                                                //error.insertAfter(element.parent());
+                                                element.parent().append(error);
+                                            }
+                                        },
+                                        submitHandler: function (form) {
+                                            //alert("submitted");
+                                            form.submit();
+                                        }
+                                    });
+
+                                    if (!validator.valid()) {
+                                        return false;
+                                    }
+
+                                    $(this).saveModalV2($("#AccountingWindow"), $("#AccountingOptions"), $("#AccountingForm"));
+                                });
+                            }
+                        },
+                        formatter: function (value, row, index) {
+                            if (row.isCustom)
+                            {
+                                if (row.level < 2) {
+                                    var btns = [];
+                                    btns.push('<button type="button" class="btn btn-sm btn-primary rowadd mr5"><i class="fa fa-plus mr5"></i>新增子</button>');
+                                    btns.push('<button type="button" class="btn btn-sm btn-info rowedit mr5"><i class="fa fa-pencil-square-o mr5" ></i>修改</button>');
+                                    if (!row.isDefault) {
+                                        btns.push('<button type="button" class="btn btn-sm btn-danger rowdel mr5"><i class="fa fa-trash-o mr5" ></i>删除</button>');
+                                    }
+                                    return btns.join('');
+                                } else
+                                {
+                                    var btns = [];
+                                    btns.push('<button type="button" class="btn btn-sm btn-info rowedit mr5"><i class="fa fa-pencil-square-o mr5" ></i>修改</button>');
+                                    if (!row.isDefault) {
+                                        btns.push('<button type="button" class="btn btn-sm btn-danger rowdel mr5"><i class="fa fa-trash-o mr5" ></i>删除</button>');
+                                    }
+                                    return btns.join('');
+                                }
+                            }
+                            else {
+                                if (row.level < 2) {
+                                    return [
+                                        '<button type="button" class="btn btn-sm btn-primary rowadd mr5"><i class="fa fa-plus mr5"></i>新增子</button>',
+                                        '<button type="button" class="btn btn-sm btn-info rowedit mr5"><i class="fa fa-pencil-square-o mr5" ></i>修改</button>'
+                                    ].join('');
+                                }
+                                else {
+                                     return [
+                                        '<button type="button" class="btn btn-sm btn-info rowedit mr5"><i class="fa fa-pencil-square-o mr5" ></i>修改</button>'
+                                    ].join('');
+                                }
+                            }
+                        }}
+                ]
+            });
+
+            $("#btn_addroot").click(function () {
+                if ($("#AccountingTypeId").val() == 0) {
+                    $(this).showToastr("请选择科目类别！");
+                    return false;
+                }
+                var actionUrl = "/Accounting/Create?typeid=@Model.AccountingTypeId";
+                var param = { typeid: '@Model.AccountingTypeId', id: 0 };
+                $(this).showModalAndSubmit($("#AccountingWindow"), actionUrl, param, "新增科目", $("#AccountingForm"), function () {
+
+                    var validator = $("#AccountingForm").validate({
+                        /* @@validation states + elements
+                        ------------------------------------------- */
+                        errorClass: "text-danger",
+                        validClass: "text-success",
+                        errorElement: "em",
+                        /* @@validation rules
+                        ------------------------------------------ */
+                        rules: {
+                            Name: {
+                                required: true
+                            },
+                            Code: {
+                                required: true
+                            }
+                            //ParentId: {
+                            //    required: true
+                            //}
+                        },
+                        messages: {
+                            Name: {
+                                required: '请输入科目名称'
+                            },
+                            Code: {
+                                required: '请输入科目代码'
+                            }
+                            //ParentId: {
+                            //    notZero: '请选择根',
+                            //}
+                        },
+                        /* @@validation highlighting + error placement
+                        ---------------------------------------------------- */
+                        highlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                        },
+                        unhighlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                        },
+                        errorPlacement: function (error, element) {
+                            if (element.is(":radio") || element.is(":checkbox")) {
+                                element.closest('.option-group').after(error);
+                            } else {
+                                //error.insertAfter(element.parent());
+                                element.parent().append(error);
+                            }
+                        },
+                        submitHandler: function (form) {
+                            //alert("submitted");
+                            form.submit();
+                        }
+                    });
+
+                    if (!$("#AccountingForm").valid()) {
+                        return false;
+                    }
+
+                    $(this).saveModalV2($("#AccountingWindow"), $("#AccountingOptions"), $("#AccountingForm"));
+                });
+            });
+
+        });
+    </script>
+}

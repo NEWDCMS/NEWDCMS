@@ -1,0 +1,96 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Users;
+
+@model UserRoleModel
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-warning alert-dismissable mt10 mb10">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+<input asp-for="Id" type="hidden" />
+
+
+<div class="form-group">
+    <label asp-for="Name" asp-postfix=":" class="col-lg-3 control-label"/>
+    <div class="col-lg-4">
+        <input asp-for="Name" class = "form-control" placeholder = "名称..."/>
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Name)
+    </div>
+</div>
+<div class="form-group">
+    <label asp-for="IsSystemRole" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @*<label class="checkbox-inline">
+            @Html.CheckBoxFor(model => model.IsSystemRole, new { @class = "mt15" })
+        </label>*@
+        @Html.CheckBoxFor(model => model.IsSystemRole, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+<div class="form-group" id="SystemNameDiv">
+    <label asp-for="SystemName" asp-postfix=":" class="col-lg-3 control-label"/>
+    <div class="col-lg-4">
+        <input asp-for="SystemName" class = "form-control" placeholder = "系统名称..." οnkeyup="this.value=this.value.replace(/^[a-zA-Z]/,'')" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.SystemName)
+    </div>
+</div>
+
+
+<div class="form-group" id="DescriptionDiv">
+    <label asp-for="Description" asp-postfix=":" class="col-lg-3 control-label"/>
+    <div class="col-lg-4">
+        <input asp-for="Description" class = "form-control" placeholder = "Description..."/>
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Description)
+    </div>
+</div>
+
+
+
+<div class="form-group">
+    <label asp-for="Active" asp-postfix=":" class="col-lg-3 control-label"/>
+    <div class="col-lg-4">
+        @*<label class="checkbox-inline">
+            @Html.CheckBoxFor(model => model.Active, new { @class = "mt15" })
+        </label>*@
+        @Html.CheckBoxFor(model => model.Active, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="UseACLPc" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.UseACLPc, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+<div class="form-group">
+    <label asp-for="UseACLMobile" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @Html.CheckBoxFor(model => model.UseACLMobile, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+
+<div class="form-group">
+    <lable class="col-lg-3 control-label"></lable>
+    <div class="col-lg-8">
+        <button class="btn btn-primary" type="submit" id="FormSubmit"><i class="fa fa-floppy-o mr5"></i>保存</button>
+        <a class="btn btn-warning" href="@Url.Action("List")"><i class="fa fa-undo mr5"></i> 返回</a>
+    </div>
+</div>

@@ -1,0 +1,807 @@
+﻿@{
+	Layout = "_Layout";
+}
+
+<section id="content_wrapper">
+	<!-- Start: Topbar-Dropdown -->
+	<div id="topbar-dropmenu">
+		@await Html.PartialAsync("_ToolBox")
+	</div>
+	<!-- End: Topbar-Dropdown -->
+	<!-- Start: Topbar -->
+	<header id="topbar">
+		<div class="topbar-left">
+			<ol class="breadcrumb">
+				<li class="crumb-active">
+					<a href="@Url.RouteUrl("")">首页</a>
+				</li>
+				<li class="crumb-icon">
+					<a href="dashboard.html">
+						<span class="glyphicon glyphicon-home"></span>
+					</a>
+				</li>
+				<li class="crumb-link">
+					<a href="#">系统管理</a>
+				</li>
+				<li class="crumb-trail">首页</li>
+			</ol>
+		</div>
+		<div class="topbar-right">
+			<div class="ib topbar-dropdown">
+				<label for="topbar-multiple" class="control-label pr10 fs11 text-muted">消息</label>
+			</div>
+			<div class="ml15 ib va-m" id="toggle_sidemenu_r">
+				<a href="#" class="pl5">
+					<i class="fa fa-sign-in fs22 text-primary"></i>
+					<span class="badge badge-hero badge-danger topAccountNews"></span>
+				</a>
+			</div>
+		</div>
+	</header>
+	<!-- End: Topbar -->
+	<!-- Begin: Content -->
+	<section id="content">
+		<!-- Dashboard Tiles -->
+		<div class="row mb10">
+			<div class="col-md-3">
+				<div class="panel bg-alert light of-h mb10">
+					<a href="/salereport/salereportitem" style="text-decoration:none">
+						<div class="pn pl20 p5">
+							<div class="icon-bg"> <i class="fa fa-bar-chart-o"></i> </div>
+							<h2 class="mt15 lh15"> <b id="todaySaleAmount" style="color:#fff"><img style="width:20px;" src="https://resources.jsdcms.com:8999/content/images/loading.gif" /></b> </h2>
+							<h5 class="text-muted">今日销售额</h5>
+						</div>
+					</a>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="panel bg-alert light of-h mb10">
+					<a href="/salereport/salereportorderitem" style="text-decoration:none">
+						<div class="pn pl20 p5">
+							<div class="icon-bg"> <i class="fa fa-bar-chart-o"></i> </div>
+							<h2 class="mt15 lh15"><b id="todayOrderQuantity" style="color:#fff"><img style="width:20px;" src="https://resources.jsdcms.com:8999/content/images/loading.gif" /></b> </h2>
+							<h5 class="text-muted">今日订单数</h5>
+						</div>
+					</a>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="panel bg-alert light of-h mb10">
+					<a href="/visitstore/businessuservisitreached" style="text-decoration:none">
+						<div class="pn pl20 p5">
+							<div class="icon-bg"> <i class="fa fa-bar-chart-o"></i> </div>
+							<h2 class="mt15 lh15"> <b id="todayAddTerminalQuantity" style="color:#fff"><img style="width:20px;" src="https://resources.jsdcms.com:8999/content/images/loading.gif" /></b> </h2>
+							<h5 class="text-muted">今日新增客户数</h5>
+						</div>
+					</a>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="panel bg-alert light of-h mb10">
+					<a href="/visitstore/businessuservisitingrecord" style="text-decoration:none">
+						<div class="pn pl20 p5">
+							<div class="icon-bg"> <i class="fa fa-bar-chart-o"></i> </div>
+							<h2 class="mt15 lh15"> <b id="todayVisitQuantity" style="color:#fff"><img style="width:20px;" src="https://resources.jsdcms.com:8999/content/images/loading.gif" /></b> </h2>
+							<h5 class="text-muted">今日拜访客户数</h5>
+						</div>
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Admin-panels -->
+		<div class="fade-onload sb-l-o-full">
+			<!-- full width widgets -->
+			<div class="row">
+				<!-- Three panes -->
+				<div class="col-md-8 admin-grid">
+					<div class="panel sort-disable">
+						<div class="panel-heading">
+							<span class="panel-title">月销售进度</span>
+							<a href="/staffreport/staffreportbusinessuserachievement" class="btn btn-warning btn-sm pull-right mt5">
+								<span class="glyphicon glyphicon-refresh mr5"></span> 更多
+							</a>
+						</div>
+						<div class="panel-body pn">
+							<div id="high-line5" style="max-width: 1450px;height: 400px;text-align: center;vertical-align: central">
+								<img style="margin-top:150px" src="https://resources.jsdcms.com:8999/content/images/loading.gif" />
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-4">
+					<div class="panel">
+						<div class="panel-heading">
+							<span class="panel-title fw700 text-info">待处理事项</span>
+						</div>
+						<div class="panel-body" style="height: 400px;text-align: center;vertical-align: central">
+
+
+							<img id="ToDoListLoading" style="margin-top:150px;text-align: center;vertical-align: central" src="https://resources.jsdcms.com:8999/content/images/loading.gif" />
+
+							<table class="table mbn tc-med-1" id="ToDoList" style="display:none">
+								<tbody>
+									<tr>
+										<td style="font-weight:normal">
+											<span class="fa fa-circle text-warning fs14 mr10"></span>待审核
+										</td>
+										<td>
+											<div class="info-circle" id="AuditCount" value="0" data-circle-color="warning" style="width:50px;"></div>
+										</td>
+										<td  style="font-weight:normal">
+											<span class="fa fa-circle text-warning fs14 mr10"></span>订货单
+										</td>
+										<td>
+											<div class="info-circle" id="OrderCount" value="0" data-circle-color="warning" style="width:50px;"></div>
+										</td>
+									</tr>
+									<tr>
+									</tr>
+									<tr>
+										<td  style="font-weight:normal">
+											<span class="fa fa-circle text-warning fs14 mr10"></span>销售订单
+										</td>
+										<td  style="font-weight:normal"><div class="info-circle" id="SaleOrderCount" value="0" data-circle-color="warning" style="width:50px;"></div></td>
+										<td  style="font-weight:normal">
+											<span class="fa fa-circle text-warning fs14 mr10"></span>退货订单
+										</td>
+										<td><div class="info-circle" id="ReturnOrderCount" value="0" data-circle-color="warning" style="width:50px;"></div></td>
+									</tr>
+									<tr>
+										<td  style="font-weight:normal">
+											<span class="fa fa-circle text-warning fs14 mr10"></span>销售单
+										</td>
+										<td><div class="info-circle" id="SaleCount" value="0" data-circle-color="warning" style="width:50px;"></div></td>
+										<td  style="font-weight:normal">
+											<span class="fa fa-circle text-warning fs14 mr10"></span>退货单
+										</td>
+										<td><div class="info-circle" id="ReturnCount" value="0" data-circle-color="warning" style="width:50px;"></div></td>
+									</tr>
+									<tr>
+										<td  style="font-weight:normal">
+											<span class="fa fa-circle text-warning fs14 mr10"></span>调拨单
+										</td>
+										<td><div class="info-circle" id="AllocationCount" value="0" data-circle-color="warning" style="width:50px;"></div></td>
+										<td  style="font-weight:normal">
+											<span class="fa fa-circle text-warning fs14 mr10"></span>收款单
+										</td>
+										<td><div class="info-circle" id="CashReceiptCount" value="0" data-circle-color="warning" style="width:50px;"></div></td>
+									</tr>
+									<tr>
+										<td  style="font-weight:normal">
+											<span class="fa fa-circle text-warning fs14 mr10"></span>待调度
+										</td>
+										<td><div class="info-circle" id="DispatchCount" value="0" data-circle-color="warning" style="width:50px;"></div></td>
+										<td  style="font-weight:normal">
+											<span class="fa fa-circle text-warning fs14 mr10"></span>待转单
+										</td>
+										<td><div class="info-circle" id="ChangeCount" value="0" data-circle-color="warning" style="width:50px;"></div></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+				<!-- end: .col-md-12.admin-grid -->
+			</div>
+			<!-- end: .row -->
+		</div>
+
+
+		<div class="admin-panels ">
+			<!-- partial width widgets -->
+			<div class="row">
+				<div class="col-md-12 admin-grid">
+					<div class="panel sort-disable">
+						<div class="panel-heading">
+							<span class="panel-title">终端拜访量</span>
+							<div class="btn-group pull-right mt5">
+								<button class="btn-group btn btn-sm mr5 rangSelect" id="rangSelect_0" data-id="1">今日</button>
+								<button class="btn-group btn btn-sm mr5 rangSelect" id="rangSelect_1" data-id="3">昨日</button>
+								<button class="btn-group btn btn-sm mr5 rangSelect" id="rangSelect_2" data-id="4">前天</button>
+								<button class="btn-group btn btn-sm mr5 rangSelect" id="rangSelect_3" data-id="6">本周</button>
+								<button class="btn-group btn btn-sm mr5 rangSelect" id="rangSelect_4" data-id="8">本月</button>
+								<a href="staffreport/visitsummery" class="btn btn-warning btn-sm">
+									<span class="glyphicon glyphicon-refresh mr5"></span> 更多
+								</a>
+							</div>
+						</div>
+						<div class="panel-body pn">
+							<div id="high-line4" style="max-width: 100%;height:400px;text-align: center;vertical-align:central">
+								<img style="margin-top:150px" src="https://resources.jsdcms.com:8999/content/images/loading.gif" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- end: .row -->
+		</div>
+	</section>
+	<!-- End: Content -->
+</section>
+
+
+
+
+@section CurPageScripts
+{
+<script type="text/javascript">
+	jQuery(document).ready(function () {
+
+		"use strict";
+		Core.init({
+			sbm: "sb-l-c",
+		});
+		Demo.init();
+
+		var menuData = [];
+		var brandData = [];
+		//获取品牌列表
+		var thisBrandInit = function () {
+			$(this).remoteRequest('GET', '/Common/GetBrandList', null, function (result) {
+				if (result.Success) {
+					var red = result.Data;
+					if (red.length > 0) {
+						red.forEach(function (brand, index) {
+							brandData.push(brand);
+						});
+					}
+				}
+				else {
+					$(this).showToastr(result.Message);
+				}
+			});
+		};
+
+		//绑定今日相关数据
+		var thisDayInit = function () {
+			$(this).remoteRequest('GET', '/Common/GetDashboardReport', null, function (result) {
+				if (result.Success) {
+
+					var res = result.Data;
+					//if (res.length > 0)
+					{
+						//绑定数据
+						$("#todaySaleAmount").text(parseFloat(res.TodaySaleAmount).toFixed(2));
+						$("#todayOrderQuantity")[0].innerHTML = res.TodayOrderQuantity;
+						$("#todayAddTerminalQuantity")[0].innerHTML = res.TodayAddTerminalQuantity;
+						$("#todayVisitQuantity")[0].innerHTML = res.TodayVisitQuantity;
+					}
+					//else {
+					//    $("#todaySaleAmount").text("0.00");
+					//    $("#todayOrderQuantity").text("0");
+					//    $("#todayAddTerminalQuantity").text("0");
+					//    $("#todayVisitQuantity").text("0");
+					//}
+				}
+				else {
+					$(this).showToastr(result.Message);
+				}
+			});
+		};
+
+		////获取菜单列表
+		var thisMenuInit = function () {
+			$(this).remoteRequest('GET', '/Common/AsyncLeftSidebar', null, function (result) {
+				if (result.Success) {
+					result.Data.forEach(function (currentNode, index) {
+						currentNode.Children.forEach(function (child, index) {
+							if (child.Visible) {
+								menuData.push(child);
+							}
+						});
+					});
+				}
+				else {
+					$(this).showToastr(result.Message);
+				}
+			});
+		};
+
+		thisBrandInit();
+		thisDayInit();
+		thisMenuInit();
+
+
+		//定义报表颜色
+		var highColors = ["#484D61", "#649AE1", "#85D27A", "#55BADF", "#F7C65F", "#EC6F5A", "#A992E2", "#48C9A9"
+		];
+
+		var homePageHighLines = function () {
+			var line3 = $('#high-line3');
+			if (line3.length) {
+				var reportData = [];
+				var brands = [];
+				var brandJsonStr = window.localStorage.getItem('brandKey');
+				brandJsonStr = JSON.parse(brandJsonStr);
+				if (brandJsonStr !== null) {
+					//降序排序
+					brandJsonStr.sort(function (a, b) {
+						if (new Date(Date.parse(a.time)) <= new Date(Date.parse(b.time))) {
+							return 1;
+						} else {
+							return -1;
+						}
+					});
+					if (brandJsonStr.length > 16) {
+						brandJsonStr = brandJsonStr.slice(0, 16); //获取前十六条数据
+					}
+
+					brandJsonStr.forEach(function (item, index) {
+						var index = $.inArray(item.data.Id, brands);   //结果：index=1
+						if (index < 0) {
+							brands.push(item.data.Id);
+						}
+					});
+				}
+
+				$.ajax({
+					async: false,
+					type: "get",
+					url: "/Common/GetMonthSaleReport",
+					data: { brandIds: brands },
+					dataType: "json",
+					success: function (result) {
+						if (result.Success) {
+							reportData = $(this).jsonKeysToCase(result.Data);
+						}
+					},
+					error: function () {
+						$(this).showToastr('网络错误，请重新保存！');
+					}
+				});
+
+				// High Line 3  图表配置
+				var date = new Date();
+
+				$('#high-line3').highcharts({
+					credits: false,
+					colors: highColors,
+					chart: {
+						//backgroundColor: '#f9f9f9', //背景
+						backgroundColor: '#fff', //背景
+						className: 'br-r',
+						type: 'line', //图表类型
+						zoomType: 'x', //缩放类型
+						panning: true, //是否启用平移
+						panKey: 'shift', //平移键
+						marginTop: 25, //外边距
+						marginRight: 1,
+					},
+					//标题
+					title: {
+						text: null
+					},
+					xAxis: {
+						//x坐标轴
+						gridLineColor: '#EEE',
+						lineColor: '#EEE',
+						tickColor: '#EEE',
+						labels: {
+							step: 0,
+							rotation: -45,
+							formatter: function () {
+								//return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + (this.value + 1);
+								return date.getFullYear() + "-" + (this.value + 1);
+							}
+						},
+						categories: function () {//按月显示
+							var days = [];
+							for (var i = 0; i <= 11; i++) {
+								days.push(i + 1);
+							}
+							return days;
+						},
+					},
+					yAxis: {//y坐标轴
+						min: 0,
+						tickInterval: 500,
+						gridLineColor: '#EEE',
+						title: {
+							text: '销售百分比',
+						}
+					},
+					plotOptions: {
+						spline: {
+							lineWidth: 3, //数据列的线条宽度
+							dataLabels: {
+								enabled: true
+							},
+						},
+						area: {
+							fillOpacity: 0.2 //填充区域图的透明度
+						}
+					},
+					legend: {
+						enabled: true,
+					},
+					//数据列
+					series: reportData,
+				});
+			}
+
+		}
+		homePageHighLines();
+
+		//拜访量 rangSelect
+		var getBusinessAnalysis = function (type)
+		{
+			var line4 = $('#high-line4');
+			var reportData = {};
+			$.ajax({
+				async: false,
+				type: "get",
+				beforeSend: function () {
+					line4.html('<img style="margin-top:50px;" src="https://resources.jsdcms.com:8999/content/images/loading.gif" />');
+				},
+				url: "/Common/GetBusinessAnalysis",
+				data: { type: type },
+				dataType: "json",
+				success: function (result)
+				{
+					if (result.Success)
+					{
+						reportData = $(this).jsonKeysToCase(result.Data);
+					}
+				},
+				error: function () {
+					$(this).showToastr('网络错误，请重新保存！');
+				}
+			});
+
+			//{"Data":{"UserNames":["陈文林","董莉莉","胡兵","蒋世兴","李红英","李群","李兴晔","刘建","刘静","撒玉强","史绪安","王德波","王骞谋","王兴国","王长华","魏文昌","肖刚","肖义","肖长勇"],"VistCounts":[0,0,16,12,0,0,0,1,7,13,13,14,5,15,17,11,2,14,15],"SaleCounts":[0,0,3,0,4,0,0,0,12,4,6,7,0,4,13,8,4,6,0],"OrderCounts":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},"Success":true}
+
+			console.log(reportData);
+
+
+			//图表展示
+			var highColors = [bgWarning, bgPrimary, bgInfo, bgAlert,
+				bgDanger, bgSuccess, bgSystem, bgDark
+			];
+
+			var cols = reportData.usernames;
+			var datas = [
+				{
+					"name": "终端拜访量",
+					"type": 'spline',
+					"data": reportData.vistcounts
+				},
+				{
+					"name": "销售开单量",
+					"type": 'spline',
+					"data": reportData.salecounts
+				},
+				{
+					"name": "新增终端量",
+					"type": 'spline',
+					"data": reportData.newaddcounts
+				}];
+
+			if (line4.length)
+			{
+				line4.highcharts({
+					credits: false,
+					colors: highColors,
+					//chart: {
+					//    type: 'column',
+					//    zoomType: 'x',
+					//    panning: true,
+					//    panKey: 'shift',
+					//    marginRight: 50,
+					//    marginTop: -5,
+					//},
+					chart: {
+						backgroundColor: '#f9f9f9', //背景
+						backgroundColor: '#fff', //背景
+						className: 'br-r',
+						type: 'line', //图表类型
+						zoomType: 'x', //缩放类型
+						panning: true, //是否启用平移
+						panKey: 'shift', //平移键
+						marginTop: 25, //外边距
+						marginRight: 1,
+					},
+					title: {
+						text: null
+					},
+					xAxis: {
+						gridLineColor: '#EEE',
+						lineColor: '#EEE',
+						tickColor: '#EEE',
+						categories: cols,
+						labels: {
+							rotation: -45
+						}
+					},
+					yAxis: {
+						min: 0,
+						title: {
+							text: '',
+							align: 'high'
+						},
+						labels: {
+							overflow: 'justify'
+						}
+					},
+					//plotOptions: {
+					//    spline: {
+					//        lineWidth: 3,
+					//    },
+					//    area: {
+					//        fillOpacity: 0.2
+					//    }
+					//},
+					plotOptions: {
+						spline: {
+							lineWidth: 3, //数据列的线条宽度
+							dataLabels: {
+								enabled: true
+							},
+						},
+						area: {
+							fillOpacity: 0.2 //填充区域图的透明度
+						}
+					},
+					legend: {
+						enabled: true,
+					},
+					series: datas
+				});
+			}
+		}
+		getBusinessAnalysis(0);
+		//范围选择
+		$(".rangSelect").click(function () {
+			var cur = $(this).attr("data-id");
+			getBusinessAnalysis(cur);
+		});
+
+		//月销进度
+		var getBussinessSalePercentReport = function () {
+			var highColors = [ bgInfo, bgAlert,
+				bgDanger, bgSuccess, bgSystem, bgDark
+			];
+			//var highColors = ['#ffffff', bgPrimary, bgInfo, bgAlert,
+			//    bgDanger, bgSuccess, bgSystem, bgDark
+			//];
+			var line5 = $('#high-line5');
+			if (line5.length)
+			{
+				var reportData = [];
+				$.ajax({
+					async: false,
+					type: "get",
+					beforeSend: function () {
+						line5.html('<img style="margin-top:50px;" src="https://resources.jsdcms.com:8999/content/images/loading.gif" />');
+					},
+					url: "/Common/GetBussinessSalePercentReport",
+					data: { type: 8, year:@DateTime.Now.Year },
+					dataType: "json",
+					success: function (result) {
+						if (result.Success) {
+							reportData = $(this).jsonKeysToCase(result.Data);
+						}
+					},
+					error: function () {
+						$(this).showToastr('网络错误，请重新保存！');
+					}
+				});
+				debugger;
+				var chart = {
+					type: 'column'
+				};
+				var title = {
+					text: ''
+				};
+				var datas = [] ;
+				reportData.forEach(function (item, index)
+				{
+					datas.push(item.bussinessusername);
+				});
+				var xAxis = {
+					categories: datas,
+					labels: {
+						rotation: -45  // 设置轴标签旋转角度
+					}
+				};
+				var yAxis = {
+					min: 0,
+					max: 100,
+					title: {
+						text: ''
+					},
+					tickPositions: [0, 25, 50, 75,100]
+				};
+				var tooltip = {
+					pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>({point.y}%)</b><br/><span style="color:{series.color}">目标总额</span>: <b>{point.sum:.2f}</b><br/><span style="color:{series.color}">(预)销额</span>: <b>{point.sale:.2f}</b>',
+					shared: true,
+					positioner: function () {
+						return { x: 50, y: 50 };
+					},
+				};
+				//var plotOptions = {
+				//    column: {
+				//        stacking: 'percent'
+				//    }
+				//};
+				var plotOptions = {
+					column: {
+						pointPadding: 0.2,
+						borderWidth: 0
+					}
+				};
+				var credits = {
+					enabled: false
+				};
+				var series =[{ name: '月销进度', data: [] }];
+				reportData.forEach(function (item, index)
+				{
+					var per = () =>
+					{
+						if (item.sumamount == 0) {
+							return 1;
+						}
+						return parseInt(Math.round(item.saleamount / item.sumamount * 10000) / 100);
+					};
+
+					var data =
+					{
+						y: per(),
+						sum: item.sumamount,
+						sale: item.saleamount
+					}
+					series[0].data.push(data);
+				});
+				debugger;
+				var json = {};
+				json.colors = highColors;
+				json.chart = chart;
+				json.title = title;
+				json.xAxis = xAxis;
+				json.yAxis = yAxis;
+				json.tooltip = tooltip;
+				json.plotOptions = plotOptions;
+				json.credits = credits;
+				json.series = series;
+				$('#high-line5').highcharts(json);
+
+			}
+
+		}
+		getBussinessSalePercentReport();
+
+		// 待处理事项统计 ToDoList
+		var demoCircleGraphs = function ()
+		{
+			var model =
+			{
+				"AuditCount": 3,
+				"OrderCount": 0,
+				"SaleOrderCount": 10,
+				"ReturnOrderCount": 0,
+				"SaleCount": 6,
+				"ReturnCount": 1,
+				"AllocationCount": 5,
+				"CashReceiptCount": 4,
+				"DispatchCount": 0,
+				"ChangeCount": 10
+			};
+
+			$(this).remoteRequest('GET', '/Common/GetPendingMatters', null, function (result) {
+				if (result.Success)
+				{
+						$("#ToDoListLoading").hide();
+					$("#ToDoList").show();
+
+
+					model = result.Data;
+
+					var infoCircle = $('.info-circle');
+					if (infoCircle.length)
+					{
+						var colors = {
+							"primary": [bgPrimary, bgPrimaryLr,
+								bgPrimaryDr
+							],
+							"info": [bgInfo, bgInfoLr, bgInfoDr],
+							"warning": [bgWarning, bgWarningLr,
+								bgWarningDr
+							],
+							"success": [bgSuccess, bgSuccessLr,
+								bgSuccessDr
+							],
+							"alert": [bgAlert, bgAlertLr, bgAlertDr]
+						};
+						// Store all circles
+						var circles = [];
+						infoCircle.each(function (i, e)
+						{
+							var value = 0;
+							switch ($(e).context.id)
+							{
+								case "AuditCount":
+									value = model.AuditCount;
+									break;
+								case "OrderCount":
+									value = model.OrderCount;
+									break;
+								case "SaleOrderCount":
+									value = model.SaleOrderCount;
+									break;
+								case "ReturnOrderCount":
+									value = model.ReturnOrderCount;
+									break;
+								case "SaleCount":
+									value = model.SaleCount;
+									break;
+								case "ReturnCount":
+									value = model.ReturnCount;
+									break;
+								case "AllocationCount":
+									value = model.AllocationCount;
+									break;
+								case "CashReceiptCount":
+									value = model.CashReceiptCount;
+									break;
+								case "DispatchCount":
+									value = model.DispatchCount;
+									break;
+								case "ChangeCount":
+									value = model.ChangeCount;
+									break;
+							}
+
+							// Define default color
+							var color = ['#DDD', bgPrimary];
+							// Modify color if user has defined one
+							var targetColor = $(e).data(
+								'circle-color');
+							if (targetColor) {
+								var color = ['#DDD', colors[
+									targetColor][0]]
+							}
+							// Create all circles
+							var circle = Circles.create({
+								id: $(e).attr('id'),
+								value: value,
+								radius: $(e).width() / 2,
+								width: 2,
+								colors: color,
+								text: function (val) {
+									return '<span class="circle-text-value mb5">' + value + '</span>'
+								}
+							});
+							circles.push(circle);
+						});
+
+						var rescale = function () {
+							infoCircle.each(function (i, e)
+							{
+								var getWidth = $(e).width() / 2;
+								circles[i].updateRadius(getWidth);
+							});
+							setTimeout(function ()
+							{
+								//$('.info-circle').find('.circle-text-value').fitText(0.4);
+							}, 50);
+						}
+						var lazyLayout = _.debounce(rescale, 1000);
+						$(window).resize(lazyLayout);
+
+					}
+				}
+			},function(){
+
+				$("#ToDoListLoading").show();
+
+			},function(){
+			$("#ToDoListLoading").hide();
+			});
+		}
+		demoCircleGraphs();
+
+	});
+</script>
+}

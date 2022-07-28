@@ -1,0 +1,1102 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+
+@model CheckAccountModel
+
+
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">财务</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">财务单据</a>
+                </li>
+                <li class="crumb-trail">期末结账</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+
+                <div class="alert alert-info  alert-dismissable">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <i class="fa fa-warning pr10"></i>
+                    【锁账】：橙色为锁账，表示账务进入账目核算期间，业务员单据将不允许随意录入，避免财务在核算过程中有不确定单据变动的干扰（注意：此时的凭证是可以正常录入）。
+                </div>
+                <div class="alert alert-info  alert-dismissable mt10 mb10">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <i class="fa fa-warning pr10"></i>
+                    【结账】：灰色为结账，表示结账日期及之前的业务已完结，结账之后将不能补录或调整之前的单据及凭证（注意：今日单据也不能再录入）。
+                </div>
+
+                <div class="tab-block mb25">
+                    <ul class="nav nav-tabs tabs-border nav-justified">
+                        <li class="active">
+                            <a href="#tab15_1" data-toggle="tab" aria-expanded="true"><i class="fa fa-pencil text-purple pr5"></i> 期末结账</a>
+                        </li>
+                        <li class="">
+                            <a href="#tab15_2" data-toggle="tab" aria-expanded="false"><i class="fa fa-pencil text-purple pr5"></i> 反结账</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="tab-content">
+
+                        <div id="tab15_1" class="tab-pane active">
+
+                            <div class="row">
+                                @{
+                                    int i = 1;
+                                    foreach (var month in Model.ClosingAccounts.OrderByDescending(s => s.ClosingAccountDate))
+                                    {
+
+                                        month.HasPrecursor = true;
+                                        month.HasSuccessor = true;
+
+                                        if (i == 1 && Model.ClosingAccounts.Count >= 1)
+                                        {
+                                            month.HasPrecursor = true;
+                                            month.HasSuccessor = false;
+                                        }
+
+                                        if (i == Model.ClosingAccounts.Count && Model.ClosingAccounts.Count > 1)
+                                        {
+                                            month.HasPrecursor = false;
+                                            month.HasSuccessor = true;
+                                        }
+
+
+                                        if (i % 4 == 0)
+                                        {
+
+                                            <div class="col-md-3">
+                                                <div class="panel panel-tile text-center">
+                                                    <div class="panel-heading br-n">
+                                                        <span class="pull-left fs22">@(month.ClosingAccountDate.ToString("yyyy"))</span>
+                                                        <span class="pull-right">
+                                                            <i class="fa fa  @(month.LockStatus ? "fa-lock" : "fa-unlock") fs22"></i>
+                                                        </span>
+                                                    </div>
+                                                    <div id="Checkout_@month.ClosingAccountDate.ToString("yyyy-MM-dd")" class="panel-body bg-light @(month.CheckStatus ? (month.LockStatus ? "" : "") : (month.LockStatus ? "Checkout" : "Checkout"))" style="@(month.CheckStatus ? (month.LockStatus ? "" : "") : (month.LockStatus ? "cursor:pointer" : "cursor:pointer"))" data-date="@(month.ClosingAccountDate.ToString("yyyy-MM-dd"))">
+                                                        <h1 class="mbn fs70" style="@(month.CheckStatus ? (month.LockStatus ? "" : "") : (month.LockStatus ? "color:#5EC658" : "color:#5EC658"))">@(month.ClosingAccountDate.ToString("MM"))</h1>
+                                                    </div>
+                                                    <div class="panel-footer br-n p12">
+                                                        <a id="LockAccount_@month.ClosingAccountDate.ToString("yyyy-MM-dd")" class="btn btn-rounded btn-des btn-block @(month.CheckStatus ? (month.LockStatus?"disabled":"") : (month.LockStatus ? "":"")) LockAccount @(month.CheckStatus ? (month.LockStatus ? "btn-default" : "btn-default") : (month.LockStatus ? "lockbg" : "btn-default"))" data-date="@(month.ClosingAccountDate.ToString("yyyy-MM-dd"))">
+                                                            @(month.CheckStatus ? (month.LockStatus ? "已结" : "") : (month.LockStatus ? "取消锁帐" : "锁帐"))
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @Html.Raw("</div><div class=\"row\">")
+                                        }
+                                        else
+                                        {
+                                            <div class="col-md-3">
+                                                <div class="panel panel-tile text-center">
+                                                    <div class="panel-heading br-n">
+                                                        <span class="pull-left fs22">@(month.ClosingAccountDate.ToString("yyyy"))</span>
+                                                        <span class="pull-right">
+                                                            <i class="fa fa @(month.LockStatus ? "fa-lock" : "fa-unlock") fs22"></i>
+                                                        </span>
+                                                    </div>
+                                                    <div id="Checkout_@month.ClosingAccountDate.ToString("yyyy-MM-dd")" class="panel-body bg-light @(month.CheckStatus ? (month.LockStatus ? "" : "") : (month.LockStatus ? "Checkout" : "Checkout"))" style="@(month.CheckStatus ? (month.LockStatus ? "" : "") : (month.LockStatus ? "cursor:pointer" : "cursor:pointer"))" data-date="@(month.ClosingAccountDate.ToString("yyyy-MM-dd"))">
+                                                        <h1 class="mbn fs70" style="@(month.CheckStatus ? (month.LockStatus ? "" : "") : (month.LockStatus ? "color:#5EC658" : "color:#5EC658"))">@(month.ClosingAccountDate.ToString("MM"))</h1>
+                                                    </div>
+                                                    <div class="panel-footer br-n p12">
+                                                        <a id="LockAccount_@month.ClosingAccountDate.ToString("yyyy-MM-dd")" class="btn btn-rounded  btn-des btn-block @(month.CheckStatus ? (month.LockStatus?"disabled":"") : (month.LockStatus?"":"")) LockAccount @(month.CheckStatus ? (month.LockStatus ? "btn-default" : "btn-default") : (month.LockStatus ? "lockbg" : "btn-default"))" data-date="@(month.ClosingAccountDate.ToString("yyyy-MM-dd"))">
+                                                            @(month.CheckStatus ? (month.LockStatus ? "已结" : "") : (month.LockStatus ? "取消锁帐" : "锁帐"))
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        i++;
+                                    }
+                                }
+                            </div>
+
+                        </div>
+                        <div id="tab15_2" class="tab-pane">
+
+
+                            <div class="row">
+                                @{
+                                    int j = 1;
+                                    var Items = Model.ClosingAccounts.Where(s => s.LockStatus && s.CheckStatus).OrderByDescending(s => s.ClosingAccountDate).ToList();
+                                    foreach (var month in Items)
+                                    {
+
+                                        month.HasPrecursor = true;
+                                        month.HasSuccessor = true;
+
+                                        if (j == 1 && Items.Count >= 1)
+                                        {
+                                            month.HasPrecursor = false;
+                                            month.HasSuccessor = true;
+                                        }
+
+                                        if (j == Items.Count && Items.Count > 1)
+                                        {
+                                            month.HasPrecursor = true;
+                                            month.HasSuccessor = false;
+                                        }
+
+                                        if (j % 4 == 0)
+                                        {
+
+                                            <div class="col-md-3">
+                                                <div class="panel panel-tile text-center">
+                                                    <div class="panel-heading br-n">
+                                                        <span class="pull-left fs22">@(month.ClosingAccountDate.ToString("yyyy"))</span>
+                                                        <span class="pull-right">
+                                                            <i class="fa fa  @(month.LockStatus ? "fa-lock" : "fa-unlock") fs22"></i>
+                                                        </span>
+                                                    </div>
+                                                    <div id="CounterCheckout_@month.ClosingAccountDate.ToString("yyyy-MM-dd")" class="panel-body bg-light CounterCheckout" style="cursor:pointer" data-id="@month.Id" data-precursor="@month.HasPrecursor">
+                                                        <h1 class="mbn fs70">@(month.ClosingAccountDate.ToString("MM"))</h1>
+                                                    </div>
+                                                    <div class="panel-footer br-n p12">
+                                                        <a class="btn btn-rounded btn-des btn-block disabled LockAccount btn-default">
+                                                            已结
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @Html.Raw("</div><div class=\"row\">")
+                                        }
+                                        else
+                                        {
+                                            <div class="col-md-3">
+                                                <div class="panel panel-tile text-center">
+                                                    <div class="panel-heading br-n">
+                                                        <span class="pull-left fs22">@(month.ClosingAccountDate.ToString("yyyy"))</span>
+                                                        <span class="pull-right">
+                                                            <i class="fa fa @(month.LockStatus ? "fa-lock" : "fa-unlock") fs22"></i>
+                                                        </span>
+                                                    </div>
+                                                    <div id="CounterCheckout_@month.ClosingAccountDate.ToString("yyyy-MM-dd")" class="panel-body bg-light CounterCheckout" style="cursor:pointer" data-id="@month.Id" data-precursor="@month.HasPrecursor">
+                                                        <h1 class="mbn fs70">@(month.ClosingAccountDate.ToString("MM"))</h1>
+                                                    </div>
+                                                    <div class="panel-footer br-n p12">
+                                                        <a class="btn btn-rounded btn-des btn-block disabled LockAccount btn-default">
+                                                            已结
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        j++;
+                                    }
+
+                                }
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Horizontal Steppers -->
+                    <div class="tab-content" id="wf-content" style="display:none">
+                        <div class="tab-pane active">
+
+
+
+
+                            <div class="row">
+                                <div class="col-md-8 col-lg-offset-2">
+                                    <ul class="fs14 list-unstyled list-spacing-10 mb10" id="WriteConfig_Box">
+                                        <li>
+                                            <i class="fa fa-exclamation-circle text-warning fa-lg pr10"></i>
+                                            开始......
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-10 col-lg-offset-1">
+                                    <div class="flow">
+                                        <div class="flowListBox"> </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="row" id="contA">
+                                        <div class="col-md-8 col-lg-offset-2">
+                                            <div class="alert alert-danger alert-dismissable">
+                                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                                <i class="fa fa-remove pr10"></i> 请确认检查本期数据无误！
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row" id="contB">
+                                        <div class="col-md-8 col-lg-offset-2">
+                                            <div class="alert alert-danger alert-dismissable">
+                                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                                <i class="fa fa-remove pr10"></i>结转成本后，会按照单据中商品的成本价生成相应的成本凭证。
+                                                (注意：结转成本后，已审核业务单据中的成本价，将会被替换成结转后的全月平均价!)
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row" id="contC">
+                                        <div class="col-md-8 col-lg-offset-2">
+                                            <div class="alert alert-danger alert-dismissable">
+                                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                                <i class="fa fa-remove pr10"></i> 请结转本期损益！
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row" id="contD">
+                                        <div class="col-md-8 col-lg-offset-2">
+                                            <div class="alert alert-primary alert-dismissable">
+                                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                                <i class="fa fa-check pr10"></i> 您已完成结转!
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row mt15">
+                                <div class="col-xs-12 text-center">
+                                    <input type="hidden" id="ClosingAccountDate" name="ClosingAccountDate" />
+                                    <input type="hidden" id="ClosingAccountId" name="ClosingAccountId" />
+                                    <button type="button" class="btn btn-rounded btn-default" id="btnReturn">返回</button>
+                                    <button type="button" class="btn btn-rounded btn-primary" id="btnBack">上一步</button>
+                                    <button type="submit" class="btn btn-rounded btn-danger btn-install" style="display:none" id="btnCost">结转成本</button>
+                                    <button type="submit" class="btn btn-rounded btn-danger btn-install" style="display:none" id="btnLoss">结转损益</button>
+                                    <button type="button" class="btn btn-rounded btn-success" id="btnNext">下一步</button>
+                                    <button type="button" class="btn btn-rounded btn-danger btn-install" style="display:none" id="btnBackHome">返回结转首页</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+    <!-- End: Content -->
+</section>
+
+
+@{
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/assets/skin/default_skin/css/theme.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Toastr/toastr.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/Scripts/Tables/bootstrap-table.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/vendor/plugins/fancytree/skin-win8/ui.fancytree.min.css");
+    //Html.AddCssFileParts(ResourceLocation.Head, "~/Content/Site.css");
+
+}
+
+@section CurPageScripts
+{
+    @{
+//Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/utility/jquery.sparkline.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/jquery.validate.unobtrusive.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/fancytree/jquery.fancytree-all.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-forms/js/advanced/steps/jquery.steps.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-forms/js/jquery.validate.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Toastr/Toastr.min.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/Scripts/Custom/Common.js");
+//Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/holder.min.js");
+    }
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            toastr.options = { positionClass: "toast-top-center", showDuration: "150", hideDuration: "2000", showMethod: "fadeIn" };
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+
+            var colorList;
+            var count;
+            var titles = ["期末检查", "成本结转", "损益结转", "结转完成"];
+            var $cbox = $("#WriteConfig_Box");
+            $(function () {
+                count = 4;
+                loadFlow(count); checkColor(colorList);
+                $cbox.html('');
+            })
+
+            function methodBtn(index, method, end) {
+                var fFor; if (end != true) {
+                    if (method == "back") {
+                        if (index == 1) {
+                            fFor = ".for" + String.fromCharCode(index + 65);
+                        } else {
+                            fFor = ".for" + String.fromCharCode(index + 64);
+                        }
+                        $(fFor).removeClass("for-cur");
+                        loadFlowDiv(index - 1);
+                        checkColor("default");
+                    }
+                    else if (method == "forward") {
+                        fFor = ".for" + String.fromCharCode(index + 65); $(fFor).addClass("for-cur");
+                        loadFlowDiv(index + 1);
+                        checkColor(colorList);
+                    }
+                } else if (end == true) { }
+            }
+
+            function checkColor(color) {
+
+                if (color != "default") {
+                    $(".flowList.for-cur").css({ "border": "2px solid #1ABB9C" });
+                    $(".flowList.for-cur,.flowListBox .for-cur em").css({ "background-color": "#1ABB9C" });
+                    $(".flowListBox .for-cur em").css({ "border": "0px none #000" });
+                }
+                else {
+                    var $this = $('.flow .flowList:not(.for-cur)');
+                    $this.css({ "border": "2px solid #ccc", "background-color": "#ccc" });
+                    $this.children("em").css({ "background-color": "#ccc" });
+                }
+                var obj = $('.for-cur:last');
+                obj.css({ "border": "2px solid #34495e", "background-color": "#34495e" });
+                obj.children("em").css({ "background-color": "#34495e" });
+            }
+
+            function fixWidth(count) {
+                var part = parseInt(100 / count) + "%"; $(".flowListBox .flowList").css("width", part);
+            }
+
+            function loadFlow(count) {
+                var flowFor; var flowVar = "";
+                for (var i = 1; i <= count; i++) {
+                    flowFor = "for" + String.fromCharCode(i + 64);
+                    if (i == 1) {
+                        flowVar += "<div class='flowList for-cur " + flowFor + "' style='position:relative'>\n";
+                        flowVar += "	<em style='position:absolute;left:35%'>" + i + "</em><br/><strong style='position:absolute;left:33%'>" + titles[i - 1] + "</strong>\n";
+                        flowVar += "</div>\n";
+                    }
+                    else {
+                        flowVar += "<div class='flowList " + flowFor + "' style='position:relative'>\n";
+                        flowVar += "	<em style='position:absolute;left:35%'>" + i + "</em><br/><strong style='position:absolute;left:33%'>" + titles[i - 1] + "</strong>\n";
+                        flowVar += "</div>\n";
+                    }
+                }
+                $(".flowListBox").html(flowVar);
+                fixWidth(count);
+                loadFlowDiv(1);
+                checkBtn(1, count);
+            }
+
+            function loadFlowDiv(index) {
+                if (index == 1) { $("#contA").removeClass("contentList"); $("#contA").siblings().addClass("contentList") }
+                if (index == 2) { $("#contB").removeClass("contentList"); $("#contB").siblings().addClass("contentList") }
+                if (index == 3) { $("#contC").removeClass("contentList"); $("#contC").siblings().addClass("contentList") }
+                if (index == 4) { $("#contD").removeClass("contentList"); $("#contD").siblings().addClass("contentList") }
+            }
+
+            var maxstep = 1;
+            var costTasks = [];
+            var lossTasks = [];
+
+            function checkBtn(index, count) {
+                $("#btnBack").addClass("disabled");
+                $("#btnBack").hide();
+
+                costTasks.push({ step: 1, name: "初始校验", action: "CostCarryOver_Task1" });
+                costTasks.push({ step: 2, name: "结转销售类", action: "CostCarryOver_Task2" });
+                costTasks.push({ step: 3, name: "结转库存损失类", action: "CostCarryOver_Task3" });
+                costTasks.push({ step: 4, name: "结转库存调整类", action: "CostCarryOver_Task4" });
+                costTasks.push({ step: 5, name: "结转拆装组合类", action: "CostCarryOver_Task5" });
+                costTasks.push({ step: 6, name: "结转采购退货类", action: "CostCarryOver_Task6" });
+                costTasks.push({ step: 7, name: "结转价格调整类", action: "CostCarryOver_Task7" });
+                costTasks.push({ step: 8, name: "生成结账凭证行", action: "CostCarryOver_Task8" });
+
+                lossTasks.push({ step: 1, name: "初始校验", action: "ProfitAndLossCarryOver_Task1" });
+                lossTasks.push({ step: 2, name: "结转损益类（收入）", action: "ProfitAndLossCarryOver_Task2" });
+                lossTasks.push({ step: 3, name: "结转损益类（支出）", action: "ProfitAndLossCarryOver_Task3" });
+                lossTasks.push({ step: 4, name: "年末处理", action: "ProfitAndLossCarryOver_Task4" });
+                lossTasks.push({ step: 5, name: "生成结账凭证行", action: "ProfitAndLossCarryOver_Task5" });
+
+                //下一步
+                $("#btnNext").click(function () {
+
+                    methodBtn(index++, 'forward', false);
+                    if (index > maxstep) { maxstep = index; }
+
+
+                    if (index != 1) {
+                        $("#btnBack").removeClass("disabled");
+                        $("#btnBack").show();
+                    }
+
+                    if (index >= 2) {
+                        $("#btnNext").show();
+                        $("#btnBack").show();
+                        $("#btnCost").show();
+                    }
+
+                    if (index >= count - 1) {
+                        $("#btnCost").hide();
+                        $("#btnNext").show();
+                        $("#btnBack").show();
+                        $("#btnLoss").show();
+                    }
+
+                    if (index >= count) {
+                        $("#btnNext").hide();
+                        $("#btnBack").hide();
+                        $("#btnCost").hide();
+                        $("#btnLoss").hide();
+                        $("#btnBackHome").show();
+                    }
+
+                    refreshBack(index);
+
+                    //console.log(index);
+                    // return false;
+
+
+                    switch (index) {
+                        case 1:
+                            {
+                                //console.log(index);
+                            }
+                            break;
+                        case 2:
+                            {
+                                //期末检查
+                                $cbox.html('');
+                                $("#btnCost").addClass("disabled");
+                                $("#btnNext").addClass("disabled");
+                                function run() {
+                                    var defer = $.Deferred();
+                                    $.ajax({
+                                        type: "post",
+                                        beforeSend: function () {
+                                            $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>检查中...</li>');
+                                        },
+                                        url: "/ClosingAccounts/Checkout",
+                                        data: { "ClosingAccountDate": $("#ClosingAccountDate").val() },
+                                        dataType: "json",
+                                        //async:false,
+                                        success: function (result) {
+                                            defer.resolve(result.Success)
+                                            if (result.Success) {
+                                                $("#btnCost").removeClass("disabled");
+                                                $cbox.append(' <li><i class=\"fa ' + result.Icon + ' text-warning fa-lg pr10\"></i>' + result.Message + '</li>');
+                                            }
+                                            else {
+                                                $cbox.append(' <li><i class=\"fa ' + result.Icon + ' text-danger fa-lg pr10\"></i>' + result.Message + '</li>');
+                                            }
+                                        },
+                                        error: function () {
+                                            defer.resolve(false);
+                                            $(this).showToastr('网络错误，请重新保存！');
+                                        }
+                                    });
+                                    return defer.promise();
+                                }
+                                $.when(run()).done(function (allowed) {
+                                    if (allowed) {
+                                        $("#btnCost").removeClass("disabled");
+                                    }
+                                    else {
+                                        $("#btnCost").addClass("disabled");
+                                    }
+                                });
+                            }
+                            break;
+                        case 3:
+                            $cbox.html('');
+                            $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>检查中...</li>');
+                            $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>允许损益结转</li>');
+                            $("#btnLoss").removeClass("disabled");
+                            $("#btnNext").addClass("disabled");
+                            break;
+                        case 4:
+                            {
+                                //结转确认
+                                $cbox.html('');
+                                async function run() {
+                                    await $.ajax({
+                                        type: "post",
+                                        url: "/ClosingAccounts/CarryForward",
+                                        data: { "ClosingAccountDate": $("#ClosingAccountDate").val() },
+                                        dataType: "json",
+                                        //async:false,
+                                        success: function (result) {
+                                            if (result.Success) {
+                                                $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>' + result.Message + '</li>');
+                                            } else {
+                                                $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>' + result.Message + '</li>');
+                                            }
+                                        },
+                                        error: function () {
+                                            $(this).showToastr('网络错误，请重新保存！');
+                                        }
+                                    });
+                                }
+                                run().then(() => {
+                                    $("#btnCost").addClass("disabled");
+                                    $("#btnNext").removeClass("disabled");
+                                });
+                            }
+                            break;
+                    }
+                });
+
+
+                var checkData =
+                {
+                    Period:
+                    {
+                        ClosingAccountDate: $("#ClosingAccountDate").val()
+                    },
+                    Task: null,
+                    CostPriceSummeries: [],
+                    CostOfSales: 0,
+                    CostOfStockLoss: 0,
+                    CostOfStockAdjust: 0,
+                    CostOfJointGoods: 0,
+                    CostOfPurchaseReject: 0,
+                    CostOfPriceAdjust: 0,
+                    //
+                    RevenueTotal: 0,
+                    ExpenseTotal: 0,
+                    YearTotal: 0,
+                    IncomeVoucher: null,
+                    ExpenseVoucher: null,
+                    UnAllotProfirVoucher: null,
+                    TrialBalances: [],
+                };
+
+                //结转成本
+                $("#btnCost").bind("click", function () {
+                    checkData.Period.ClosingAccountDate = $("#ClosingAccountDate").val();
+                    $cbox.html('');
+                    $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>开始结转成本......</li>');
+                    $("#btnCost").addClass("disabled");
+                    async function run() {
+                        var isbreak = false;
+                        for (var i = 0; i < costTasks.length; i++) {
+                            if (isbreak) {
+                                $("#btnCost").removeClass("disabled");
+                                return;
+                            }
+
+                            var task = costTasks[i];
+
+                            $cbox.append(' <li><i class=\"fa fa-exclamation-circle text-primary fa-lg pr10\"></i>开始' + task.name + '......</li>');
+
+                            checkData.task = task;
+
+                            await $.ajax({
+                                type: "post",
+                                url: "/ClosingAccounts/" + task.action,
+                                data: checkData,
+                                dataType: "json",
+                                //async:false,
+                                success: function (result) {
+                                    var data = result.Data;
+                                    if (data != null) {
+
+                                        checkData.CostPriceSummeries = data.CostPriceSummeries;
+                                        checkData.CostOfSales = data.CostOfSales;
+                                        checkData.CostOfStockLoss = data.CostOfStockLoss;
+                                        checkData.CostOfStockAdjust = data.CostOfStockAdjust;
+                                        checkData.CostOfJointGoods = data.CostOfJointGoods;
+                                        checkData.CostOfPurchaseReject = data.CostOfPurchaseReject;
+                                        checkData.CostOfPriceAdjust = data.CostOfPriceAdjust;
+                                    }
+                                    if (result.Success) {
+                                        isbreak = false;
+                                        $cbox.append(' <li><i class=\"fa ' + result.Icon + ' text-warning fa-lg pr10\"></i>' + result.Message + '.</li>');
+                                    }
+                                    else {
+                                        isbreak = true;
+                                        $cbox.append(' <li><i class=\"fa ' + result.Icon + ' text-danger fa-lg pr10\"></i>' + result.Message + '.</li>');
+                                    }
+                                },
+                                error: function () {
+                                    isbreak = true;
+                                    $(this).showToastr('网络错误，请重新保存！');
+                                }
+                            });
+                        }
+                        $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>结转完成。</li>');
+                    }
+                    run().then(() => {
+                        $("#btnCost").addClass("disabled");
+                        $("#btnNext").removeClass("disabled");
+                    });
+
+                    $(this).unbind('click');
+                });
+
+                //结转损益
+                $("#btnLoss").bind("click", function () {
+                    checkData.CostPriceSummeries = [];
+                    checkData.Period.ClosingAccountDate = $("#ClosingAccountDate").val();
+
+                    $("#btnNext").addClass("disabled");
+                    $cbox.html('');
+                    $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>开始结转损益......</li>');
+                    $("#btnLoss").addClass("disabled");
+                    async function run() {
+                        var isbreak = false;
+                        for (var i = 0; i < lossTasks.length; i++) {
+                            if (isbreak) {
+                                $("#btnLoss").removeClass("disabled");
+                                return;
+                            }
+
+                            var task = lossTasks[i];
+
+                            $cbox.append(' <li><i class=\"fa fa-exclamation-circle text-primary fa-lg pr10\"></i>开始' + task.name + '......</li>');
+
+                            checkData.task = task;
+
+                            await $.ajax({
+                                type: "post",
+                                url: "/ClosingAccounts/" + task.action,
+                                data: checkData,
+                                dataType: "json",
+                                //async:false,
+                                success: function (result) {
+                                    var data = result.Data;
+
+                                    //console.log(data);
+
+                                    if (data != null) {
+                                        if (data.RevenueTotal > 0)
+                                            checkData.RevenueTotal = data.RevenueTotal;
+
+                                        if (data.ExpenseTotal > 0)
+                                            checkData.ExpenseTotal = data.ExpenseTotal;
+
+                                        if (data.YearTotal > 0)
+                                            checkData.YearTotal = data.YearTotal;
+
+
+                                        if (data.IncomeVoucher != null && (data.IncomeVoucher.BillNumber != null || data.IncomeVoucher.BillNumber != "")) {
+                                            checkData.IncomeVoucher = data.IncomeVoucher;
+                                        }
+
+
+                                        if (data.ExpenseVoucher != null && (data.ExpenseVoucher.BillNumber != null || data.ExpenseVoucher.BillNumber != "")) {
+                                            checkData.ExpenseVoucher = data.ExpenseVoucher;
+                                        }
+
+                                        if (data.UnAllotProfirVoucher.BillNumber != null || data.UnAllotProfirVoucher.BillNumber != "") {
+                                            checkData.UnAllotProfirVoucher = data.UnAllotProfirVoucher;
+                                        }
+
+                                        checkData.TrialBalances = data.TrialBalances;
+                                    }
+
+                                    if (result.Success) {
+                                        isbreak = false;
+                                        $cbox.append(' <li><i class=\"fa ' + result.Icon + ' text-warning fa-lg pr10\"></i>' + result.Message + '.</li>');
+                                    }
+                                    else {
+                                        isbreak = true;
+                                        $cbox.append(' <li><i class=\"fa ' + result.Icon + ' text-danger fa-lg pr10\"></i>' + result.Message + '.</li>');
+                                    }
+                                },
+                                error: function () {
+                                    isbreak = true;
+                                    $(this).showToastr('网络错误，请重新保存！');
+                                }
+                            });
+
+                        }
+                        $cbox.append(' <li><i class=\"fa fa-check-circle text-warning fa-lg pr10\"></i>结转完成。</li>');
+                    }
+                    run().then(() => {
+                        $("#btnLoss").addClass("disabled");
+                        $("#btnNext").removeClass("disabled");
+                    });
+
+                    $.when(run).done(function () {
+                        if (status) {
+                            // 后续操作
+                        }
+                    });
+
+                    $(this).unbind('click');
+                });
+
+                //上一步
+                $("#btnBack").click(function () {
+                    $("#btnCost").hide();
+                    $cbox.html('');
+                    if (refreshBack(index) > 1) {
+
+                        methodBtn(index--, 'back', false);
+                        $("#btnNext").show();
+                    }
+
+                    if (index == 1) {
+                        console.log(index);
+                        $("#btnBack").hide();
+                        $("#btnNext").removeClass("disabled");
+                    }
+
+                    if (index == 2) {
+                        console.log(index);
+                        $("#btnNext").removeClass("disabled");
+                        $("#btnCost").show();
+                        $("#btnLoss").hide();
+                    }
+
+                    if (index == 3) {
+                        console.log(index);
+                        $("#btnNext").removeClass("disabled");
+                        $("#btnLoss").show();
+                        $("#btnCost").hide();
+                    }
+                });
+
+                //返回
+                $("#btnBackHome").click(function () {
+                    window.location.href = "/ClosingAccounts/Settle";
+                });
+
+}
+                    /**/
+                    /**/
+
+                    function refreshBack(index) { return index; }
+
+                    //选择结转
+                    $(".Checkout").click(function () {
+                        $("#tab-content").hide();
+                        $("#wf-content").show();
+                        $("#ClosingAccountDate").val($(this).attr("data-date"));
+                    });
+                    $("#btnReturn").click(function () {
+                        //window.location.href = "/ClosingAccounts/Settle";
+                        $("#tab-content").show();
+                        $("#wf-content").hide();
+                    });
+
+                    //反结转
+                    $(".CounterCheckout").click(function () {
+                        $("#ClosingAccountId").val($(this).attr("data-id"));
+
+                        if ($(this).attr("data-precursor") == "True") {
+                            $(this).showToastr('请先反结前期！');
+                            return;
+                        }
+
+                        WinMsg.confirm({ message: "确认要反结转吗？" }).on(function (e) {
+                            if (!e) {
+                                return;
+                            }
+                            if ($("#ClosingAccountId").val() == "") return false;
+                            $.ajax({
+                                type: "post",
+                                url: "/ClosingAccounts/CounterCheckout",
+                                data: { "ClosingAccountId": $("#ClosingAccountId").val() },
+                                dataType: "json",
+                                //async:false,
+                                success: function (result) {
+                                    if (result.Success) {
+                                        window.location.href = "/ClosingAccounts/Settle";
+                                    }
+                                    else {
+                                    }
+                                },
+                                error: function () {
+                                    $(this).showToastr('网络错误，请重新保存！');
+                                }
+                            });
+                        });
+                    });
+
+                    //解锁帐
+                    $(".LockAccount").click(function () {
+                        $("#ClosingAccountDate").val($(this).attr("data-date"));
+                        if ($("#ClosingAccountDate").val() == "") return false;
+                        $.ajax({
+                            type: "post",
+                            url: "/ClosingAccounts/LockAccount",
+                            data: { "ClosingAccountDate": $("#ClosingAccountDate").val() },
+                            dataType: "json",
+                            //async:false,
+                            success: function (result) {
+                                if (result.Success) {
+                                    $("#LockAccount_" + $("#ClosingAccountDate").val()).removeClass("btn-default").addClass("lockbg").html("取消锁帐");
+
+                                } else {
+                                    $("#LockAccount_" + $("#ClosingAccountDate").val()).removeClass("lockbg").addClass("btn-default").html("锁帐");
+                                }
+                            },
+                            error: function () {
+                                $(this).showToastr('网络错误，请重新保存！');
+                            }
+                        });
+                    });
+                });
+    </script>
+}
+
+
+
+<style>
+
+    .flow {
+        width: 80%;
+        margin: 30px auto;
+        height: 50px;
+        padding: 20px 0 0;
+        position: relative
+    }
+
+    .flowList {
+        float: left;
+        height: 2px;
+        border: 2px solid #ccc;
+        background: #ccc
+    }
+
+
+    .lockbg {
+        background-color: #5EC658;
+        color: #ffffff;
+        font-size: 13px;
+    }
+
+
+    .flowListBox {
+        position: absolute;
+        width: 100%;
+        left: 0;
+        top: 10px
+    }
+
+        .flowListBox .flowList {
+            float: left;
+            text-align: right
+        }
+
+            .flowListBox .flowList em {
+                margin-top: -22px;
+                display: inline-block;
+                width: 40px;
+                height: 40px;
+                -moz-border-radius: 100%;
+                -webkit-border-radius: 100%;
+                border-radius: 100%;
+                background: #ccc;
+                text-align: center;
+                line-height: 40px;
+                font-style: normal;
+                font-weight: 700;
+                vertical-align: middle;
+                color: #fff;
+                box-shadow: 0 0 2px 2px rgba(255,255,255,.56);
+                cursor: pointer
+            }
+
+            .flowListBox .flowList strong {
+                display: inline-block;
+                height: 40px;
+                line-height: 40px;
+                font-weight: 400;
+                cursor: pointer
+            }
+
+        .flowListBox .for-cur em {
+            margin-top: -20px;
+            width: 40px;
+            height: 40px;
+            font-size: 14px;
+            line-height: 40px
+        }
+
+    .foot-btn {
+        width: 100%;
+        height: 58px;
+        border-top: 1px solid #ddd;
+        padding: 10px;
+        margin-top: 10px
+    }
+
+    .successs {
+        text-align: center;
+        padding: 20px 0 60px
+    }
+
+        .successs h3 {
+            padding: 20px;
+            font-size: 25px
+        }
+
+    .for-cur:last-child {
+        background-color: #c96;
+        border: 2px solid #c96
+    }
+
+    .contentList {
+        display: none
+    }
+
+    .wrapper {
+        overflow: hidden;
+        min-height: 100%;
+        height: auto;
+    }
+
+
+    .margin-t-10 {
+        margin-top: 10px;
+    }
+
+    .margin-t-30 {
+        margin-top: 30px;
+    }
+
+    .margin-l-5 {
+        margin-left: 5px;
+    }
+
+    .wrapper {
+        width: 960px;
+        margin: 0 auto;
+    }
+
+    .content-header {
+        color: #ffffff;
+        padding: 0;
+    }
+
+        .content-header > h1 {
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 35px;
+        }
+
+    .language-selector {
+        margin: 10px 0;
+    }
+
+
+    .form-group input[type=checkbox] {
+        margin-top: 11px;
+    }
+
+    .form-group .checkbox input[type=checkbox] {
+        margin-top: 4px;
+    }
+
+
+    .credentials {
+        background: #eeeeee;
+        padding: 22px 10px 7px;
+        margin-bottom: 15px;
+        margin-top: 20px;
+    }
+
+    .content-footer {
+        padding: 20px;
+    }
+
+    .validation-summary-errors {
+        color: red;
+    }
+
+        .validation-summary-errors ul {
+            padding-left: 0;
+            list-style: none;
+        }
+
+    .throbber-header {
+        font-size: 145%;
+    }
+
+    .throbber {
+        display: none;
+    }
+
+        .throbber .curtain {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #10171b;
+            opacity: 0.7;
+            filter: alpha(opacity=70);
+        }
+
+        .throbber .curtain-content {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+            .throbber .curtain-content div {
+                text-align: center;
+                padding: 250px;
+                color: #FFF;
+            }
+</style>

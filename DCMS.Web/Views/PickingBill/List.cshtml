@@ -1,0 +1,521 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.Core.Domain.Common;
+@using DCMS.ViewModel.Models.Sales;
+
+@model PickingBillListModel
+@{
+    var refURL = Context.Request.GetAbsoluteUri();
+}
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">仓库分拣单管理</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">销售管理</a>
+                </li>
+                <li class="crumb-trail">仓库分拣单</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="panel panel-default" id="panel0">
+                    <div class="panel-heading">
+                        <span class="glyphicon glyphicon-search"></span> 高级搜索
+                        <a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedSearch"><i class="fa fa-angle-double-right mr5"></i>展开</a>
+                    </div>
+                    <div class="panel-body p10">
+                        <form id="formSearch" class="form-horizontal" novalidate="novalidate">
+
+                            <div class="row">
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="StartTime" placeholder="开始..." />
+                                </div>
+                                <div class=" col-sm-2">
+                                    <dcms-editor asp-for="EndTime" placeholder="结束..." />
+                                </div>
+                                <div class="col-sm-2">
+                                    <dcms-select asp-for="BusinessUserId" asp-items="@Model.BusinessUsers" asp-default="选择业务员" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <input asp-for="Remark" class="form-control" placeholder="备注..." />
+                                </div>
+
+                                <div class="col-sm-2">
+                                    <div id="PickingWholeScrapStatus" style="display:none">
+
+                                        <dcms-select asp-for="WholeScrapStatus" asp-items="@Html.GetEnumSelectList<PickingWholeScrapStatus>().ToSelectListDescription<PickingWholeScrapStatus>()" asp-default="请选择" />
+                                    </div>
+                                    <div id="PickingScrapStatus" style="display:none">
+
+                                        <dcms-select asp-for="ScrapStatus" asp-items="@Html.GetEnumSelectList<PickingScrapStatus>().ToSelectListDescription<PickingScrapStatus>()" asp-default="请选择" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <button id="btn_query" type="button" class="btn btn-primary btn-block">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+                            </div>
+                            @*<div class="row">
+
+
+                                </div>*@
+
+                        </form>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 仓库分拣列表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+
+                        <div id="toolbar" class="btn-group">
+                            <div id="toolbar" class="btn-group">
+                                @*<button id="btn_print_whole" type="button" class="btn btn-primary" style="display:none">
+                                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>打印整箱拆零合并单
+                                    </button>
+                                    <button id="btn_print_scrap" type="button" class="btn btn-primary" style="display:none">
+                                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>打印拆零单
+                                    </button>*@
+                                <button id="btn_print" type="button" class="btn btn-primary btn-sm">
+                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>打印
+                                </button>
+                            </div>
+                        </div>
+
+                        <table class="table table-striped table-bordered table-hover" id="datatable"></table>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</section>
+
+@*打印区域*@
+<div id="printData">
+</div>
+
+@{
+
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "windowWidth", "1000px" }, { "showSave", "true" } });
+
+}
+
+
+
+@section CurPageScripts
+{
+
+
+    <script type="text/javascript">
+
+        function numberFormatter(value, row, index) {
+            return m_pagerow + index + 1;
+        }
+
+        function strEnabledFormatter(value, row, index) {
+            if (!value) {
+                return '<span class="label label-denger">否</span>';
+            } else {
+                return '<span class="label label-success">是</span>';
+            }
+        }
+
+        function nameFormatter(value, row) {
+            var icon = row.Id % 2 === 0 ? 'glyphicon-star' : 'glyphicon-star-empty'
+            return '<i class="glyphicon ' + icon + '"></i> ' + value;
+        }
+
+        function IconFormatter(value, row) {
+            return '<i class="fa ' + value + '"></i>';
+        }
+
+        function priceFormatter(value) {
+            // 16777215 == ffffff in decimal
+            var color = '#' + Math.floor(Math.random() * 6777215).toString(16);
+            return '<div  style="color: ' + color + '">' +
+                '<i class="glyphicon glyphicon-usd"></i>' +
+                value.substring(1) +
+                '</div>';
+        }
+
+
+        // 格式化类型
+        function typeFormatter(value, row, index) {
+            if (value === 'menu') {
+                return '菜单';
+            }
+            if (value === 'button') {
+                return '按钮';
+            }
+            if (value === 'api') {
+                return '接口';
+            }
+            return '-';
+        }
+
+        // 格式化状态
+        function statusFormatter(value, row, index) {
+            if (value) {
+                return '<span class="label label-success">正常</span>';
+            } else {
+                return '<span class="label label-default">锁定</span>';
+            }
+        }
+
+
+        var $table = $('#datatable');
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            //toastr
+
+
+            //日期选择控件初始
+            $('.datetimepicker').datetimepicker({ locale: 'zh-cn', format: "YYYY-MM-DD hh:mm:ss" });
+
+            //高级搜索
+            $("#panel0 #AdvancedSearch").click(function () {
+                var ico = $(this).find(".fa");
+                if (ico.hasClass('fa-angle-double-right'))
+                    ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+                else
+                    ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+                $("#panel0").find(".panel-body").toggleClass("hidden animated fadeIn");
+            });
+
+            //设置拣货类型下拉显示与隐藏
+            SetStatusDisplayNone();
+
+
+            //查询参数
+            var dbQueryParams = function (params) {
+                var temp =
+                {
+
+                    //时间
+                    start: $("#datetimepicker_StartTime").val(),
+                    end: $("#datetimepicker_EndTime").val(),
+                    //业务员
+                    businessUserId: $("#BusinessUserId").val(),
+                    //备注
+                    remark: $("#Remark").val(),
+                    //过滤
+                    pickingFilter: ($("#PickingFilterSelectedIds1").is(":checked")) ? "1" : "0",
+                    //状态1
+                    wholeScrapStatus: $("#WholeScrapStatus").val(),
+                    //状态2
+                    scrapStatus: $("#ScrapStatus").val(),
+
+                    pageSize: params.limit,   //页面显示行数
+                    pageIndex: (params.offset / params.limit)  //页码
+                };
+                return temp;
+            };
+
+            var p = $(".page-size").val();
+
+            //初始化表格
+            var actionURL = "/PickingBill/AsyncList";
+            var $formSection = $(".formSection");
+            var m_pagerow = 0;
+            //初始
+            $($table).bootstrapTable({
+                url: actionURL,         //请求后台的URL（*）
+                method: 'get',                      //请求方式（*）
+                toolbar: '#toolbar',                //工具按钮用哪个容器
+                striped: true,                      //是否显示行间隔色
+                cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                pagination: true,                   //是否显示分页（*）
+                sortable: true,                     //是否启用排序
+                sortOrder: "asc",                   //排序方式
+                queryParams: dbQueryParams,//传递参数（*）
+                sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                idField: 'Id',
+                pageNumber: 1,                       //初始化加载第一页，默认第一页
+                pageSize: 20,                       //每页的记录行数（*）
+                pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                search: false,
+                strictSearch: true,
+                showColumns: true,
+                showRefresh: true,
+                clickToSelect: true,
+                uniqueId: "Id",
+                showToggle: true,
+                cardView: false,
+                detailView: false,
+                showFooter: false,
+                //columns: tbColumns,
+                columns: [
+                    { checkbox: true },
+                    {
+                        field: 'BillNumber',
+                        title: '编号',
+                        align: 'left',
+                        width: '150',
+                        formatter: function (value, row, index) {
+                            return [
+                                '<a href="/SaleReservationBill/Edit/' + row.BillId + '">' + row.BillNumber + '</a>'
+                            ].join("")
+                        }
+                    },
+
+                    { field: 'BillTypeName', title: '单据类型', align: 'left' },
+                    { field: 'TransactionDate', title: '交易时间', align: 'center' },
+                    { field: 'BusinessUserName', title: '业务员', align: 'left' },
+                    { field: 'TerminalName', title: '客户', align: 'left' },
+
+                    {
+                        field: 'OrderAmount',
+                        title: '订单金额',
+                        align: 'right',
+                        formatter: function (value, row, index) {
+                            return "<span style='color: #ffd700;'>￥</span>" + parseFloat(row.OrderAmount).toFixed(2);
+                        }
+                    },
+                    { field: 'Remark', title: '备注', align: 'left' },
+
+
+                ],
+
+                onPageChange: function (number, size) {
+                    m_pagerow = (number - 1) * size;
+                },
+                treeShowField: 'Name',
+                parentIdField: 'ParentId',
+                onLoadSuccess: function (data) {
+                    //console.log('load');
+                    // jquery.treegrid.js
+                    $table.treegrid({
+                        // initialState: 'collapsed',
+                        treeColumn: 1,
+                        expanderExpandedClass: 'glyphicon glyphicon-minus',
+                        expanderCollapsedClass: 'glyphicon glyphicon-plus',
+                        onChange: function () {
+                            $table.bootstrapTable('resetWidth');
+                        }
+                    });
+                }
+            });
+
+            //声明表单
+            var $formobj = $("#ModalForm");
+
+            //模态框中保存
+            var $formmodal = $("#modal-form");
+
+            //查询
+            $("#btn_query", $formSection).click(function () {
+                m_pagerow = 0;
+                $("#datatable").bootstrapTable('refresh', { url: actionURL });
+            });
+
+            //打印btn_print
+            $("#btn_print").click(function () {
+                var ids = "";
+                var arrselections = $("#datatable").bootstrapTable('getSelections');
+                if (arrselections.length > 0) {
+                    arrselections.forEach(function (a, b, c) {
+                        ids = ids + (ids == "" ? "" : ",") + a.BillId;
+                    });
+                }
+
+                if (ids == "") {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                //过滤（整箱拆零合并拣货）
+                var pickingFilter = ($("#PickingFilterSelectedIds1").is(":checked")) ? "1" : "0";
+                //状态1
+                var wholeScrapStatus = $("#WholeScrapStatus").val();
+                //状态2（待拆零拣货、待整箱拣货、已拆零拣货、已整箱拣货）
+                var scrapStatus = $("#ScrapStatus").val();
+
+                var $tb = $("#datatable");
+                WinMsg.confirm({ message: "确定打印所选单据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    $.ajax({
+                        type: "get",
+                        url: "/PickingBill/Print",
+                        data: {
+                            pickingFilter: pickingFilter,
+                            wholeScrapStatus: wholeScrapStatus,
+                            scrapStatus: scrapStatus,
+                            selectData: ids
+                        },
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (result) {
+                            if (result.Success) {
+                                var printDatas = result.Data;
+                                $("#printData").html(printDatas);
+                                $("#printData").printArea();
+                                //打印完成设置打印htm为空
+                                $("#printData").html("");
+                                toastr.success(result.Message);
+                                $tb.bootstrapTable('refresh');
+                            }
+                            else {
+                                $(this).showToastr(result.Message);
+                            }
+                        },
+                        error: function () {
+                            $(this).showToastr('网络错误，请重新保存！');
+                        }
+                    });
+                });
+
+
+
+            });
+
+
+
+            //整箱拆零合并拣货 点击事件
+            $("#PickingFilterSelectedIds1").click(function () {
+                SetStatusDisplayNone();
+                m_pagerow = 0;
+                $("#datatable").bootstrapTable('refresh', { url: actionURL });
+            });
+
+            //设置打印按钮文字显示
+            $("#PickingWholeScrapStatus").change(function () {
+
+                var btnInnerText = "";
+                var btnValue = "0";
+
+                $("#PickingWholeScrapStatus").attr("style", "display:block;");//显示div
+                btnInnerText = $("#PickingWholeScrapStatus option:selected").text();
+                btnValue = $("#PickingWholeScrapStatus option:selected").val();
+
+                $("#btn_print")[0].innerText = "打印" + btnInnerText;
+                $("#btn_print")[0].value = btnValue;
+                m_pagerow = 0;
+                $("#datatable").bootstrapTable('refresh', { url: actionURL });
+            });
+            //设置打印按钮文字显示
+            $("#PickingScrapStatus").change(function () {
+                var btnInnerText = "";
+                var btnValue = "0";
+
+                $("#PickingScrapStatus").attr("style", "display:block;");//显示div
+                btnInnerText = $("#PickingScrapStatus option:selected").text();
+                btnValue = $("#PickingScrapStatus option:selected").val();
+
+                $("#btn_print")[0].innerText = "打印" + btnInnerText;
+                $("#btn_print")[0].value = btnValue;
+                m_pagerow = 0;
+                $("#datatable").bootstrapTable('refresh', { url: actionURL });
+            });
+
+        });
+
+        //设置下拉框显示与隐藏
+        function SetStatusDisplayNone() {
+            //设置拣货类型下拉显示与隐藏
+            $("#PickingWholeScrapStatus").attr("style", "display:none;");//隐藏div
+            $("#PickingScrapStatus").attr("style", "display:none;");//隐藏div
+
+            $("#btn_print_whole").hide();
+            $("#btn_print_scrap").hide();
+
+            var va = $('#PickingFilterSelectedIds1').attr('value');
+            var ck = $('#PickingFilterSelectedIds1').is(':checked');
+
+            //if (ck) {
+            //	$("#PickingWholeScrapStatus").attr("style", "display:block;");//显示div
+            //	$("#btn_print_whole").show();
+            //}
+            //else {
+            //	$("#PickingScrapStatus").attr("style", "display:block;");//显示div
+            //	$("#btn_print_scrap").show();
+            //}
+
+            var btnInnerText = "";
+            var btnValue = "0";
+            if (ck) {
+                $("#PickingWholeScrapStatus").attr("style", "display:block;");//显示div
+                btnInnerText = $("#PickingWholeScrapStatus option:selected").text();
+                btnValue = $("#PickingWholeScrapStatus option:selected").val();
+                $("#btn_print_whole").show();
+            }
+            else {
+                $("#PickingScrapStatus").attr("style", "display:block;");//显示div
+                btnInnerText = $("#PickingScrapStatus option:selected").text();
+                btnValue = $("#PickingScrapStatus option:selected").val();
+                $("#btn_print_scrap").show();
+            }
+
+            $("#btn_print")[0].innerText = "打印" + btnInnerText;
+            $("#btn_print")[0].value = btnValue;
+
+        }
+
+
+    </script>
+}

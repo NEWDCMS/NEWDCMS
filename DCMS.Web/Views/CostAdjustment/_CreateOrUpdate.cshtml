@@ -1,0 +1,82 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.WareHouses;
+@model CostAdjustmentBillModel
+@*打印区域*@
+<div id="printData"></div>
+@Html.HiddenFor(model => model.Id)
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-warning alert-dismissable mt10 mb10">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+@if (Model.AuditedStatus || Model.ReversedStatus)
+{
+    @await Html.PartialAsync("_Watermark")
+}
+
+<div class="panel panel-default mb10">
+    <div class="panel-body p10">
+        <form id="formSearch" class="form-horizontal" novalidate="novalidate">
+            <div class="form-group mbn">
+
+                <div class="col-sm-2">
+                    <dcms-editor asp-for="AdjustmentDate" placeholder="调价日期..." asp-disabled="@(Model.AuditedStatus)" />
+                </div>
+
+                <div class="col-sm-2">
+                    <dcms-select-bool asp-for="AdjustmentByMinUnit" asp-items="@(new string[] {  "是", "否"})" asp-default="按最小单位调价" asp-disabled="@Model.AuditedStatus" />
+                </div>
+
+                <div class="col-sm-4">
+                    <dcms-input asp-for="Remark" class="form-control" placeholder="备注..." asp-readonly="@Model.AuditedStatus" />
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Id != 0 && !string.IsNullOrEmpty(@Model.BillBarCode))
+{
+    <div class="row mtn mb10">
+        <div class="col-md-3 pt20">
+            <div class="form-group mbn">
+                <lable class="col-lg-3 control-label">单据编号：</lable>
+                <div class="col-lg-9">
+                    <input asp-for="BillNumber" class="form-control-bb input-sm pbn pln prn" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 pt20">
+            <div class="form-group mbn">
+                <lable class="col-lg-3 control-label">制单：</lable>
+                <div class="col-lg-9">
+                    <input asp-for="MakeUserName" class="form-control-bb input-sm pbn pln prn" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 pt20">
+            <div class="form-group mbn">
+                <lable class="col-lg-3 control-label">审核：</lable>
+                <div class="col-lg-9">
+                    <input asp-for="AuditedUserName" class="form-control-bb input-sm pbn pln prn" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <img class="media-object mn thumbnail pull-right" src="@Model.BillBarCode" />
+        </div>
+    </div>
+}
+
+<div class="row mt10 mb10">
+    <div class="col-md-12">
+        <table id="CostAdjustmentItems" class="table table-striped table-bordered table-hover"></table>
+    </div>
+</div>

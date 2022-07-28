@@ -1,0 +1,60 @@
+﻿
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Configuration;
+
+@model CompanySettingModel
+
+
+
+<div class="alert alert-warning alert-dismissable mb10">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+    <i class="fa fa-warning pr10"></i>
+    <strong>警告!</strong> 数据清除后将不可恢复，请谨慎操作
+</div>
+
+
+<div class="form-group">
+    <label asp-for="ClearArchiveDatas" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-1">
+        @Html.CheckBoxFor(model => model.ClearArchiveDatas, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        包括商品档案、组合商品档案、品牌档案、单位档案、统计类别、促销活动、价格方案、仓库档案、客户档案、渠道档案、客户等级、片区档案、供应商档案等基础档案。
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="ClearBillDatas" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-1">
+        @Html.CheckBoxFor(model => model.ClearBillDatas, new { @class = "mt15" })
+    </div>
+    <div class="col-lg-7">
+        包括销售订单、退货订单、销售单、退货单、采购订单、采购单、采购退货单、调拨单、组合单、拆分单、收款单、付款单、预收款单、预付款单、费用支出单、费用合同、其他收入、等经营数据。
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="col-lg-3"></div>
+    <div class="col-lg-2">
+        <div class="input-group">
+            <input asp-for="VerificationCode" class="form-control" />
+            <span class="input-group-addon btn" id="SendVerificationCode">发送验证码</span>
+        </div>
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="col-lg-3">
+    </div>
+    <div class="col-lg-2">
+        <button class="btn btn-primary btn-sm" id="ClearData">清除数据</button>
+    </div>
+
+</div>
+
+
+

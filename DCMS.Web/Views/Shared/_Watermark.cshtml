@@ -1,0 +1,27 @@
+﻿<style>
+    .have-black {
+        background-image: url( @LayoutExtensions.ResourceServerUrl("/content/images/have-black.png") );
+    }
+    .have-gray {
+        background-image: url( @LayoutExtensions.ResourceServerUrl("/content/images/have_gray.png") );
+    }
+
+    .have-red,
+    .have-gray,
+    .have-black,
+    .have-finish,
+    .have-schedule,
+    .reject-red,
+    .abort-red {
+        width: 218px;
+        height: 100px;
+        position: absolute;
+        z-index: 100;
+        top: 1%;
+        right: 30%;
+        display: none;
+        background-repeat: no-repeat;
+    }
+</style>
+<div id="inkpadBox" class="have-black" style="display: block;"></div>
+<div id="inkpadBox1" class="have-gray" style="display: none;"></div>

@@ -1,0 +1,83 @@
+﻿@using DCMS.ViewModel.Models.Common;
+@using System.Collections.Generic;
+@using Microsoft.AspNetCore.Html;
+@model MenuModel
+@{
+    var controller = ViewContext.RouteData.Values["Controller"].ToString();
+    var action = ViewContext.RouteData.Values["Action"].ToString();
+}
+
+<aside id="sidebar_left" class="nano nano-primary has-scrollbar" style="z-index:1000;">
+    <div class="nano-content">
+        <!-- Start: Sidebar Header -->
+        <header class="sidebar-header">
+            <div class="user-menu">
+                @{ await Html.RenderPartialAsync("_ShortCut");}
+            </div>
+        </header>
+        <!-- End: Sidebar Header -->
+        <!-- sidebar menu -->
+        <ul class="nav sidebar-menu">
+            <li class="sidebar-label pt20">菜单</li>
+            <li>
+                <a href="@Url.RouteUrl("HomePage")">
+                    <span class="fa fa-home"></span>
+                    <span class="sidebar-title">首页</span>
+                </a>
+            </li>
+            @{
+                foreach (var tree in Model.MenuTrees)
+                {
+                    if (tree.Visible)
+                    {
+                        <li class="sidebar-label pt15" data-show="@tree.Visible">@tree.Module.Name</li>
+                        if (tree.Children.Count > 0)
+                        {
+                            foreach (var node in tree.Children)
+                            {
+                                if (node.Module.Selected)
+                                {
+                                    if (node.Children.Count > 0)
+                                    {
+                                        <li class="@(node.Children.Select(s=>s.Module?.Controller?.ToLower()).Contains(controller?.ToLower())?"node-open":"node-close")" data-ids="@string.Join(",",node?.Children?.Select(s=>s.Module?.Controller?.ToLower())?.ToArray())">
+                                            <a class="@(node.Children.Select(s=>s.Module?.Controller?.ToLower()).Contains(controller.ToLower())?"accordion-toggle menu-open":"accordion-toggle")" href="#">
+                                                <span class="glyphicons @(string.IsNullOrEmpty(node?.Module?.Icon) ? "glyphicons-building" : node?.Module?.Icon)"></span>
+                                                <span class="sidebar-title">@node?.Module?.Name</span>
+                                                <span class="caret"></span>
+                                            </a>
+                                            <ul class="nav sub-nav">
+                                                @foreach (var child in node.Children)
+                                                {
+                                                    if (child?.Module?.Selected??false)
+                                                    {
+                                                        <li class="@(((child?.Module?.Controller?.ToLower()==controller?.ToLower())&&(child?.Module?.Action?.ToLower()==action.ToLower()))?"active":"")">
+                                                            <a href="@child.Module?.LinkUrl?.ToLower()" onclick="Core.getOrSetLocalStorage(@child?.Module?.Id)" style="@(((child?.Module?.Controller?.ToLower()==controller.ToLower())&&(child?.Module?.Action?.ToLower()==action.ToLower()))?"background-color:#4a89dc;color:#ffffff;":"")">
+                                                                <span class="glyphicons glyphicons-edit" style="@(((child?.Module?.Controller?.ToLower()==controller.ToLower())&&(child?.Module?.Action?.ToLower()==action.ToLower()))?"color:#ffffff":"")"></span> @child?.Module?.Name
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                            </ul>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <a href="@node?.Module?.LinkUrl?.ToLower()" onclick="Core.getOrSetLocalStorage(@node?.Module?.Id)"><span class="glyphicons glyphicons-edit"></span> @node?.Module?.Name</a>
+                                        </li>
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        </ul>
+        <div class="sidebar-toggle-mini">
+            <a href="#">
+                <span class="fa fa-sign-out"></span>
+            </a>
+        </div>
+    </div>
+</aside>
+

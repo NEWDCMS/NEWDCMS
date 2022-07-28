@@ -1,0 +1,114 @@
+[
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 1,
+		"Name" : "瓶装",
+		"DisplayOrder" : 0,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 1,
+		"Name" : "听装",
+		"DisplayOrder" : 1,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 1,
+		"Name" : "200ML",
+		"DisplayOrder" : 0,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 1,
+		"Name" : "300ML",
+		"DisplayOrder" : 1,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 1,
+		"Name" : "400ML",
+		"DisplayOrder" : 2,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 1,
+		"Name" : "500ML",
+		"DisplayOrder" : 3,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 1,
+		"Name" : "礼盒装",
+		"DisplayOrder" : 2,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 1,
+		"Name" : "组合装",
+		"DisplayOrder" : 3,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 2,
+		"Name" : "瓶",
+		"DisplayOrder" : 0,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 2,
+		"Name" : "包",
+		"DisplayOrder" : 1,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 2,
+		"Name" : "箱",
+		"DisplayOrder" : 2,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 2,
+		"Name" : "听",
+		"DisplayOrder" : 3,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 2,
+		"Name" : "袋",
+		"DisplayOrder" : 4,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 2,
+		"Name" : "盒",
+		"DisplayOrder" : 5,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 2,
+		"Name" : "件",
+		"DisplayOrder" : 2,
+		"StoreId" : 0
+	},
+	{
+		"Id" : 0,
+		"SpecificationAttributeId" : 2,
+		"Name" : "板",
+		"DisplayOrder" : 3,
+		"StoreId" : 0
+	}
+]

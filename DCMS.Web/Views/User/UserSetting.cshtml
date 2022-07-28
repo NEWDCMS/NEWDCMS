@@ -1,0 +1,263 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Users;
+@using DCMS.Web.Framework.Extensions;
+
+@model UserModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">首页</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="dashboard.html">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">配置</a>
+                </li>
+                <li class="crumb-trail">账户设置</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span> 账户设置
+                        </span>
+                    </div>
+                    <div class="admin-form panel-body p10">
+                        <form asp-action="UserSetting" class="form-horizontal" asp-controller="User" method="post" id="SettingForm" enctype="multipart/form-data">
+                            @{
+                                if (!ViewData.ModelState.IsValid)
+                                {
+                                    <div class="alert alert-warning alert-dismissable mt10">
+                                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                        <div asp-validation-summary="All"></div>
+                                    </div>
+                                }
+
+                                <input asp-for="Id" type="hidden" />
+                                <input asp-for="FaceImage" type="hidden" />
+                                <div class="form-group">
+                                    <lable class="col-lg-2 control-label">用户名</lable>
+                                    <div class="col-lg-8">
+                                        <input asp-for="Username" class="form-control" placeholder="用户名" readonly="readonly" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <lable class="col-lg-2 control-label">姓名</lable>
+                                    <div class="col-lg-8">
+                                        <input asp-for="UserRealName" class="form-control" placeholder="姓名" readonly="readonly" />
+                                    </div>
+                                    <div>
+                                        @Html.DCMSValidationMessageFor(model => model.UserRealName)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <lable class="col-lg-2 control-label">邮箱</lable>
+                                    <div class="col-lg-8">
+                                        <input asp-for="Email" class="form-control" placeholder="邮箱." />
+                                    </div>
+                                    <div>
+                                        @Html.DCMSValidationMessageFor(model => model.Email)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <lable class="col-lg-2 control-label">手机号</lable>
+                                    <div class="col-lg-8">
+                                        <input asp-for="MobileNumber" class="form-control" />
+                                    </div>
+                                    <div>
+                                        @Html.DCMSValidationMessageFor(model => model.MobileNumber)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <lable class="col-lg-2 control-label">上传头像</lable>
+                                    <div class="col-lg-8">
+                                        <label for="file" class="field file state-success">
+                                            <span class="button btn-primary">上传</span>
+                                            <input type="file" class="gui-file" name="image" id="file" aria-required="true" aria-invalid="false" accept="image/gif, image/jpg, image/jpeg, image/png" onchange="show(this)">
+                                            <input type="text" class="gui-input" id="uploader" placeholder="请选择要上传的图片" readonly="">
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-lg-8 col-lg-offset-2">
+                                        @if (Model.FaceImage != "" && Model.FaceImage != null)
+                                        {
+                                            <img src="@Model.FaceImage" id="user_image" alt="Sample" style="width:300px;height:200px;" />
+                                        }
+
+                                        @if (Model.FaceImage == "" || Model.FaceImage == null)
+                                        {
+                                            <img src="" id="user_image" alt="Sample" style="width:300px;height:200px;" />
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <lable class="col-lg-2 control-label"></lable>
+                                    <div class="col-lg-8">
+                                        <button class="btn btn-primary" type="submit" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+                                    </div>
+                                </div>
+
+                            }
+
+                        </form>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <lable class="col-lg-2 control-label"></lable>
+                    <div class="col-lg-8">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } }); }
+
+
+@section CurPageScripts
+{
+
+
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+
+            // Init Demo JS
+
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            $("#FormSubmit").click(function () {
+
+                //表单验证
+                jQuery.validator.addMethod("notZero", function (value, element, param) {
+                    return this.optional(element) || (value != 0);
+                }, "请确保输入的值不为零");
+
+                var validator = $("#SettingForm").validate({
+                    /* @@validation states + elements
+                    ------------------------------------------- */
+                    errorClass: "text-danger",
+                    validClass: "text-success",
+                    errorElement: "em",
+                    /* @@validation rules
+                    ------------------------------------------ */
+                    rules: {
+                        UserRealName: {
+                            required: true
+                        },
+                        Email: {
+                            required: true
+                        },
+                        MobileNumber: {
+                            required: true
+                        },
+                    },
+                    messages: {
+                        UserRealName: {
+                            required: '请输入姓名'
+                        },
+                        Email: {
+                            required: '请输入邮箱'
+                        },
+                        MobileNumber: {
+                            required: '请输入手机号'
+                        }
+                    },
+                    /* @@validation highlighting + error placement
+                    ---------------------------------------------------- */
+                    highlight: function (element, errorClass, validClass) {
+                        $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                    },
+                    unhighlight: function (element, errorClass, validClass) {
+                        $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                    },
+                    errorPlacement: function (error, element) {
+                        if (element.is(":radio") || element.is(":checkbox")) {
+                            element.closest('.option-group').after(error);
+                        } else {
+                            element.parent().append(error);
+                        }
+                    },
+                    submitHandler: function (form) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+        function show(f) {
+            var file = f.files[0];
+            document.getElementById('uploader').value = file.name;
+            var reader = new FileReader();
+            if (file) {
+                reader.onload = function (e) {
+                    document.getElementById('user_image').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+}

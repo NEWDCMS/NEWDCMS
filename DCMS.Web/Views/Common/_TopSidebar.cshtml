@@ -1,0 +1,36 @@
+﻿@using DCMS.ViewModel.Models.Common;
+
+@model MenuModel
+
+@foreach (var tree in Model.MenuTrees)
+{
+    if (tree.Visible)
+    {
+        foreach (var node in tree.Children)
+        {
+            if (node.Module.Selected)
+            {
+                <li class="bg-light p8"><span class="fw600 pl5 lh30"> @node.Module.Name</span></li>
+
+                if (node.Children.Count > 0)
+                {
+                    foreach (var child in node.Children)
+                    {
+                        if (child.Module.Selected)
+                        {
+                            <li>
+                                <a href="@child.Module.LinkUrl"><span class="glyphicons glyphicons-edit"></span> @child.Module.Name</a>
+                            </li>
+                        }
+                    }
+                }
+                else
+                {
+                    <li>
+                        <a href="@node.Module.LinkUrl"><span class="glyphicons glyphicons-edit"></span> @node.Module.Name</a>
+                    </li>
+                }
+            }
+        }
+    }
+}

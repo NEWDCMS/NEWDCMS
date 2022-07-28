@@ -1,0 +1,493 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Products;
+
+@model ProductListModel
+
+<section id="content_wrapper">
+
+	<!-- Start: Topbar-Dropdown -->
+	<div id="topbar-dropmenu">
+		<div id="topbar-dropmenu">
+			@await Html.PartialAsync("_ToolBox")
+		</div>
+	</div>
+	<!-- End: Topbar-Dropdown -->
+	<!-- Start: Topbar -->
+	<header id="topbar">
+		<div class="topbar-left">
+			<ol class="breadcrumb">
+				<li class="crumb-active">
+					<a href="@Url.RouteUrl("HomePage")">档案</a>
+				</li>
+				<li class="crumb-icon">
+					<a href="@Url.RouteUrl("HomePage")">
+						<span class="glyphicon glyphicon-home"></span>
+					</a>
+				</li>
+				<li class="crumb-link">
+					<a href="#">员工相关</a>
+				</li>
+				<li class="crumb-trail">员工提成</li>
+			</ol>
+		</div>
+		<div class="topbar-right">
+			<div class="ml15 ib va-m" id="toggle_sidemenu_r">
+				<a href="#" class="pl5">
+					<i class="fa fa-sign-in fs22 text-primary"></i>
+					<span class="badge badge-hero badge-danger">3</span>
+				</a>
+			</div>
+		</div>
+	</header>
+	<!-- End: Topbar -->
+	<!-- Begin: Content -->
+	<section id="content">
+
+		<div class="special-alerts">
+			<div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+				<i class="fa fa-info pr10"></i>
+				<strong>您没有被授权此操作!</strong>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-6">
+				@*Select Form*@
+				<div class="row mb10">
+					<div class="col-md-12">
+
+						<div class="input-group">
+							<span class="input-group-addon">
+								提成方案
+							</span>
+							<select class="form-control" id="PercentagePlanId" name="PercentagePlanId">
+								@foreach (var plan in Model.PercentagePlans)
+								{
+									@*<option value="@plan.Id" selected="@(Model.CurrentPercentagePlan==plan.Id ? "selected" :"")">@plan.Name</option>*@
+									@if (plan.Id == Model.CurrentPercentagePlan)
+									{
+										<option value="@plan.Id" selected="selected">@plan.Name</option>
+									}
+									else
+									{
+										<option value="@plan.Id">@plan.Name</option>
+									}
+								}
+							</select>
+							<input type="hidden"  id="CategoryId" name="CategoryId" value="0"/>
+						</div>
+					</div>
+				</div>
+
+				@*Catagory Tree*@
+
+				<div class="panel">
+					<div class="panel-heading">
+						<div class="pull-left">
+							<span class="panel-title">
+								<span class="glyphicon glyphicon-th"></span>按类别配置提成
+							</span>
+						</div>
+						<div class="pull-right">
+						</div>
+					</div>
+					<div class="panel-body p5">
+						<div class="fixed-table-container">
+							<table id="CatagoriesTreeData" class="table table-striped table-bordered table-hover">
+								<thead>
+									<tr>
+										<th>商品类别</th>
+										<th class="text-left">提成方式</th>
+										<th class="text-right">销售提成(%或元)</th>
+										<th class="text-right">退货提成(%或元)</th>
+										<th class="text-center">操作</th>
+									</tr>
+								</thead>
+
+								<tbody>
+									<tr>
+										<td></td>
+										<td class="text-left"></td>
+										<td class="text-right"></td>
+										<td class="text-right"></td>
+										<td class="text-center" style="font-size:0px;">
+											<button type="button" class="btn btn-sm btn-info roweSetting" name="roweSetting"><i class="fa fa-pencil-square-o mr5"></i>设置</button>
+											<button type="button" class="btn btn-sm btn-danger rowReset" name="rowReset"><i class="fa fa-refresh mr5"></i>重置</button>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="col-md-6">
+
+
+				@*Toolbar*@
+
+				<div class="row mb10">
+					<div class="col-md-12">
+
+						<div class="pull-right">
+
+							<a href="@Url.Action("List","Percentage",new { planId= Model.CurrentPercentagePlan})" class="btn btn-info btn-sm mr5">
+								<span class="glyphicon glyphicon-refresh mr5" aria-hidden="true"></span> 刷新
+							</a>
+							<a href="@Url.Action("List","PercentagePlan")" class="btn btn-primary btn-sm">
+								<span class="glyphicon glyphicon-cog mr5" aria-hidden="true"></span>创建方案
+							</a>
+
+						</div>
+
+					</div>
+				</div>
+
+				@*GridView*@
+
+				<div class="panel">
+					<div class="panel-heading">
+						<span class="panel-title">
+							<span class="glyphicon glyphicon-th"></span>按商品配置提成
+						</span>
+					</div>
+					<div class="panel-body p5">
+						<table class="table table-striped table-bordered table-hover" id="datatable"></table>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+
+	</section>
+	<!-- End: Content -->
+</section>
+
+
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalFormPercentage" }, { "modalWindow", "modalWindowPercentage" }, { "showSave", "true" } }); }
+
+
+@section NewDefinFrameWorkScripts
+{
+	@{
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery-1.11.1.min.js", order: 999);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery_ui/jquery-ui.min.js", order: 999);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/bootstrap.min.js", order: 999);
+	}
+}
+
+
+
+@section CurPageScripts
+{
+
+	<script type="text/javascript">
+
+		//初始化操作按钮的方法
+		window.operateEvents = {
+			//设置提成
+			'click .roweSetting': function (e, value, row, index) {
+				var percentagePlanId = $("#PercentagePlanId").val();
+				var param = { productId: row.Id, percentagePlanId: percentagePlanId };
+				var actionUrl = "/Percentage/Create";
+				$(this).showModalV2($("#modalWindowPercentage"), actionUrl, param, "设置提成", $("#ModalFormPercentage"), null);
+			},
+			//重置提成
+			'click .rowReset': function (e, value, row, index) {
+				WinMsg.confirm({ message: "确认要重置选择的数据吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+					$.ajax({
+						type: "POST",
+						url: "/Percentage/Reset?percentageId=" + row.PercentageId,
+						contentType: "application/json",
+						dataType: "json",
+						success: function (result) {
+							if (result.Success) {
+								toastr.success(result.Message);
+							}
+							else {
+								$(this).showToastr(result.Message);
+							}
+						},
+						error: function () {
+							$(this).showToastr('网络错误，请重新保存！');
+						}
+					});
+					$("#CatagoriesTreeData").fancytree();
+					$("#datatable").bootstrapTable('refresh');
+				});
+			}
+		};
+
+		jQuery(document).ready(function () {
+			"use strict";
+
+			// Init Theme Core
+			Core.init({
+				sbm: "sb-l-c",
+			});
+
+			// Init Demo JS
+
+			//Demo.init();
+
+			//权限提示
+			if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+				$('#alert-demo-2').fadeToggle();
+				setTimeout(function () {
+					$('#alert-demo-2').fadeToggle();
+				}, 3000);
+			}
+
+			function logEvent(event, data, msg) {
+				//var args = $.isArray(args) ? args.join(", ") :
+				msg = msg ? ": " + msg : "";
+				$.ui.fancytree.info("Event('" + event.type + "', node=" + data.node + ")" + msg);
+			}
+
+			//商品类别树
+			$("#CatagoriesTreeData").fancytree({
+				extensions: ["table"],
+				table: {
+					indentation: 20,    
+					nodeColumnIdx: 0,     
+					checkboxColumnIdx: 0  
+				},
+				source: {
+					url: "/Percentage/GetFancyTree?plan=" + $("#PercentagePlanId").val()
+				},
+                activate: function (event, data)
+                {
+                    //console.log(data.node.data.id);
+                    $("#CategoryId").val(data.node.data.id);
+					$("#datatable").bootstrapTable('refresh');
+
+				},
+				lazyLoad: function (event, data) {
+					//data.result = $.ajax({
+					//    url: "/Percentage/GetFancyTree",
+					//    dataType: "json"
+					//});
+					//[{ "title": "Sub item", "lazy": true }, { "title": "Sub folder", "folder": true, "lazy": true }]
+					//data.result = { url: "ajax-sub2.json" };
+
+				},
+                renderColumns: function (event, data)
+				{
+					var node = data.node,
+						$tdList = $(node.tr).find(">td");
+					
+					// (index #0 is rendered by fancytree by adding the checkbox)
+					//$tdList.eq(0).text(node.getIndexHier());
+					// (index #2 is rendered by fancytree)
+					//$tdList.eq(1).text(node.key);
+					// Rendered by row template:
+					//$tdList.eq(4).html("<input type='checkbox' name='like' value='" + node.key + "'>");
+					$tdList.eq(1).text(node.data.title1);
+					$tdList.eq(2).text(node.data.title2);
+					$tdList.eq(3).text(node.data.title3);
+                    var options = '<button type="button" class="btn btn-sm btn-info" name="roweSetting"><i class="fa fa-pencil-square-o mr5" ></i>设置</button>'+
+						'<button type="button" class="btn btn-sm btn-danger" name="rowReset"><i class="fa fa-refresh mr5" ></i>重置</button>';
+
+                    $tdList.eq(4).html(options);
+                    
+					if (node.children != null && node.children.length > 0)
+                        $tdList.eq(4).html("");
+				}
+            });
+
+			$("#btnSelect").click(function (event) {
+				var node = $("#tree").fancytree("getActiveNode");
+				node.setSelected(!node.isSelected());
+			});
+			$("#btnRemove").click(function (event) {
+				var node = $("#tree").fancytree("getActiveNode");
+				node.remove();
+			});
+			//获取Id为tree的Fancytree对象
+			var $fancytree = $("#CatagoriesTreeData").fancytree("getTree");
+
+			//获取tree的根节点
+            //$("#CatagoriesTreeData").fancytree("getRootNode");
+
+			//访问每个节点并把节点展开
+			$("#CatagoriesTreeData").fancytree("getRootNode").visit(function (node) {
+				node.setExpanded(true);
+			});
+			// 格式化状态
+			function statusFormatter(value, row, index) {
+				if (value) {
+					return '<span class="label label-success">正常</span>';
+				} else {
+					return '<span class="label label-default">锁定</span>';
+				}
+			}
+
+			//查询参数
+            var queryParams = function (params) {
+                var temp =
+                {
+                    key: "",
+                    categoryId: $("#CategoryId").val(),
+                    plan: $("#PercentagePlanId").val(),
+                    pageSize: params.limit,  
+                    pageIndex: (params.offset / params.limit) 
+                };
+                return temp;
+            }
+
+			//商品列表
+			$("#datatable").bootstrapTable({
+				url: "/Percentage/AsyncList",
+				method: 'get',
+				striped: true,
+				cache: false,
+				pagination: true,
+				showPagination: true,
+                queryParams: queryParams,
+				sidePagination: "server",
+				idField: 'Id',
+				pageNumber: 1,
+				pageSize: 15,
+				pageList: [10, 25, 50, 100],
+				search: false,
+				strictSearch: true,
+				showRefresh: false,
+				clickToSelect: false,
+				uniqueId: "Id",
+				showToggle: false,
+				cardView: false,
+				detailView: false,
+				columns: [
+
+					{ field: 'Name', title: '商品名称', align: 'left' },
+					{ field: 'PercentageCalCulateMethods', align: 'left', title: '提成方式' },
+					{ field: 'PercentageSales', align: 'right', title: '销售提成(%或元)' },
+					{ field: 'PercentageReturns', align: 'right', title: '退货提成(%或元)' },
+					{ field: 'operate', title: '操作', align: 'center', width: '151', events: operateEvents, formatter: operateFormatter }
+				],
+				onPageChange: function (number, size) {
+					m_pagerow = (number - 1) * size;
+				},
+				onLoadSuccess: function (data) {
+					//console.log('load');
+				}
+			});
+
+			// 格式化按钮
+			function operateFormatter(value, row, index) {
+				return [
+					'<button type="button" class="btn btn-sm btn-info roweSetting"><i class="fa fa-pencil-square-o mr5" ></i>设置</button>',
+					'<button type="button" class="btn btn-sm btn-danger rowReset"><i class="fa fa-refresh mr5" ></i>重置</button>'
+				].join('');
+			}
+
+			//设置提成
+			$("#CatagoriesTreeData").on("click", "button[name=roweSetting]", function (e) {
+				var node = $.ui.fancytree.getNode(e),
+					$input = $(e.target);
+				//e.stopPropagation();
+				//console.log(node);
+				var percentagePlanId = $("#PercentagePlanId").val();
+				var param = { catagoryId: node.data.id, percentagePlanId: percentagePlanId };
+				var actionUrl = "/Percentage/Create";
+				$(this).showModalV2($("#modalWindowPercentage"), actionUrl, param, "设置提成", $("#ModalFormPercentage"), null)
+			});
+
+			//重置提成
+			$("#CatagoriesTreeData").on("click", "button[name=rowReset]", function (e) {
+				var node = $.ui.fancytree.getNode(e),
+					$input = $(e.target);
+				WinMsg.confirm({ message: "确认要重置选择的数据吗？" }).on(function (e) {
+					if (!e) {
+						return;
+					}
+					$.ajax({
+						type: "POST",
+						url: "/Percentage/Reset?percentageId=" + node.data.id1,
+						contentType: "application/json",
+						dataType: "json",
+						success: function (result) {
+							if (result.Success) {
+								toastr.success(result.Message);
+							}
+							else {
+								$(this).showToastr(result.Message);
+							}
+						},
+						error: function () {
+							$(this).showToastr('网络错误，请重新保存！');
+						}
+					});
+					$("#CatagoriesTreeData").fancytree();
+					$("#datatable").bootstrapTable('refresh');
+
+				});
+			});
+
+			//保存设置提成
+			$("#btnSave_modalWindowPercentage", $("#modalWindowPercentage")).click(function () {
+				if ($("select[name=CalCulateMethodId]").val() == "") {
+					$(this).showToastr('请选择提成计算方式！！！');
+					return false;
+				}
+				var formobj = $("#modalWindowPercentage"), rangs = [];
+				//获取按利润区间范围计算提成项
+				var allTableData = $("#PercentageRangeOption").bootstrapTable('getData');
+				for (var i = 0; i < allTableData.length; i++) {
+					//console.log(allTableData[i]);
+					var row = {
+						Id: allTableData[i].Id,
+						NetSalesRange: allTableData[i].NetSalesRange,
+						SalesPercent: allTableData[i].SalesPercent,
+						ReturnPercent: allTableData[i].ReturnPercent,
+					};
+					rangs.push(row);
+				}
+
+                var postData =
+                {
+                    Percentage:
+                    {
+                        StoreId: 0,
+                        PercentagePlanId: $("#PercentagePlanId").val() == "" ? 0 : $("#PercentagePlanId").val(),
+                        CatagoryId: $("#CatagoryId").val() == "" ? 0 : $("#CatagoryId").val(),
+                        ProductId: $("#ProductId").val() == "" ? 0 : $("#ProductId").val(),
+                        Name: $("input[name=Name]", $("#modalWindowPercentage")).val(),
+                        CalCulateMethodId: $("select[name=CalCulateMethodId]").val() == "" ? 0 : $("select[name=CalCulateMethodId]").val(),
+                        QuantityCalCulateMethodId: $("select[name=QuantityCalCulateMethodId]").val() == "" ? 0 : $("select[name=QuantityCalCulateMethodId]").val(),
+                        CostingCalCulateMethodId: $("select[name=CostingCalCulateMethodId]").val() == "" ? 0 : $("select[name=CostingCalCulateMethodId]").val(),
+                        IsReturnCalCulated: $("input[type='checkbox'],input[name='IsReturnCalCulated']").is(':checked') ? true : false,
+                        IsGiftCalCulated: $("input[type='checkbox'],input[name='IsGiftCalCulated']").is(':checked') ? true : false,
+                        SalesPercent: $("input[name=SalesPercent]").val() == "" ? 0 : $("input[name=SalesPercent]").val(),
+                        ReturnPercent: $("input[name=ReturnPercent]").val() == "" ? 0 : $("input[name=ReturnPercent]").val(),
+                        SalesAmount: $("input[name=SalesAmount]").val() == "" ? 0 : $("input[name=SalesAmount]").val(),
+                        ReturnAmount: $("input[name=ReturnAmount]").val() == "" ? 0 : $("input[name=ReturnAmount]").val(),
+                        Rangs: rangs
+                    }
+                };
+
+				//console.log(JSON.stringify(percentageSerialize));
+				//return false;
+
+				$(this).remoteSubmit("post", "/Percentage/Create?percentageId=" + $("#Id").val(), postData, null, function () { $("#modalWindowPercentage").modal('hide'); }, null, null);
+
+                //$("#CatagoriesTreeData").fancytree(); load
+                //$fancytree.load(true);
+				//$("#datatable").bootstrapTable('refresh');
+				window.location.href = "/Percentage/List?";
+			});
+
+			$("#PercentagePlanId").change(function () {
+				location.href = "?planId=" + $("#PercentagePlanId").val();
+			});
+
+		});
+	</script>
+}

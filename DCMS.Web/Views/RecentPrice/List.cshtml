@@ -1,0 +1,402 @@
+﻿@using System.Linq;
+@using System.Collections.Generic;
+@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Products;
+
+@model RecentPriceListModel
+
+<section id="content_wrapper">
+
+	<!-- Start: Topbar-Dropdown -->
+	<div id="topbar-dropmenu">
+		<div id="topbar-dropmenu">
+			@await Html.PartialAsync("_ToolBox")
+		</div>
+	</div>
+	<!-- End: Topbar-Dropdown -->
+	<!-- Start: Topbar -->
+	<header id="topbar">
+		<div class="topbar-left">
+			<ol class="breadcrumb">
+				<li class="crumb-active">
+					<a href="@Url.RouteUrl("HomePage")">档案</a>
+				</li>
+				<li class="crumb-icon">
+					<a href="@Url.RouteUrl("HomePage")">
+						<span class="glyphicon glyphicon-home"></span>
+					</a>
+				</li>
+				<li class="crumb-link">
+					<a href="#">商品相关</a>
+				</li>
+				<li class="crumb-trail">上次售价</li>
+			</ol>
+		</div>
+		<div class="topbar-right">
+			<div class="ml15 ib va-m" id="toggle_sidemenu_r">
+				<a href="#" class="pl5">
+					<i class="fa fa-sign-in fs22 text-primary"></i>
+					<span class="badge badge-hero badge-danger">3</span>
+				</a>
+			</div>
+		</div>
+	</header>
+	<!-- End: Topbar -->
+	<!-- Begin: Content -->
+	<section id="content">
+
+		<div class="special-alerts">
+			<div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+				<i class="fa fa-info pr10"></i>
+				<strong>您没有被授权此操作!</strong>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-12">
+
+				<div class="panel panel-default">
+					<div class="panel-heading">  <span class="glyphicon glyphicon-search"></span> 查询</div>
+					<div class="panel-body p10">
+						<form id="formSearch" novalidate="novalidate">
+							<div class="row">
+								<div class="col-sm-2">
+									<div class="input-group">
+										<input asp-for="TerminalId" type="hidden" />
+										<input asp-for="TerminalName" class="form-control" placeholder="客户..." />
+										<span class="input-group-btn">
+											<button id="btn_search_customer" type="button" class="btn btn-default">
+												<span class="glyphicon glyphicon-search"></span>
+											</button>
+										</span>
+									</div>
+								</div>
+								<div class="col-sm-2">
+									<div class="input-group">
+										<input asp-for="ProductId" type="hidden" />
+										<input asp-for="ProductName" class="form-control" placeholder="商品名称..." />
+										<span class="input-group-btn">
+											<button id="btn_search_product" type="button" class="btn btn-default">
+												<span class="glyphicon glyphicon-search"></span>
+											</button>
+										</span>
+									</div>
+								</div>
+								<div class="col-sm-3">
+
+								</div>
+								<div class="col-sm-5 text-right">
+									<button id="btn_query" type="button" class="btn btn-info">
+										<span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+									</button>
+									@*<button id="btn_query" type="button" class="btn btn-danger">
+											<span class="glyphicon glyphicon-remove mr5" aria-hidden="true"></span>清空
+										</button>
+										<button id="btn_importProduct" type="button" class="btn btn-info">
+											<span class="glyphicon glyphicon-import mr5" aria-hidden="true"></span> 导入
+										</button>
+										<button id="btn_expoertProduct" type="button" class="btn btn-info">
+											<span class="glyphicon glyphicon-export mr5" aria-hidden="true"></span> 导出
+										</button>*@
+									<button class="btn btn-primary" type="button" id="FormSubmit" value="保存"><i class="fa fa-floppy-o mr5"></i>保存</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+
+
+			</div>
+		</div>
+
+
+
+		<div class="row">
+			<div class="col-md-12">
+
+				@*GridView*@
+
+				<div class="panel">
+					<div class="panel-heading">
+						<span class="panel-title">
+							<span class="glyphicon glyphicon-th"></span> 价格列表
+						</span>
+					</div>
+					<div class="panel-body p5">
+						<table id="RecentPrices" class="table table-striped table-bordered table-hover"></table>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+
+	</section>
+	<!-- End: Content -->
+</section>
+
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ModalForm" }, { "showSave", "true" } }); }
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "ProductModalForm" }, { "modalWindow", "ModalProductWindows" }, { "showSave", "true" } }); }
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "TerminalSelectForm" }, { "modalWindow", "TerminalSelectModalWindow" }, { "showSave", "true" } }); }
+
+
+
+
+@section NewDefinFrameWorkScripts
+{
+	@{
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery-1.11.1.min.js", order: 999);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/jquery/jquery_ui/jquery-ui.min.js", order: 999);
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/bootstrap/bootstrap.min.js", order: 999);
+	}
+}
+
+
+
+@section CurPageScripts
+{
+	
+
+	<script type="text/javascript">
+
+		jQuery(document).ready(function () {
+			"use strict";
+
+			// Init Theme Core
+			Core.init({
+				sbm: "sb-l-c",
+			});
+
+			// Init Demo JS
+
+			//Demo.init();
+			//权限提示
+			if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+				$('#alert-demo-2').fadeToggle();
+				setTimeout(function () {
+					$('#alert-demo-2').fadeToggle();
+				}, 3000);
+			}
+
+			//客户搜索
+			$(document).on('click', "#btn_search_customer", function () {
+				var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+				$(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { ids: "" }, "选择终端", $("#TerminalSelectForm"), function (rows) { });
+			});
+
+			window.operateEventsPopTerminal = {
+				'click .rowSelect': function (e, value, row, index) {
+					try {
+						$("#TerminalId").val(row.Id);
+						$("#TerminalName").val(row.Name);
+						$('#TerminalSelectModalWindow').modal('hide');
+					}
+					catch (err) {
+						console.log(err);
+						$(this).showToastr(err);
+						return;
+					}
+				}
+			};
+
+			//商品列表选择赋值
+			window.operateEventsPop = {
+				'click .rowSelect': function (e, value, row, index) {
+					var index = $(this).attr("data-id");
+					var keys = Object.keys(row.Units);
+					$("#ProductName").val(row.Name);
+					$("#ProductId").val(row.Id);
+					$('#ModalProductWindows').modal('hide');
+				}
+			};
+
+			$("#btn_search_product").click(function () {
+				$(this).productSelectShowModal($("#ModalProductWindows"), "/Product/AsyncSearchSelectPopup", null, "选择商品", $("#ProductModalForm"),
+					function () { });
+			});
+
+
+			function formatFixed(value, row, index) {
+				return "" + parseFloat(typeof (value) == 'undefined' ? '0' : value).toFixed(2) + "";
+			}
+
+
+			$("#RecentPrices").bootstrapTable({
+				url: '/RecentPrice/AsyncRecentPrices',
+				striped: true,
+				cache: false,
+				pagination: true,
+				showPagination: true,
+				sidePagination: "server",
+				sortable: false,
+				sortOrder: "asc",
+				search: false,
+				queryParams: function (params) {
+					var temp =
+					{
+						cumtomerName: "",
+						productName: "",
+						pagenumber: (params.offset / params.limit)  //页码
+					};
+					return temp;
+				},
+				strictSearch: false,
+				showColumns: false,
+				showRefresh: false,
+				clickToSelect: false,
+				uniqueId: "id",
+				showToggle: false,
+				editable: true,
+				cardView: false,
+				detailView: false,
+				showFooter: false,
+				columns: [
+					{
+						title: '<i class="fa fa-gear fs18"></i>',
+						align: 'center',
+						formatter: function (value, row, index) {
+							return m_pagerow + index + 1;
+						}
+					},
+					{
+						field: 'CustomerId',
+						visible: false
+					},
+					{
+						field: 'CustomerName',
+                        title: '客户名称', align: 'left',
+                        formatter: $(this).formatIsNull
+					},
+					{
+						field: 'ProductId',
+						visible: false
+					},
+					{
+						field: 'ProductName',
+						title: '商品名称',
+						class: 'editable',
+						align: 'left',
+                        width: '200',
+                        formatter: $(this).formatIsNull
+					},
+					{
+						field: 'SmallUnitPrice',
+						align: 'right',
+						class: 'editable',
+						title: '小单位价格',
+						formatter: $(this).formatFixed
+					},
+					{
+						field: 'StrokeUnitPrice',
+						align: 'right',
+						class: 'editable',
+						title: '中单位价格',
+						formatter: $(this).formatFixed
+					},
+					{
+						field: 'BigUnitPrice',
+						align: 'right',
+						class: 'editable',
+						title: '大单位价格',
+						formatter: $(this).formatFixed
+					},
+					{
+						field: 'UpdateTime',
+						title: '修改时间',
+						align: 'center',
+						width: '200',
+						formatter: function (value, row, index) {
+							return $(this).dateFtt('yyyy-MM-dd hh:ss:mm', new Date(value));
+						}
+					}
+				],
+				onClickCell: function (field, value, row, $element) {
+
+					if (field == "Operate") {
+						return false;
+					}
+
+					var input = $($element).find("input");
+					var select = $($element).find("select");
+					if (input.length > 0 || select.length > 0)
+						return false;
+
+					//当前列所在行的索引
+					var index = $element.parent().attr("data-index");
+
+					if (["SmallUnitPrice", "StrokeUnitPrice", "BigUnitPrice"].indexOf(field) >= 0) {
+						var html = '<input type="text" class="form-control input-sm" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+						$($element).html(html);
+						var inputObj = $("#" + $(html).attr("id"));
+						inputObj.focus();
+						inputObj.bind("focusout", function () {
+							row[field] = $(this).val();
+							$("#RecentPrices").bootstrapTable('updateRow', { index: index, row: row });
+							$($element).html("" + value + "");
+						});
+					}
+					//debug
+					$.each($('#RecentPrices').bootstrapTable('getData'), function (i, row) {
+						//console.log(row);
+					});
+				}
+			});
+
+			//查询
+			$("#btn_query").click(function () {
+				$("#RecentPrices").bootstrapTable('refresh', { url: "/RecentPrice/AsyncRecentPrices?cumtomerName=" + $("#TerminalName").val() + "&productName=" + $("#ProductName").val() });
+			});
+
+			//保存配置
+			$("#FormSubmit").click(function () {
+				//获取表格的所有内容行
+				var allTableData = $('#RecentPrices').bootstrapTable('getData');
+				var serializeData = [];
+				$.each(allTableData, function (i, row) {
+					var tmpObj = {
+						"Id": typeof (row.Id) == 'undefined' ? "0" : row.Id,
+						"ProductId": typeof (row.ProductId) == 'undefined' ? "0" : row.ProductId,
+						"CustomerId": typeof (row.CustomerId) == 'undefined' ? "0" : row.CustomerId,
+						"SmallUnitPrice": typeof (row.SmallUnitPrice) == 'undefined' ? "0" : row.SmallUnitPrice,
+						"StrokeUnitPrice": typeof (row.StrokeUnitPrice) == 'undefined' ? "0" : row.StrokeUnitPrice,
+						"BigUnitPrice": typeof (row.BigUnitPrice) == 'undefined' ? "0" : row.BigUnitPrice
+					};
+					serializeData.push(tmpObj);
+				});
+				console.log(JSON.stringify(serializeData));
+
+				////return false;
+				//$.ajax({
+				//	type: "post",
+				//	url: "/RecentPrice/RecentPriceUpdate",
+				//	data: JSON.stringify(serializeData),
+				//	contentType: "application/json",
+				//	dataType: "json",
+				//	success: function (result) {
+				//		if (result.Success) {
+				//			toastr.success(result.Message);
+				//			$("#RecentPrices").bootstrapTable('refresh');
+				//		}
+				//		else {
+				//			$(this).showToastr(result.Message);
+				//		}
+				//	},
+				//	error: function () {
+				//		$(this).showToastr('网络错误，请重新保存！');
+				//	}
+				//});
+
+				//保存的数据
+				var postData = {
+					//商品项目
+					Items: serializeData,
+				};
+
+				//保存服务器
+				$(this).remoteSubmit("post", "/RecentPrice/RecentPriceUpdate", postData, null);
+			});
+		});
+	</script>
+}

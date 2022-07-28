@@ -1,0 +1,693 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Finances;
+@using DCMS.ViewModel.Models.Report;
+@using System.Collections.Generic;
+@using System.Linq;
+@using DCMS.Core.Domain.Common;
+
+@model VisitSummeryListModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        @await Html.PartialAsync("_ToolBox")
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">报表</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">员工报表</a>
+                </li>
+                <li class="crumb-trail">业务员业绩</li>
+                <li class="crumb-trail">拜访量汇总</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <span class="glyphicon glyphicon-tasks"></span> 拜访量汇总报表
+                        </div>
+                    </div>
+                    <div class="panel-body p10">
+                        <div class="bootstrap-table">
+                            <div class="fixed-table-toolbar">
+                                <div class="bs-bars pull-left">
+                                    <div id="toolbar" class="btn-group mb10">
+
+                                        <input type="text" id="StartTime" name="StartTime" class="datetimepicker pull-left" placeholder="开始..." style="height:30px;width:100px" />
+                                        <input type="text" id="EndTime" name="EndTime" class="datetimepicker pull-left" placeholder="结束..." style="height:30px;width:100px;margin-left:5px;margin-right:5px;" />
+
+                                        <a class="btn-alert btn btn-sm mr5 rangSelect" id="rangSelect_1" data-id="1"> <span class="ladda-label">今日</span></a>
+                                        <a class="btn-alert btn btn-sm mr5 rangSelect" id="rangSelect_3" data-id="3"><span class="ladda-label">昨日</span></a>
+                                        <a class="btn-alert btn btn-sm mr5 rangSelect" id="rangSelect_4" data-id="4"><span class="ladda-label">前天</span></a>
+                                        <a class="btn-alert btn btn-sm mr5 rangSelect" id="rangSelect_6" data-id="6"><span class="ladda-label">本周</span></a>
+                                        <a class="btn-alert btn btn-sm mr5 rangSelect" id="rangSelect_7" data-id="7"><span class="ladda-label">上月</span></a>
+                                        <a class="btn-primary btn btn-sm mr5 rangSelect" id="rangSelect_8" data-id="8"><span class="ladda-label">本月</span></a>
+
+
+
+                                        <a href="@Url.Action("VisitSummery")" class="btn btn-danger btn-sm">
+                                            <span class="glyphicon glyphicon-refresh mr5"></span>重置
+                                        </a>
+                                        <a href="#" id="VisitExportAll" target="_blank" class="btn btn-info btn-sm mr5" style="margin-left:5px;">
+                                            <span class="glyphicon glyphicon-export mr5"></span>导出全部
+                                        </a>
+
+                                        <a id="rangSearch" class="btn btn-default btn-sm" >
+                                            <span class="glyphicon glyphicon-search mr5"></span>查询
+                                        </a>
+                                        <a href="@Url.Action("BusinessUserVisitOfYear")" class="btn btn-default btn-sm" style="margin-left:5px;">
+                                            <span class="glyphicon glyphicon-list mr5"></span>统计
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel panel-default" id="panel1">
+                                <div class="row">
+                                    <!-- Three panes -->
+                                    <div class="col-md-12 admin-grid">
+                                        <div class="panel sort-disable">
+                                            <div class="panel-heading">
+                                                <span class="panel-title">拜访量汇总统计</span>
+                                                @*<a class="btn btn-default btn-sm pull-right m5 mrn p5 pbn" id="AdvancedChart"><i class="fa fa-angle-double-right"></i></a>*@
+                                            </div>
+                                            <div class="panel-body pn">
+
+                                                <div id="high-line4" style="max-width: 100%;height:400px;text-align: center;vertical-align:central">
+                                                    <img style="margin-top:150px" src="https://resources.jsdcms.com:8999/content/images/loading.gif" />
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- end: .col-md-12.admin-grid -->
+                                </div>
+                            </div>
+
+                            <div class="fixed-table-container">
+                                <div class="fixed-table-body">
+                                    <input type="hidden" name="CType" id="CType" value="8" />
+                                    <input type="hidden" name="CTitle" id="CTitle" value="本月" />
+
+                                    <table class="table table-striped table-bordered table-hover" id="VisitSummery"></table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+
+    <!-- End: Content -->
+</section>
+
+<div id="modal-image" class="popup-basic popup-lg mfp-hide">
+    <img class="img-responsive" src="https://resources.jsdcms.com:8999/content/images/loading.gif">
+</div>
+
+@await Html.PartialAsync("_Windows", Model)
+
+@{
+    Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/magnific/jquery.magnific-popup.js", order: 999);
+    //Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/ladda/ladda.min.js", order: 999);
+}
+
+@section CurPageScripts
+{
+
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Theme Core
+            Core.init();
+
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            //高级搜索
+            $("#panel0 #AdvancedSearch").click(function () {
+                var ico = $(this).find(".fa");
+                if (ico.hasClass('fa-angle-double-right'))
+                    ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+                else
+                    ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+                $("#panel0").find(".panel-body").toggleClass("hidden fadeIn");
+            });
+
+            //统计图
+            $("#panel1 #AdvancedChart").click(function () {
+                var ico = $(this).find(".fa");
+                if (ico.hasClass('fa-angle-double-right'))
+                    ico.removeClass("fa-angle-double-right").addClass("fa-angle-double-down");
+                else
+                    ico.removeClass("fa-angle-double-down").addClass("fa-angle-double-right");
+                $("#panel1").find(".panel-body").toggleClass("hidden fadeIn");
+            });
+
+            //客户搜索
+            $(document).on('click', "#btn_search_customer", function () {
+                var actionUrl = "/Terminal/AsyncSearchSelectPopup";
+                $(this).showModalV2($("#TerminalSelectModalWindow"), actionUrl, { ids: "" }, "选择终端", $("#TerminalSelectForm"), function (rows) { });
+            });
+
+            window.operateEventsPopTerminal = {
+                'click .rowSelect': function (e, value, row, index) {
+                    try {
+                        $("#TerminalId").val(row.Id);
+                        $("#TerminalName").val(row.Name);
+                        $('#TerminalSelectModalWindow').modal('hide');
+                    }
+                    catch (err) {
+                        console.log(err);
+                        $(this).showToastr(err);
+                        return;
+                    }
+                }
+            };
+
+
+            //防止重复查询
+            var queryNumber = 1;
+            $("#btn_query").click(function () {
+                if (queryNumber > 1) {
+                    return false;
+                }
+                queryNumber = queryNumber + 1;
+            });
+
+            //异步获取拜访汇总
+            var loadVisitSummery = function (type)
+            {
+                //载入明细
+                $("#VisitSummery").bootstrapTable({
+                    url: '/StaffReport/AsyncVisitSummery',
+                    striped: true,
+                    cache: false,
+                    pagination: true,
+                    showPagination: false,
+                    sidePagination: "server",
+                    queryParams: function (params) {
+                        var temp =
+                        {
+                            type: $("#CType").val(),
+                            start: $("#StartTime").val(),
+                            end: $("#EndTime").val() 
+                        };
+                        return temp;
+                    },
+                    sortable: false,
+                    sortOrder: "asc",
+                    search: false,
+                    pageSize: 50,                     //每页的记录行数（*）
+                    pageList: [50],
+                    strictSearch: false,
+                    showColumns: false,
+                    showRefresh: false,
+                    clickToSelect: false,
+                    uniqueId: "id",
+                    showToggle: false,
+                    editable: true,
+                    cardView: false,
+                    detailView: false,
+                    showFooter: true,
+                    onLoadSuccess: function (data) {
+                        //$(".fixed-table-pagination").hide();
+                    },
+                    onPostBody: function (data) {
+                        $("[data-toggle='popover']").popover();
+                    },
+                    columns: [
+                        {
+                            title: '<i class="fa fa-gear fs18"></i>',
+                            align: 'center',
+                            width: 50,
+                            formatter: function (value, row, index) {
+                                return m_pagerow + index + 1;
+                            },
+                            footerFormatter: function (value) {
+                                return '总计';
+                            }
+                        },
+                        {
+                            field: 'UserName',
+                            title: '业务员',
+                            align: 'center',
+                            width: 100
+                        },
+                        {
+                            field: 'VistCount',
+                            title: '拜访终端量',
+                            align: 'center',
+                            formatter: function (value, row, index) {
+                                return "<b>" + value + "</b> <a href='#' id='VistCount_" + row.UserId + "' class='VistCount pull-right'><span class=\"glyphicons glyphicons-edit\"></span></a>";
+                            },
+                            footerFormatter: function (rows) {
+                                var sum = 0;
+                                for (var i = 0; i < rows.length; i++) {
+                                    sum += rows[i].VistCount
+                                }
+                                return "<b>" + sum + "家</b>";
+                            }
+                        },
+                        {
+                            field: 'NewAddCount',
+                            title: '新增终端量',
+                            align: 'center',
+                            formatter: function (value, row, index) {
+                                return "<b>" + value + "</b> <a href='#' id='NewAddCount_" + row.UserId + "' class='NewAddCount pull-right'><span class=\"glyphicons glyphicons-edit\"></span></a>";
+                            },
+                            footerFormatter: function (rows) {
+                                var sum = 0;
+                                for (var i = 0; i < rows.length; i++) {
+                                    sum += rows[i].NewAddCount
+                                }
+                                return "<b>" + sum + "家</b>";
+                            }
+                        },
+                        {
+                            field: 'DoorheadPhotoCount',
+                            title: '拜访门头照片数',
+                            align: 'center',
+                            formatter: function (value, row, index) {
+                                return "<b>" + value + "</b> <a href='#' id='DoorheadPhotoCount_" + row.UserId + "' class='DoorheadPhotoCount pull-right'><span class=\"glyphicons glyphicons-edit\"></span></a>";
+                            },
+                            footerFormatter: function (rows) {
+                                var sum = 0;
+                                for (var i = 0; i < rows.length; i++) {
+                                    sum += rows[i].DoorheadPhotoCount
+                                }
+                                return "<b>" + sum + "张</b>";
+                            }
+                        },
+                        {
+                            field: 'DisplayPhotoCount',
+                            title: '拜访陈列照片数',
+                            align: 'center',
+                            formatter: function (value, row, index) {
+                                return "<b>" + value + "</b> <a href='#' id='DisplayPhotoCount_" + row.UserId + "' class='DisplayPhotoCount pull-right'><span class=\"glyphicons glyphicons-edit\"></span></a>";
+                            },
+                            footerFormatter: function (rows) {
+                                var sum = 0;
+                                for (var i = 0; i < rows.length; i++) {
+                                    sum += rows[i].DisplayPhotoCount
+                                }
+                                return "<b>" + sum + "张</b>";
+                            }
+                        },
+                        {
+                            field: 'TotalDuration',
+                            title: '拜访总时长',
+                            align: 'center',
+                        },
+                        {
+                            field: 'Operate',
+                            title: '操作',
+                            align: 'center',
+                            width: '130',
+                            events: {
+                                'click .visitExport': function (e, value, row, index) {
+                                    window.location.href = "/StaffReport/VisitExport?staffUserId=" + row.UserId + "&type=" + $("#CType").val() + "&start=" + $("#StartTime").val() + "&end=" + $("#EndTime").val();
+                                }
+                            },
+                            formatter: function (value, row, index) {
+                                return [
+                                    '<button type="button" class="btn btn-sm btn-info visitExport" title="导出个人"><i class="glyphicon glyphicon-export mr5" ></i> 导出 </button>'
+                                ].join('');
+                            }
+                        }
+                    ]
+                });
+            }
+            loadVisitSummery(8);
+
+
+            //拜访量 rangSelect
+            var getBusinessAnalysis = function (type)
+            {
+                var line4 = $('#high-line4');
+                //var reportData = {};
+                $.ajax({
+                    //async: false,
+                    type: "get",
+                    beforeSend: function ()
+                    {
+        
+                    },
+                    url: "/Common/GetBusinessAnalysis",
+                    data: { type: type },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result.Success) {
+
+                            switch (type) {
+                                case "1":
+                                    $("#rangSelect_1").html("今日");
+                                    break;
+                                case "3":
+                                    $("#rangSelect_3").html("昨日");
+                                    break;
+                                case "4":
+                                    $("#rangSelect_4").html("前日");
+                                    break;
+                                case "6":
+                                    $("#rangSelect_6").html("本周");
+                                    break;
+                                case "7":
+                                    $("#rangSelect_7").html("上月");
+                                    break;
+                                case "8":
+                                    $("#rangSelect_8").html("本月");
+                                    break;
+                            }
+
+                            var reportData = $(this).jsonKeysToCase(result.Data);
+                            //图表展示
+                            var highColors = [bgWarning, bgPrimary, bgInfo, bgAlert,
+                                bgDanger, bgSuccess, bgSystem, bgDark
+                            ];
+                            var cols = reportData.usernames;
+                            var datas = [
+                                {
+                                    "name": "终端拜访量",
+                                    "type": 'spline',
+                                    "data": reportData.vistcounts
+                                },
+                                {
+                                    "name": "销售开单量",
+                                    "type": 'spline',
+                                    "data": reportData.salecounts
+                                },
+                                {
+                                    "name": "新增终端量",
+                                    "type": 'spline',
+                                    "data": reportData.newaddcounts
+                                }];
+                            if (line4.length) {
+                                line4.highcharts({
+                                    credits: false,
+                                    colors: highColors,
+                                    //chart: {
+                                    //    type: 'column',
+                                    //    zoomType: 'x',
+                                    //    panning: true,
+                                    //    panKey: 'shift',
+                                    //    marginRight: 50,
+                                    //    marginTop: -5,
+                                    //},
+                                    chart: {
+                                        backgroundColor: '#f9f9f9', //背景
+                                        backgroundColor: '#fff', //背景
+                                        className: 'br-r',
+                                        type: 'line', //图表类型
+                                        zoomType: 'x', //缩放类型
+                                        panning: true, //是否启用平移
+                                        panKey: 'shift', //平移键
+                                        marginTop: 25, //外边距
+                                        marginRight: 1,
+                                    },
+                                    title: {
+                                        text: null
+                                    },
+                                    xAxis: {
+                                        gridLineColor: '#EEE',
+                                        lineColor: '#EEE',
+                                        tickColor: '#EEE',
+                                        categories: cols,
+                                        labels: {
+                                            rotation: -45
+                                        }
+                                    },
+                                    yAxis: {
+                                        min: 0,
+                                        title: {
+                                            text: '',
+                                            align: 'high'
+                                        },
+                                        labels: {
+                                            overflow: 'justify'
+                                        }
+                                    },
+                                    //plotOptions: {
+                                    //    spline: {
+                                    //        lineWidth: 3,
+                                    //    },
+                                    //    area: {
+                                    //        fillOpacity: 0.2
+                                    //    }
+                                    //},
+                                    plotOptions: {
+                                        spline: {
+                                            lineWidth: 3, //数据列的线条宽度
+                                            dataLabels: {
+                                                enabled: true
+                                            },
+                                        },
+                                        area: {
+                                            fillOpacity: 0.2 //填充区域图的透明度
+                                        }
+                                    },
+                                    legend: {
+                                        enabled: true,
+                                    },
+                                    series: datas
+                                });
+                            }
+
+                            //
+                        }
+                    },
+                    complete: function ()
+                    {
+                        $("#VisitSummery").bootstrapTable('refresh');  
+                    },
+                    error: function () {
+                        $(this).showToastr('网络错误，请重新保存！');
+                    }
+                });
+            }
+            getBusinessAnalysis(0);
+
+
+            //范围选择
+            $(".rangSelect").click(function ()
+            {
+                $("#rangSelect_8").removeClass("btn-primary").addClass("btn-default");
+                $(this).html("<img src='https://resources.jsdcms.com:8999/content/images/loading.gif' width='15px'  height='15px'/>");
+
+                var mp = $("#toolbar").find(".rangSelect");
+                for (var i = 0; i < mp.length; i++) {
+                    $(mp).removeClass("btn-alert").addClass("btn-default");
+                }
+                $(this).addClass("btn-alert");
+                var cur = $(this).attr("data-id");
+                $("#CType").val(cur);
+                getBusinessAnalysis(cur);
+               
+            });
+
+            //时间跨度选择
+            $("#rangSearch").click(function () {
+                
+                var start = $("#StartTime").val();
+                var end = $("#EndTime").val();
+                if (start == "") {
+                    $(this).showToastr('请选择开始日期');
+                    return;
+                }
+                if (end == "") {
+                    $(this).showToastr('请选择结束日期');
+                    return;
+                }
+                $("#CType").val(0);
+                $(this).html("<img src='https://resources.jsdcms.com:8999/content/images/loading.gif' width='15px'  height='15px'/>");
+                var line4 = $('#high-line4');
+                $.ajax({
+                    //async: false,
+                    type: "get",
+                    beforeSend: function () {
+
+                    },
+                    url: "/Common/GetBusinessAnalysis",
+                    data: { type: 0,start: start, end: end },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result.Success)
+                        {
+                            $("#rangSearch").html("<span class=\"glyphicon glyphicon-search mr5\"></span>查询");
+                            var reportData = $(this).jsonKeysToCase(result.Data);
+                            //图表展示
+                            var highColors = [bgWarning, bgPrimary, bgInfo, bgAlert,
+                                bgDanger, bgSuccess, bgSystem, bgDark
+                            ];
+                            var cols = reportData.usernames;
+                            var datas = [
+                                {
+                                    "name": "终端拜访量",
+                                    "type": 'spline',
+                                    "data": reportData.vistcounts
+                                },
+                                {
+                                    "name": "销售开单量",
+                                    "type": 'spline',
+                                    "data": reportData.salecounts
+                                },
+                                {
+                                    "name": "新增终端量",
+                                    "type": 'spline',
+                                    "data": reportData.newaddcounts
+                                }];
+                            if (line4.length) {
+                                line4.highcharts({
+                                    credits: false,
+                                    colors: highColors,
+                                    chart: {
+                                        backgroundColor: '#f9f9f9', //背景
+                                        backgroundColor: '#fff', //背景
+                                        className: 'br-r',
+                                        type: 'line', //图表类型
+                                        zoomType: 'x', //缩放类型
+                                        panning: true, //是否启用平移
+                                        panKey: 'shift', //平移键
+                                        marginTop: 25, //外边距
+                                        marginRight: 1,
+                                    },
+                                    title: {
+                                        text: null
+                                    },
+                                    xAxis: {
+                                        gridLineColor: '#EEE',
+                                        lineColor: '#EEE',
+                                        tickColor: '#EEE',
+                                        categories: cols,
+                                        labels: {
+                                            rotation: -45
+                                        }
+                                    },
+                                    yAxis: {
+                                        min: 0,
+                                        title: {
+                                            text: '',
+                                            align: 'high'
+                                        },
+                                        labels: {
+                                            overflow: 'justify'
+                                        }
+                                    },
+                                    plotOptions: {
+                                        spline: {
+                                            lineWidth: 3, //数据列的线条宽度
+                                            dataLabels: {
+                                                enabled: true
+                                            },
+                                        },
+                                        area: {
+                                            fillOpacity: 0.2 //填充区域图的透明度
+                                        }
+                                    },
+                                    legend: {
+                                        enabled: true,
+                                    },
+                                    series: datas
+                                });
+                            }
+
+                            //
+                        }
+                    },
+                    complete: function () {
+                        $("#VisitSummery").bootstrapTable('refresh');
+                    },
+                    error: function () {
+                        $(this).showToastr('网络错误，请重新保存！');
+                    }
+                });
+
+            });
+
+            //VisitExportAll
+            $("#VisitExportAll").click(function ()
+            {
+                location.href = "/staffreport/visitexportall?type=" + $("#CType").val() + "&start=" + $("#StartTime").val() + "&end=" + $("#EndTime").val();
+            });
+
+            //VistCount
+            $(document).on('click', ".VistCount", function () {
+                $(this).showToastr("请稍后，明细功能正在开发中！");
+                return false;
+            });
+
+            //$(".NewAddCount").click(function () {
+            $(document).on('click', ".NewAddCount", function () {
+                $(this).showToastr("请稍后，明细功能正在开发中！");
+                return false;
+            });
+
+            //$(".DoorheadPhotoCount").click(function () {
+            $(document).on('click', ".DoorheadPhotoCount", function () {
+                $(this).showToastr("请稍后，明细功能正在开发中！");
+                return false;
+            });
+
+            //$(".DisplayPhotoCount").click(function () {
+            $(document).on('click', ".DisplayPhotoCount", function () {
+                $(this).showToastr("请稍后，明细功能正在开发中！");
+                return false;
+            });
+
+
+        });
+    </script>
+}

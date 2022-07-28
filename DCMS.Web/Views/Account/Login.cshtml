@@ -1,0 +1,449 @@
+﻿@{
+    Layout = "_Login";
+}
+
+@using DCMS.Web.Extensions
+@using DCMS.Web.Framework.UI
+@using DCMS.Web.Framework
+@using DCMS.Core
+@using DCMS.Core.Domain.Users
+@using DCMS.ViewModel.Models.Users
+
+@model LoginModel
+@inject IWebHelper webHelper
+
+<style>
+    .validation-summary-errors {
+        display: inline-block;
+    }
+
+        .validation-summary-errors > ul {
+            list-style: none;
+            padding: 0px;
+            margin: 0px;
+        }
+</style>
+
+<section id="content" class="table-layout">
+
+    <div class="tab-content mw900 center-block pt50">
+
+        <div class="admin-form tab-pane active m50 row pt50">
+
+            <div class="col-md-7 panel panel-primary heading-border pn">
+                <div class="panel-heading">
+                    <span class="panel-title"><i class="fa fa-sign-in"></i>经销商管理登录</span>
+                </div>
+                <!-- end .form-header section -->
+
+                <form asp-route="Login" asp-route-controller="Account"
+                      asp-route-action="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" id="LoginForm">
+                    @Html.AntiForgeryToken()
+                    @if (ViewData.ModelState.Any(x => x.Value.Errors.Any()))
+                    {
+                        <div class="alert alert-warning alert-dismissable m20">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            <i class="fa fa-warning pr10"></i>
+                            @Html.ValidationSummary(true)
+                        </div>
+                    }
+
+                    <div class="panel-body p25 pt10">
+                        <div class="section">
+
+
+                            <!-- end .colm section -->
+
+                            <div class="p20">
+
+                                @*<div class="section-divider mv40 text-left">
+                                        <span>口令登录</span>
+                                    </div>*@
+                                <!-- .tagline -->
+
+                                <div class="section">
+                                    <label for="username" class="field prepend-icon">
+                                        <input asp-for="UserName" class="gui-input" placeholder="用户名/邮箱/手机号" />
+                                        <label for="username" class="field-icon">
+                                            <i class="fa fa-user"></i>
+                                        </label>
+                                    </label>
+                                </div>
+                                <!-- end section -->
+
+                                <div class="section">
+                                    <label for="password" class="field prepend-icon">
+                                        <input asp-for="Password" type="password" class="gui-input" placeholder="密码" />
+                                        <label for="password" class="field-icon">
+                                            <i class="fa fa-lock"></i>
+                                        </label>
+                                    </label>
+                                </div>
+                                <!-- end section -->
+
+                                <div class="section">
+                                    <label class="switch switch-info round switch-inline">
+                                        <input asp-for="RememberMe" checked="checked" />
+                                        <label for="remember" data-on="是" data-off="否"></label>
+                                        <span>记住账户？</span>
+                                    </label>
+                                </div>
+                                <!-- end section -->
+                                @*@<div class="section-divider mv40 text-left">
+                                        <span>社交登录</span>
+                                    </div>
+
+                                    <div class="section row">
+                                        <div class="col-md-4">
+                                            <a href="#" class="button btn-social  span-left btn-block btn-rounded" style="background-color:#00ba0e;color:#fff">
+                                                <span>
+                                                    <i class="fa fa-weixin"></i>
+                                                </span> 微信
+                                            </a>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <a href="#" class="button btn-social  span-left btn-block btn-rounded" style="background-color:#1eb2ef;color:#fff">
+                                                <span>
+                                                    <i class="fa fa-qq"></i>
+                                                </span> QQ
+                                            </a>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <a href="#" class="button btn-social  span-left btn-block btn-rounded" style="background-color:#8D2418;color:#fff">
+                                                <span>
+                                                    <i class="fa fa-weibo"></i>
+                                                </span> 微博
+                                            </a>
+                                        </div>
+
+
+                                    </div>*@
+
+                            </div>
+
+
+
+                        </div>
+                        <!-- end .section row section -->
+
+
+
+                    </div>
+                    <!-- end .form-body section -->
+                    <div class="panel-footer">
+                        <button type="submit" class="button btn-primary btn-block  btn-rounded">登录</button>
+                    </div>
+                    <!-- end .form-footer section -->
+                </form>
+            </div>
+
+            <div class="col-md-5  panel panel-primary heading-border">
+
+                <div class="panel-body p25 pt10">
+                    <div class="section">
+
+
+                        <div class="pl30">
+                            <div class="section-divider mv40 text-left">
+                                <span>扫码登录</span>
+                            </div>
+                            <!-- .tagline -->
+
+                            <div class="section text-center">
+                                <img style="border:1px solid #ddd;padding:4px;" asp-for="ceshiimg" width="180px" height="180px" src="@Model.Code" id="upload_image" alt="Sample" />
+                            </div>
+                            <!-- end section -->
+
+
+
+                            <div class="section-divider mt30 mb40 text-left">
+                                <span>客户端 APP 下载</span>
+                            </div>
+                            <!-- .section-divider -->
+
+                            <div class="section row">
+
+                                <div class="col-md-4 text-center">
+                                    <a href="#" class="button btn-social pl40  mr10 btn-block  btn-rounded" style="background-color:#31497D;color:#fff">
+                                        <span>
+                                            <i class="fa fa-apple"></i>
+                                        </span> IOS
+                                    </a>
+
+                                </div>
+
+
+                                <div class="col-md-4 text-center">
+
+                                    <a href="#" class="button btn-social  pl40  mr10 btn-block btn-rounded" style="background-color:#00acee;color:#fff">
+                                        <span>
+                                            <i class="fa fa-android"></i>
+                                        </span> Android
+                                    </a>
+
+
+                                </div>
+
+
+                                <div class="col-md-4 text-center">
+
+                                    <a href="#" class="button btn-social  pl40 btn-block btn-rounded" style="background-color:#dd4b39;color:#fff">
+                                        <span>
+                                            <i class="fa fa-windows"></i>
+                                        </span> Windows
+                                    </a>
+                                </div>
+
+                            </div>
+
+                            <!-- end section -->
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+
+
+</section>
+
+@section CurPageScripts
+{
+    @{
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/pages/login/EasePack.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/pages/login/rAF.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/pages/login/TweenLite.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/js/pages/login/login.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-forms/js/advanced/steps/jquery.steps.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-forms/js/jquery.validate.min.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/assets/admin-tools/admin-forms/js/additional-methods.min.js");
+
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/lazyline/jquery.lazylinepainter-1.5.0.js");
+        Html.AddScriptParts(ResourceLocation.Footer, "~/vendor/plugins/lazyline/vendor/raphael-min.js");
+    }
+
+    <script src="@Html.ResourceServerUrl("~/lib/microsoft/signalr/dist/browser/signalr.js")"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+
+            "use strict";
+
+            // Init Demo JS
+            Demo.init();
+
+            /*------------------------------------------------------------------ */
+            var validator = $("#LoginForm").validate({
+
+                /* @@validation states + elements
+                ------------------------------------------- */
+
+                errorClass: "state-error",
+                validClass: "state-success",
+                errorElement: "em",
+
+                /* @@validation rules
+                ------------------------------------------ */
+                rules: {
+                    UserName: {
+                        required: true
+                    },
+                    Password: {
+                        required: true,
+                        minlength: 6,
+                        maxlength: 16
+                    }
+                },
+                messages: {
+                    UserName: {
+                        required: '请输入用户名'
+                    },
+                    Password: {
+                        required: '请输入密码'
+                    }
+                },
+                /* @@validation highlighting + error placement
+                ---------------------------------------------------- */
+                highlight: function (element, errorClass, validClass) {
+                    $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                },
+                unhighlight: function (element, errorClass, validClass) {
+                    $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                },
+                errorPlacement: function (error, element) {
+                    if (element.is(":radio") || element.is(":checkbox")) {
+                        element.closest('.option-group').after(error);
+                    } else {
+                        error.insertAfter(element.parent());
+                    }
+                },
+                submitHandler: function (form) {
+                    //alert("submitted");
+                    form.submit();
+                }
+            });
+
+
+            /*------------------------------------------------------------------ */
+            //扫码登陆
+            var uuid, timer;
+            //var url = "http://localhost:8998/qrhub";
+            var url = "https://api.jsdcms.com/chatHub";
+            var connection = new signalR.HubConnectionBuilder()
+                .configureLogging(signalR.LogLevel.Information)
+                .withAutomaticReconnect([0, 0, 10000])
+                .withUrl(url, {
+                    skipNegotiation: true,
+                    transport: signalR.HttpTransportType.WebSockets
+                })
+                .build();
+
+            //生成二维码
+           var generateQRCode = function (code) {
+                $("#upload_image").attr("src","@LayoutExtensions.ResourceServerUrl("/content/images/loading.gif")");
+               $(this).remoteRequest('GET', '/Account/GenerateQRCode?code=' + code,null, function (result) {
+                   console.log(result);
+                   if (result != null) {
+                       $("#upload_image").attr("src", result.Data);
+                   }
+               });
+            }
+
+            //自动登陆
+            var autologin = function (uuid, userid, salt)
+            {
+                $.ajax({
+                    type: "post",
+                    url: '/account/autoauthenticate?uuid=' + uuid + '&userid=' + userid + '&pwd=' + salt + '',
+                    datatype: 'json',
+                    success: function (result)
+                    {
+                        console.log(result)
+                        if (result != null)
+                        {
+                            if (result.Success)
+                            {
+                                location.href = "/?store=" + result.Store
+                            }
+                            else
+                            {
+                                //重新生成
+                                generateQRCode(uuid);
+                            }
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err)
+                    },
+                    complete: function () {
+                        //window.location.reload();
+                    }
+                });
+
+                //$(this).remoteRequest('POST', '/Account/Autologin?uuid=' + uuid + '&userId' + userId + '&pwd' + pwd + '', null, function (result) {
+                //    if (result != null) {
+                //        if (result.Success) {
+                //            location.href = "/?store=" + result.Store
+                //        }
+                //        else
+                //        {
+                //            window.location.reload();
+                //        }
+                //    }
+                //});
+            }
+
+            //客户端注册getUserInfo 事件
+            connection.on("GetUserInfo", function (uuid, userId, pwd) {
+                console.log("getUserInfo:");
+                console.log(uuid);
+                console.log(userId);
+                console.log(pwd);
+                autologin(uuid, userId, pwd);
+            });
+
+            connection.on("System", function (msg) {
+                console.log("System:");
+                console.log(msg);
+  
+            });
+
+            //客户端注册getUUID事件
+            connection.on("GetUUID", function (obj) {
+                //console.log("getUUID:");
+                var data = JSON.parse(obj);
+                //console.log(data);
+                //console.log(data.UUID);
+                if (data != null) { generateQRCode(data.UUID); }
+            });
+
+
+            //初始化连接
+            var startHubInit = function (refreshInterval) {
+                refreshInterval == null && (refreshInterval = 30000);
+
+                //连接服务器
+                connection.start().then(function (res) {
+                    console.log("调用服务端注册事件....");
+                    console.log(connection.state);
+                    //调用服务端注册事件
+                    connection.invoke("SendUserInfo").catch(function (err) {
+                        //console.log("register异常:");
+                        //SendUserInfo(string connectionId, string uuid, int userId, string pwd)
+                        return console.error(err.toString());
+                    });
+
+                }).catch(function (err) {
+                    console.log("异常:");
+                    return console.error(err.toString());
+                });
+
+                //指定时间刷新二维码 默认30000,0为永不刷新
+                window.clearInterval(timer);
+                refreshInterval == 0 || (timer = window.setInterval(function () {
+                    console.log("指定时间刷新二维码:");
+                    //调用服务端注册事件
+                    //connection.invoke("Register").catch(function (err) {
+                    //    return console.error(err.toString());
+                    //});
+                }, refreshInterval));
+            }
+
+            //停止刷新
+            var stopRefresh = function () {
+                window.clearInterval(timer);
+            }
+
+
+
+            //启动
+            startHubInit(0);
+
+            //自动刷新
+            async function start() {
+                try {
+                    await connection.start();
+                    console.assert(connection.state === signalR.HubConnectionState.Connected);
+                    //console.log("SignalR Connected.");
+                } catch (err) {
+                    console.assert(connection.state === signalR.HubConnectionState.Disconnected);
+                    //console.log(err);
+                    setTimeout(() => start(), 5000);
+                }
+            };
+        });
+    </script>
+
+}
+
+

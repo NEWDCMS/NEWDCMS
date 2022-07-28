@@ -1,0 +1,13 @@
+@model DateTime?
+@using System.Globalization
+
+@{
+    var placeholder = ((Dictionary<string, object>)Html.ViewData["htmlAttributes"])["placeholder"];
+}
+
+<div class="input-group date pull-right">
+    <input type="text" id="@Html.IdForModel()" name="@Html.NameForModel()" value="@(Model > DateTime.MinValue || Model.HasValue ? Model.Value.ToString(CultureInfo.CurrentCulture.DateTimeFormat) : null)" class="form-control datetimepicker" placeholder="@placeholder" />
+    <span class="input-group-addon cursor">
+        <i class="fa fa-calendar"></i>
+    </span>
+</div>

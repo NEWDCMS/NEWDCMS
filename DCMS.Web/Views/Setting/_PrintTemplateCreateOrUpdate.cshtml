@@ -1,0 +1,240 @@
+﻿@using DCMS.ViewModel.Models.Configuration;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+
+@model PrintTemplateModel
+
+<input asp-for="Id" type="hidden" />
+
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-primary alert-dismissable mt10 mb10">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+<div class="row">
+
+</div>
+
+<div class="form-group">
+    <label asp-for="TemplateType" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-4">
+        <dcms-select asp-for="TemplateType" asp-items="@Model.TemplateTypes" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.TemplateType)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="BillType" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-4">
+        <dcms-select asp-for="BillType" asp-items="@Model.BillTypes" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.BillType)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="Title" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="Title" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Title)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="PaperWidth" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-2">
+        @{
+            @*var types = Enum.GetValues(typeof(PaperTypeEnum)).Cast<PaperTypeEnum>();
+            foreach (var t in types)
+            {
+                <td>
+                    @CommonHelper.GetEnumDescription(t)
+                </td>
+            }*@
+        }
+
+        <dcms-select asp-for="PaperType" asp-items="@Model.PaperTypes" class="form-control" />
+ 
+
+        @*<select id="paperType"  class="form-control">
+            <option value="noPaper">无</option>
+            <option value="custom">自定义</option>
+            <option value="P1">标准票据打印纸(215.9*139.7mm)</option>
+            <option value="P2">标准票据打印纸(215.9*93.1mm)</option>
+            <option value="P3">标准票据打印纸(215.9*69.9mm)</option>
+            <option value="A5">A5(148*210mm)</option>
+            <option value="A4">A4(210*297mm)</option>
+            <option value="A3">A3(297*420mm)</option>
+            <option value="A2">A2(420*594mm)</option>
+            <option value="A1">A1(594*841mm)</option>
+            <option value="B5">B5(182*257mm)</option>
+            <option value="B4">B4(257*364mm)</option>
+            <option value="B3">B3(364*515mm)</option>
+            <option value="B2">B2(515*728mm)</option>
+            <option value="B1">B1(728*1030mm)</option>
+        </select>*@
+    </div>
+    <div class="col-lg-2">
+        <div class="input-group">
+            <input asp-for="PaperWidth" class="form-control" />
+            <span class="input-group-addon">宽(mm)</span>
+        </div>
+    </div>
+    <div class="col-lg-2">
+        <div class="input-group">
+            <input asp-for="PaperHeight" class="form-control" />
+            <span class="input-group-addon">高(mm)</span>
+        </div>
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="col-lg-2"></div>
+    <div class="col-lg-10">
+        <div class="panel">
+            <div class="panel-heading">
+                <span class="panel-icon">
+                    <i class="fa fa-trophy"></i>
+                </span>
+                <span class="panel-title"> 单据主体</span>
+            </div>
+            <div class="panel-body pb5">
+                <span class="label label-primary mr5 mb10 ib lh15">业务员</span>
+                <span class="label label-primary mr5 mb10 ib lh15">业务电话</span>
+                <span class="label label-primary mr5 mb10 ib lh15">公司地址</span>
+                <span class="label label-primary mr5 mb10 ib lh15">订货电话</span>
+                <span class="label label-primary mr5 mb10 ib lh15">审核状态</span>
+                <span class="label label-primary mr5 mb10 ib lh15">商铺名称</span>
+                <span class="label label-primary mr5 mb10 ib lh15">客户名称</span>
+                <span class="label label-primary mr5 mb10 ib lh15">客户编码</span>
+                <span class="label label-primary mr5 mb10 ib lh15">老板姓名</span>
+                <span class="label label-primary mr5 mb10 ib lh15">客户地址</span>
+                <span class="label label-primary mr5 mb10 ib lh15">客户电话</span>
+                <span class="label label-primary mr5 mb10 ib lh15">仓库</span>
+                <span class="label label-primary mr5 mb10 ib lh15">送货员</span>
+                <span class="label label-primary mr5 mb10 ib lh15">部门</span>
+                <span class="label label-primary mr5 mb10 ib lh15">单据编号</span>
+                <span class="label label-primary mr5 mb10 ib lh15">制单</span>
+                <span class="label label-primary mr5 mb10 ib lh15">交易日期</span>
+                <span class="label label-primary mr5 mb10 ib lh15">日期</span>
+                <span class="label label-primary mr5 mb10 ib lh15">备注</span>
+                <span class="label label-primary mr5 mb10 ib lh15">优惠金额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">优惠后金额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">大写</span>
+                <span class="label label-primary mr5 mb10 ib lh15">欠款金额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">打印时间</span>
+                <span class="label label-primary mr5 mb10 ib lh15">剩余预收款金额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">当前剩余还货数量</span>
+                <span class="label label-primary mr5 mb10 ib lh15">客户备注1</span>
+                <span class="label label-primary mr5 mb10 ib lh15">客户备注2</span>
+                <span class="label label-primary mr5 mb10 ib lh15">累计欠款</span>
+                <span class="label label-primary mr5 mb10 ib lh15">一票通编号</span>
+                <span class="label label-primary mr5 mb10 ib lh15">送货人电话</span>
+                <span class="label label-primary mr5 mb10 ib lh15">送货人</span>
+                <span class="label label-primary mr5 mb10 ib lh15">企业注册号</span>
+                <span class="label label-primary mr5 mb10 ib lh15">食品经营许可证号</span>
+                <span class="label label-primary mr5 mb10 ib lh15">支付信息</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="col-lg-2"></div>
+    <div class="col-lg-10">
+        <div class="panel">
+            <div class="panel-heading">
+                <span class="panel-icon">
+                    <i class="fa fa-trophy"></i>
+                </span>
+                <span class="panel-title"> 单据明细</span>
+            </div>
+            <div class="panel-body pb5">
+                <span class="label label-primary mr5 mb10 ib lh15">商品名称</span>
+                <span class="label label-primary mr5 mb10 ib lh15">商品编号</span>
+                <span class="label label-primary mr5 mb10 ib lh15">条形码</span>
+                <span class="label label-primary mr5 mb10 ib lh15">生产日期</span>
+                <span class="label label-primary mr5 mb10 ib lh15">商品单位</span>
+                <span class="label label-primary mr5 mb10 ib lh15">单位换算</span>
+                <span class="label label-primary mr5 mb10 ib lh15">大包原价</span>
+                <span class="label label-primary mr5 mb10 ib lh15">小包原价</span>
+                <span class="label label-primary mr5 mb10 ib lh15">大包价格</span>
+                <span class="label label-primary mr5 mb10 ib lh15">小包价格</span>
+                <span class="label label-primary mr5 mb10 ib lh15">大包条码</span>
+                <span class="label label-primary mr5 mb10 ib lh15">小包条码</span>
+                <span class="label label-primary mr5 mb10 ib lh15">保质期</span>
+                <span class="label label-primary mr5 mb10 ib lh15">规格</span>
+                <span class="label label-primary mr5 mb10 ib lh15">数量</span>
+                <span class="label label-primary mr5 mb10 ib lh15">辅助数量</span>
+                <span class="label label-primary mr5 mb10 ib lh15">小单位数量</span>
+                <span class="label label-primary mr5 mb10 ib lh15">价格</span>
+                <span class="label label-primary mr5 mb10 ib lh15">零售价</span>
+                <span class="label label-primary mr5 mb10 ib lh15">金额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">备注</span>
+                <span class="label label-primary mr5 mb10 ib lh15">销售单价</span>
+                <span class="label label-primary mr5 mb10 ib lh15">销售金额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">成本价</span>
+                <span class="label label-primary mr5 mb10 ib lh15">成本金额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">利润</span>
+                <span class="label label-primary mr5 mb10 ib lh15">成本利润率</span>
+                <span class="label label-primary mr5 mb10 ib lh15">税率</span>
+                <span class="label label-primary mr5 mb10 ib lh15">税额</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="form-group">
+    <div class="col-lg-2"></div>
+    <div class="col-lg-10">
+        <div class="panel">
+            <div class="panel-heading">
+                <span class="panel-icon">
+                    <i class="fa fa-trophy"></i>
+                </span>
+                <span class="panel-title"> 单据明细小计/合计</span>
+            </div>
+            <div class="panel-body pb5">
+                <span class="label label-primary mr5 mb10 ib lh15">金额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">大写</span>
+                <span class="label label-primary mr5 mb10 ib lh15">总销售额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">总税额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">数量</span>
+                <span class="label label-primary mr5 mb10 ib lh15">辅助数量</span>
+                <span class="label label-primary mr5 mb10 ib lh15">数量(大中小)</span>
+                <span class="label label-primary mr5 mb10 ib lh15">辅助数量(大中小)</span>
+                <span class="label label-primary mr5 mb10 ib lh15">小单位数量</span>
+                <span class="label label-primary mr5 mb10 ib lh15">合计成本金额</span>
+                <span class="label label-primary mr5 mb10 ib lh15">合计利润</span>
+                <span class="label label-primary mr5 mb10 ib lh15">合计成本利润率</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*class="table table-bordered"*@
+
+<div class="form-group">
+    <label asp-for="Content" asp-postfix=":" class="col-lg-2 control-label" />
+    <div class="col-lg-10">
+        <input asp-for="Content" type="hidden" />
+        <div class="panel-body pn of-h">
+            <div id="ContentSummernote" style="height: 400px;">@Html.Raw(Model.Content)</div>
+        </div>
+    </div>
+</div>
+
+

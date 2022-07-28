@@ -1,0 +1,365 @@
+﻿@using DCMS.Web.Framework.UI;
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section id="content_wrapper">
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="#">档案</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">往来相关</a>
+                </li>
+                <li class="crumb-trail">终端等级</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content" class="formSection">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><span class="glyphicons glyphicons-search"></span> 查询条件</div>
+                    <div class="panel-body p10">
+                        <form id="formSearch" class="form-horizontal" novalidate="novalidate">
+                            <div class="form-group mbn">
+                                <div class="col-sm-2">
+                                    <input id="txt_SearchStr" type="text" class="form-control" placeholder="关键字...">
+                                </div>
+                                <div class="col-sm-10">
+                                    <button id="btn_query" type="button" class="btn btn-primary">
+                                        <span class="glyphicon glyphicon-search mr5" aria-hidden="true"></span>查询
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span>等级列表
+                        </span>
+                    </div>
+                    <div class="panel-body p5 ptn">
+                        <div id="toolbar" class="btn-group">
+
+                            <button id="btn_add" type="button" class="btn btn-primary btn-sm mr5">
+                                <span class="glyphicon glyphicon-plus mr5" aria-hidden="true"></span>添加
+                            </button>
+                            @*<button id="btn_edit" type="button" class="btn btn-info btn-sm mr5">
+                                    <span class="glyphicon glyphicon-pencil mr5" aria-hidden="true"></span>编辑
+                                </button>*@
+                            <button id="btn_delete" type="button" class="btn btn-danger btn-sm">
+                                <span class="glyphicon glyphicon-remove mr5" aria-hidden="true"></span>删除
+                            </button>
+                        </div>
+                        <table id="datatable" class="table table-hover table-bordered table-responsive"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End: Content -->
+</section>
+
+
+@{ await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "RankForm" }, { "modalWindow", "RankWindow" }, { "showSave", "true" } }); }
+
+
+
+
+
+@section CurPageScripts
+{
+   
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            // Init Theme Core
+            Core.init({
+                sbm: "sb-l-c",
+            });
+            // Init Demo JS
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            //弹出(新增)等级窗口
+            $("#btn_add").click(function () {
+                var actionURL = "/Rank/AddRank";
+                $(this).showModalAndSubmit($("#RankWindow"), actionURL, null, "新增等级信息", $("#RankForm"), function () {
+                    var validator = $("#RankForm").validate({
+                        errorClass: "text-danger", validClass: "text-success", errorElement: "em",
+                        rules: {
+                            Name: {
+                                required: true
+                            }
+                        },
+                        messages: {
+                            Name: {
+                                required: '等级名称不能为空'
+                            }
+                        },
+                        highlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                        },
+                        unhighlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                        },
+                        errorPlacement: function (error, element) {
+                            if (element.is(":radio") || element.is(":checkbox")) {
+                                element.closest('.option-group').after(error);
+                            } else {
+                                //error.insertAfter(element.parent());
+                                element.parent().append(error);
+                            }
+                        },
+                        submitHandler: function (form) {
+                            //alert("submitted");
+                            form.submit();
+                        }
+                    });
+
+                    if (!$("#RankForm").valid()) {
+                        return false;
+                    }
+                    var modalForm = $("#RankForm").serializeJson();
+                    $(this).remoteSubmit("post", actionURL, { model: modalForm }, null, function () {
+                        $("#datatable").bootstrapTable('refresh');
+                        location.href = "/Rank/List";
+                    });
+                });
+            });
+            //弹出(编辑)等级窗口
+            $("#btn_edit").click(function () {
+                var arrselections = $("#datatable").bootstrapTable('getSelections');
+                if (arrselections.length > 1) {
+                    $(this).showToastr('只能选择一行进行编辑');
+                    return;
+                }
+                if (arrselections.length <= 0) {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+
+                var actionURL = "/Rank/EditRank";
+                $(this).showModalAndSubmit($("#RankWindow"), actionURL, { id: arrselections[0].id }, "编辑供应商信息", $("#ManufacturerForm"), function () {
+                    var validator = $("#RankForm").validate({
+                        errorClass: "text-danger", validClass: "text-success", errorElement: "em",
+                        rules: {
+                            Name: {
+                                required: true
+                            }
+                        },
+                        messages: {
+                            Name: {
+                                required: '等级名称不能为空'
+                            }
+                        },
+                        highlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                        },
+                        unhighlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                        },
+                        errorPlacement: function (error, element) {
+                            if (element.is(":radio") || element.is(":checkbox")) {
+                                element.closest('.option-group').after(error);
+                            } else {
+                                //error.insertAfter(element.parent());
+                                element.parent().append(error);
+                            }
+                        },
+                        submitHandler: function (form) {
+                            //alert("submitted");
+                            form.submit();
+                        }
+                    });
+
+                    if (!$("#RankForm").valid()) {
+                        return false;
+                    }
+                    var modalForm = $("#RankForm").serializeJson();
+                    $(this).remoteSubmit("post", actionURL, { model: modalForm }, null, function () {
+                        $("#datatable").bootstrapTable('refresh');
+                        $("#RankWindow").modal('hide');
+                    });
+                });
+            });
+
+
+            //删除等级
+            $("#btn_delete").click(function () {
+                var arrselections = $("#datatable").bootstrapTable('getSelections');
+                if (arrselections.length <= 0) {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                var selections = [];
+                $.each(arrselections, function (i, val) {
+                    selections.push(val.id);
+                });
+                Deletes({ ids: selections.toString() });
+            });
+            var Deletes = function (param) {
+                WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    $(this).remoteSubmit("post", "/Rank/DeleteRank", param, null, function () {
+                        $("#datatable").bootstrapTable('refresh');
+                        $("#RankWindow").modal('hide');
+                    });
+                })
+            }
+
+            //等级列表
+            $("#datatable").bootstrapTable({
+                toolbar: "#toolbar",
+                url: "/Rank/RankList",
+                method: 'get',
+                striped: true,
+                cache: false,
+                pagination: true,
+                queryParams: function (params) {
+                    var temp =
+                    {
+                        pageSize: params.limit,
+                        pageIndex: (params.offset / params.limit)
+                    };
+                    return temp;
+                },
+                sidePagination: "server",
+                idField: 'Id',
+                pageNumber: 1,
+                pageSize: 10,
+                uniqueId: "Id",
+                columns: [
+                    { checkbox: true },
+                    {
+                        title: '<i class="fa fa-gear fs18"></i>', formatter: function (value, row, index) {
+                            return m_pagerow + index + 1;
+                        }
+                    },
+                    { field: 'Name', title: '等级名称', align: 'left' },
+                    { field: 'Describe', title: '描述', align: 'left' },
+                    {
+                        title: '操作', width: '160', align: 'center',
+                        events: {
+                            'click .rowdel': function (e, value, row, index) {
+                                var selections = [];
+                                selections.push(row.Id);
+                                Deletes({ ids: selections.toString() });
+                            },
+                            'click .rowedit': function (e, value, row, index) {
+                                var actionURL = "/Rank/EditRank";
+                                $(this).showModalAndSubmit($("#RankWindow"), actionURL, { id: row.Id }, "编辑等级信息", $("#RankForm"), function () {
+                                    var validator = $("#RankForm").validate({
+                                        errorClass: "text-danger", validClass: "text-success", errorElement: "em",
+                                        rules: {
+                                            Name: {
+                                                required: true
+                                            }
+                                        },
+                                        messages: {
+                                            Name: {
+                                                required: '等级名称不能为空'
+                                            }
+                                        },
+                                        highlight: function (element, errorClass, validClass) {
+                                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                                        },
+                                        unhighlight: function (element, errorClass, validClass) {
+                                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                                        },
+                                        errorPlacement: function (error, element) {
+                                            if (element.is(":radio") || element.is(":checkbox")) {
+                                                element.closest('.option-group').after(error);
+                                            } else {
+                                                //error.insertAfter(element.parent());
+                                                element.parent().append(error);
+                                            }
+                                        },
+                                        submitHandler: function (form) {
+                                            //alert("submitted");
+                                            form.submit();
+                                        }
+                                    });
+
+                                    if (!$("#RankForm").valid()) {
+                                        return false;
+                                    }
+                                    var modalForm = $("#RankForm").serializeJson();
+                                    $(this).remoteSubmit("post", actionURL, { model: modalForm }, null, function () {
+                                        $("#datatable").bootstrapTable('refresh');
+                                        $("#RankWindow").modal('hide');
+                                    });
+                                });
+                            }
+                        },
+                        formatter: function (value, row, index) {
+                            return [
+                                '<button type="button" class="btn btn-sm btn-info rowedit"><i class="fa fa-pencil-square-o mr5" ></i>编辑</button>',
+                                '<button type="button" class="btn btn-sm btn-danger rowdel"><i class="fa fa-trash-o mr5" ></i>删除</button>'
+                            ].join('');
+                        }
+                    }
+                ],
+                onPageChange: function (number, size) {
+                    m_pagerow = (number - 1) * size;
+                },
+                onLoadSuccess: function (data) {
+                    console.log('load');
+                }
+            });
+
+            //查询
+            $("#btn_query").click(function () {
+                $("#datatable").bootstrapTable('refresh', { url: "/Rank/RankList?searchStr=" + $("#txt_SearchStr").val() });
+            });
+        });
+
+    </script>
+}

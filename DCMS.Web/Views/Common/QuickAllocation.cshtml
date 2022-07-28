@@ -1,0 +1,74 @@
+﻿@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+@using DCMS.ViewModel.Models.Users;
+@using DCMS.Core;
+@using DCMS.Core.Infrastructure;
+@using DCMS.ViewModel.Models.WareHouses;
+
+@{
+	var workContext = EngineContext.Current.Resolve<IWorkContext>();
+	@model QuickAllocationModel
+}
+
+@{
+
+	int loadindex = 0;
+
+	if (Model.AllocationTypeId == 1)
+	{
+		<div class="form-group">
+			@*@Html.RSLabelFor(m => m.DeliveryUserName, new { @class = "col-lg-3 control-label" }, true)*@
+			<label asp-for="DeliveryUserName" asp-postfix=":" class="col-lg-3 control-label" />
+			<div class="col-lg-8">
+				@*@Html.DropDownListFor(model => model.DeliveryUserId, Model.DeliveryUsers, "-送货员-", new { @class = "form-control" })*@
+				<dcms-select asp-for="DeliveryUserId" asp-items="@Model.DeliveryUsers" asp-default="送货员" class="form-control" />
+			</div>
+		</div>
+	}
+
+	if (Model.AllocationTypeId == 2 || Model.AllocationTypeId == 4)
+	{
+		<div class="form-group">
+			@*@Html.RSLabelFor(m => m.CategoryName, new { @class = "col-lg-3 control-label" }, true)*@
+			<label asp-for="CategoryName" asp-postfix=":" class="col-lg-3 control-label" />
+			<div class="col-lg-8">
+				@*@Html.CheckBoxFor(model => model.CategoryName, Model.Categories)*@
+				@{
+					if (Model.Categories != null && Model.Categories.Count() > 0)
+					{
+						foreach (var cate in Model.Categories.OrderBy(c => c.Value))
+						{
+							<input name="CategoryName" class="mt15" type="checkbox" value="@cate.Value">@cate.Text
+						}
+					}
+				}
+			</div>
+		</div>
+	}
+
+	if (Model.AllocationTypeId == 1 || Model.AllocationTypeId == 2 || Model.AllocationTypeId == 3)
+	{
+		if (Model.LoadDatas != null && Model.LoadDatas.Items != null && Model.LoadDatas.Items != null)
+		{
+			foreach (SelectListItem item in Model.LoadDatas.Items)
+			{
+				<div class="form-group">
+					@if (loadindex == 0)
+					{
+						@*@Html.RSLabelFor(m => m.LoadDataName, new { @class = "col-lg-3 control-label" }, true)*@
+						<label asp-for="LoadDataName" asp-postfix=":" class="col-lg-3 control-label" />
+					}
+					else
+					{
+						<label class="col-lg-3 control-label"></label>
+					}
+					<div class="col-lg-8">
+						<input name="LoadDataName" type="checkbox" value="@item.Value" class="mt15" />@item.Text
+					</div>
+				</div>
+				loadindex++;
+			}
+		}
+	}
+
+}

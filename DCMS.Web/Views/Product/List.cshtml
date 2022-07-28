@@ -1,0 +1,673 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Products;
+
+@model ProductListModel
+
+<section id="content_wrapper">
+
+    <!-- Start: Topbar-Dropdown -->
+    <div id="topbar-dropmenu">
+        <div id="topbar-dropmenu">
+            @await Html.PartialAsync("_ToolBox")
+        </div>
+    </div>
+    <!-- End: Topbar-Dropdown -->
+    <!-- Start: Topbar -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <ol class="breadcrumb">
+                <li class="crumb-active">
+                    <a href="@Url.RouteUrl("HomePage")">档案管理</a>
+                </li>
+                <li class="crumb-icon">
+                    <a href="@Url.RouteUrl("HomePage")">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                </li>
+                <li class="crumb-link">
+                    <a href="#">商品相关</a>
+                </li>
+                <li class="crumb-trail">商品档案</li>
+            </ol>
+        </div>
+        <div class="topbar-right">
+            <div class="ml15 ib va-m" id="toggle_sidemenu_r">
+                <a href="#" class="pl5">
+                    <i class="fa fa-sign-in fs22 text-primary"></i>
+                    <span class="badge badge-hero badge-danger">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- End: Topbar -->
+    <!-- Begin: Content -->
+    <section id="content">
+
+        <div class="special-alerts">
+            <div class="alert alert-danger light alert-dismissable" id="alert-demo-2" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <i class="fa fa-info pr10"></i>
+                <strong>您没有被授权此操作!</strong>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+
+                @*Select Form*@
+
+                <div class="row mb10">
+                    <div class="col-md-12">
+                        <select class="form-control" id="ProductStatus" name="ProductStatus">
+                            <option value="1">只展示可用商品</option>
+                            <option value="0">只展示停用商品</option>
+                            <option value="2">全部</option>
+                        </select>
+                    </div>
+                </div>
+
+                @*Catagory Tree*@
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="pull-left">
+                            商品类别
+                        </div>
+                        <div class="pull-right">
+                            <a id="btn_add_catagory" href="javascript:;" class="mr5"><span class="glyphicon glyphicon-plus"></span></a>
+                            <a id="btn_edit_catagory" href="javascript:;" class="mr5"><span class="glyphicon glyphicon-pencil"></span></a>
+                            <a id="btn_del_catagory" href="javascript:;" class="mr5"><span class="glyphicon glyphicon-trash"></span></a>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <input type="hidden" name="ProductCategoryId" id="ProductCategoryId" value="0" />
+                        <div id="CatagoriesTreeData"></div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-10">
+
+
+                @*Toolbar*@
+
+                <div class="row mb10">
+                    <div class="col-md-12">
+
+                        <div class="input-group w400 pull-left">
+                            <input type="text" id="txt_SearchStr" class="form-control" placeholder="请输入商品名称、助记名进行检索" onkeydown="if(event.keyCode==13){event.keyCode=0;event.returnValue=false;}">
+                            <span class="input-group-btn">
+                                <button id="btn_query" type="button" class="btn btn-primary" style="border:1px solid #dddddd;"><span class="glyphicon glyphicon-search"></span> 搜索</button>
+                            </span>
+                        </div>
+
+                        <div class="pull-right">
+                            @*二期开发*@
+                            <button id="btn_setMnemonicCode" type="button" class="btn btn-primary">
+                                <span class="glyphicon glyphicon-ok mr5" aria-hidden="true"></span>一键匹配简称
+                            </button>
+                            <button id="btn_disableProduct" type="button" class="btn btn-danger">
+                                <span class="glyphicon glyphicon-remove mr5" aria-hidden="true"></span>批量禁用
+                            </button>
+                            <button id="btn_enableProduct" type="button" class="btn btn-success">
+                                <span class="glyphicon glyphicon-ok mr5" aria-hidden="true"></span>批量解禁
+                            </button>
+                            <button id="btn_addProduct" type="button" class="btn btn-primary">
+                                <span class="glyphicon glyphicon-plus mr5" aria-hidden="true"></span>添加
+                            </button>
+                            <button id="btn_importProduct" type="button" class="btn btn-info">
+                                <span class="glyphicon glyphicon-import mr5" aria-hidden="true"></span> 导入
+                            </button>
+                            @*二期开发*@
+                            <button id="btn_expoertProduct" type="button" class="btn btn-warning">
+                                <span class="glyphicon glyphicon-export mr5" aria-hidden="true"></span> 导出价格
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                @*GridView*@
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            <span class="glyphicon glyphicon-th"></span>商品列表
+                        </span>
+                    </div>
+                    <div class="panel-body p5">
+                        <table class="table table-striped table-bordered table-hover" id="datatable"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+    <!-- End: Content -->
+    <input id="hid_CategoryId" type="hidden" value="" />
+
+</section>
+
+<div id="FileForm" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">导入数据</h4>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Import" asp-controller="Product" method="Post" id="formSearch" novalidate="novalidate" enctype="multipart/form-data">
+                    <input id="hidCategoryId" name="hidCategoryId" type="hidden" value="" />
+                    <div class="row" style="text-align:center;">
+                        <label for="file" class="field file state-success">
+                            <input type="file" class="gui-file" name="file" id="file" aria-required="true" aria-invalid="false">
+                        </label>
+                        <input type="submit" name="submit" value="导入" class="btn btn-info" />
+
+                        <a id="btn_down" href="@Url.Action("UploadDownTemplate", "StoreDataInit", new { order = 10 })" class="btn btn-success">
+                            <span class="glyphicon glyphicon-export mr5"></span>下载模板
+                        </a>
+                        @*<a id="btn_down" href="@Url.Action("DownLoad","Product")" class="btn btn-success">
+                                <span class="glyphicon glyphicon-export mr5"></span>下载模板
+                            </a>*@
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="alert alert-info alert-dismissable" style="padding:0;">
+                    <i class="fa fa-warning pr10"></i>
+                    <strong style="margin-right:40px;">温馨提示：请先下载模板，按照模板填写数据进行导入！</strong>
+                    <button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-undo mr5"></i>取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@{
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "CatagoryForm" }, { "modalWindow", "CatagoryWindow" }, { "showSave", "true" } });
+    await Html.RenderPartialAsync("_ModalForm", new ViewDataDictionary(ViewData) { { "formId", "BrandForm" }, { "modalWindow", "BrandWindow" }, { "showSave", "true" } });
+}
+
+@section CurPageScripts
+{
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            "use strict";
+
+            Core.init({
+                sbm: "sb-l-c",
+            });
+
+            Demo.init();
+
+            //权限提示
+            if ($(this).getUrlQueryString("Authorize") == "noAuthorize") {
+                $('#alert-demo-2').fadeToggle();
+                setTimeout(function () {
+                    $('#alert-demo-2').fadeToggle();
+                }, 3000);
+            }
+
+            function logEvent(event, data, msg) {
+                //var args = $.isArray(args) ? args.join(", ") :
+                msg = msg ? ": " + msg : "";
+                $.ui.fancytree.info("Event('" + event.type + "', node=" + data.node + ")" + msg);
+            }
+
+            //商品类别树
+            $("#CatagoriesTreeData").fancytree({
+                extensions: ["dnd", "edit"],
+                source: {
+                    url: "/Category/GetFancyTree"
+                },
+                dnd: {
+                    autoExpandMS: 400,
+                    focusOnClick: true,
+                    preventVoidMoves: true,
+                    preventRecursiveMoves: true,
+                    dragStart: function (node, data) {
+                        return true;
+                    },
+                    dragEnter: function (node, data) {
+                        return true;
+                    },
+                    dragDrop: function (node, data) {
+                        data.otherNode.moveTo(node, data.hitMode);
+                    }
+                },
+                activate: function (event, data) {
+                },
+                lazyLoad: function (event, data) {
+                    data.result = $.ajax({
+                        url: "/Category/GetFancyTree",
+                        dataType: "json"
+                    });
+                },
+                click: function (event, data) {
+                    //var node = $("#CatagoriesTreeData").fancytree("getActiveNode");
+                    var node = data.node.data;
+                    console.log(node);
+                    $("#ProductCategoryId").val(node.id);
+                    $("#hid_CategoryId").val(node.id)  //-------导入商品时用这个字段，但是之前没有在这个地方给赋值。2021-1-14 16:35
+                    //logEvent(event, data, ", targetType=" + data.targetType);
+                    $("#datatable").bootstrapTable('refresh');
+                    $("#ProductCategoryId").val("0");
+
+                },
+
+
+            });
+
+            $("#btnSelect").click(function (event) {
+                var node = $("#tree").fancytree("getActiveNode");
+                node.setSelected(!node.isSelected());
+            });
+
+            $("#btnRemove").click(function (event) {
+                var node = $("#tree").fancytree("getActiveNode");
+                node.remove();
+            });
+
+            //获取Id为tree的Fancytree对象
+            var $fancytree = $("#CatagoriesTreeData").fancytree("getTree");
+
+            //获取tree的根节点
+            $("#CatagoriesTreeData").fancytree("getRootNode")
+
+            //访问每个节点并把节点展开
+            $("#CatagoriesTreeData").fancytree("getRootNode").visit(function (node) {
+                node.setExpanded(true);
+            });
+
+            // 格式化状态
+            function statusFormatter(value, row, index) {
+                if (value) {
+                    return '<span class="label label-success">正常</span>';
+                } else {
+                    return '<span class="label label-default">锁定</span>';
+                }
+            }
+
+            //商品列表
+            $("#datatable").bootstrapTable({
+                url: "/Product/AsyncList",         //请求后台的URL（*）
+                method: 'get',                      //请求方式（*）
+                striped: true,                      //是否显示行间隔色
+                cache: false,
+                //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                pagination: true,
+                showPagination: false,
+                queryParams: function (params) {
+                    var temp =
+                    {
+                        productStatus: $("#ProductStatus option:selected").val(),//选中的值
+                        key: $("#txt_SearchStr").val(),
+                        categoryId: $("#ProductCategoryId").val(),
+                        stockQtyMoreThan: false,
+                        pageSize: params.limit,   //页面显示行数
+                        pageIndex: (params.offset / params.limit)  //页码
+                    };
+                    return temp;
+                },
+                sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                idField: 'Id',
+                dataField: "Rows",
+                totalField: "Total",
+                pageNumber: 1,                       //初始化加载第一页，默认第一页
+                pageSize: 30,                       //每页的记录行数（*）
+                pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                search: false,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+                strictSearch: true,
+                showRefresh: false,                  //是否显示刷新按钮
+                clickToSelect: false,                //是否启用点击选中行
+                uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                showToggle: false,                    //是否显示详细视图和列表视图的切换按钮
+                cardView: false,                    //是否显示详细视图
+                detailView: false,                   //是否显示父子表
+                columns: [
+                    { checkbox: true, visible: true },
+                    {
+                        title: '<i class="fa fa-gear fs18"></i>',
+                        width: '52',
+                        align: 'center',
+                        formatter: function (value, row, index) {
+                            return m_pagerow + index + 1;
+                        }
+                    },
+                    { field: 'Name', title: '商品名称', align: 'left' },
+                    { field: 'SmallBarCode', title: '小单位条码', align: 'left' },
+                    { field: 'CategoryName', title: '类别', align: 'left' },
+                    { field: 'BrandName', title: '品牌', align: 'left' },
+                    { field: 'Status', title: '状态', formatter: statusFormatter, align: 'center' },
+                    { field: 'UnitName', title: '单位', align: 'center' },
+                    { field: 'operate', title: '操作', align: 'center', width: '150', events: operateEvents, formatter: operateFormatter }
+                ],
+
+                onPageChange: function (number, size) {
+                    m_pagerow = (number - 1) * size;
+                },
+                onLoadSuccess: function (data) {
+                    //console.log('load');
+                }
+            });
+
+            $("#ProductStatus").change(function () {
+                $("#datatable").bootstrapTable('refresh');
+            });
+
+            // 格式化按钮
+            function operateFormatter(value, row, index) {
+                return [
+                    //二期开发
+                    //'<button type="button" class="btn btn-sm btn-default rowrecords"><i class="fa fa-search-plus mr5" ></i>记录</button>',
+                    //'<button type="button" class="btn btn-sm btn-danger rowLook"><i class="fa fa-pencil-square-o mr5" ></i>查看</button>',
+                    '<button type="button" class="btn btn-sm btn-info rowedit"><i class="fa fa-pencil-square-o mr5" ></i>编辑</button>',
+                    '<button type="button" class="btn btn-sm btn-danger rowdel"><i class="fa fa-trash-o mr5" ></i>删除</button>'
+                ].join('');
+            }
+
+            //添加分类
+            $("#btn_add_catagory").click(function () {
+                var actionUrl = "/Category/Create";
+                $(this).showModalAndSubmit($("#CatagoryWindow"), actionUrl, null, "添加分类", $("#CatagoryForm"), function () {
+
+                    //表单验证
+                    jQuery.validator.addMethod("notZero", function (value, element, param) {
+                        return this.optional(element) || (value != 0);
+                    }, "请确保输入的值不为零");
+
+                    var validator = $("#CatagoryForm").validate({
+                        /* @@validation states + elements
+                        ------------------------------------------- */
+                        errorClass: "text-danger",
+                        validClass: "text-success",
+                        errorElement: "em",
+                        /* @@validation rules
+                        ------------------------------------------ */
+                        rules: {
+                            ParentId: {
+                                required: true
+                            },
+                            Name: {
+                                required: true
+                            }
+                        },
+                        messages: {
+                            ParentId: {
+                                required: '请选择父类'
+                            },
+                            Name: {
+                                required: '请输入分类名称'
+                            }
+                        },
+                        /* @@validation highlighting + error placement
+                        ---------------------------------------------------- */
+                        highlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                        },
+                        unhighlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                        },
+                        errorPlacement: function (error, element) {
+                            if (element.is(":radio") || element.is(":checkbox")) {
+                                element.closest('.option-group').after(error);
+                            } else {
+                                //error.insertAfter(element.parent());
+                                element.parent().append(error);
+                            }
+                        },
+                        submitHandler: function (form) {
+                            //alert("submitted");
+                            form.submit();
+                        }
+                    });
+
+                    if (!validator)
+                        return false;
+
+                    $(this).saveModalV2($("#CatagoryWindow"), $("#datatable"), $("#CatagoryForm"), function () {
+                        $("#CatagoriesTreeData").fancytree();
+                    });
+
+                    //$("#CatagoriesTreeData").fancytree();
+                });
+            });
+
+
+            //编辑分类
+            $("#btn_edit_catagory").click(function () {
+                var actionUrl = "/Category/Edit";
+                var node = $("#CatagoriesTreeData").fancytree("getActiveNode");
+                if (node == null) {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                var param = { id: node.data.id };
+                $(this).showModalAndSubmit($("#CatagoryWindow"), actionUrl, param, "编辑分类", $("#CatagoryForm"), function () {
+
+                    //表单验证
+                    jQuery.validator.addMethod("notZero", function (value, element, param) {
+                        return this.optional(element) || (value != 0);
+                    }, "请确保输入的值不为零");
+
+                    var validator = $("#CatagoryForm").validate({
+                        /* @@validation states + elements
+                        ------------------------------------------- */
+                        errorClass: "text-danger",
+                        validClass: "text-success",
+                        errorElement: "em",
+                        /* @@validation rules
+                        ------------------------------------------ */
+                        rules: {
+                            ParentId: {
+                                required: true
+                            },
+                            Name: {
+                                required: true
+                            }
+                        },
+                        messages: {
+                            ParentId: {
+                                required: '请选择父类'
+                            },
+                            Name: {
+                                required: '请输入分类名称'
+                            }
+                        },
+                        /* @@validation highlighting + error placement
+                        ---------------------------------------------------- */
+                        highlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').addClass(errorClass).removeClass(validClass);
+                        },
+                        unhighlight: function (element, errorClass, validClass) {
+                            $(element).closest('.field').removeClass(errorClass).addClass(validClass);
+                        },
+                        errorPlacement: function (error, element) {
+                            if (element.is(":radio") || element.is(":checkbox")) {
+                                element.closest('.option-group').after(error);
+                            } else {
+                                //error.insertAfter(element.parent());
+                                element.parent().append(error);
+                            }
+                        },
+                        submitHandler: function (form) {
+                            //alert("submitted");
+                            form.submit();
+                        }
+                    });
+
+                    if (!validator)
+                        return false;
+
+                    $(this).saveModalV2($("#CatagoryWindow"), $("#datatable"), $("#CatagoryForm"), function () {
+                        $("#CatagoriesTreeData").fancytree();
+                    });
+
+                    //$("#CatagoriesTreeData").fancytree();
+                });
+            });
+
+            //删除分类
+            $("#btn_del_catagory").click(function () {
+                //var $tb = $("#datatable");
+                //var node = $("#CatagoriesTreeData").fancytree("getActiveNode");
+                //if (node == null) {
+                //    $(this).showToastr('请选择有效数据');
+                //    return;
+                //}
+                ////console.log(node.data.id);
+                //alert(node.data.id);
+                //var actionUrl = "/Category/Delete";
+                //$(this).signDelete($tb, node.data.id, actionUrl, $("#ModalForm"));
+                //$("#CatagoriesTreeData").fancytree();
+
+                var $tb = $("#datatable");
+                var node = $("#CatagoriesTreeData").fancytree("getActiveNode");
+                if (node == null) {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                //alert(districtId);
+                WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    $(this).remoteSubmit("post", "/Category/Delete", { selections: node.data.id }, null, function () {
+                        $("#CatagoriesTreeData").fancytree();
+                    });
+                });
+            });
+
+            //品牌搜索
+            $(document).on('click', "#btn_search", function () {
+                var actionUrl = "/Brand/AsyncSearch";
+                $(this).showModalV2($("#BrandWindow"), actionUrl, { ids: "" }, "选择品牌", $("#BrandForm"), function (rows) { });
+            });
+
+            window.operateEventsPopBrand = {
+                'click .rowSelect': function (e, value, row, index) {
+                    try {
+                        $("#BrandId").val(row.Id);
+                        $("#BrandName").val(row.Name);
+                        $('#BrandWindow').modal('hide');
+                    }
+                    catch (err) {
+                        console.log(err);
+                        $(this).showToastr(err);
+                        return;
+                    }
+                }
+            };
+
+
+            $("#btn_query").click(function () {
+                $("#ProductCategoryId").val(0);
+                $("#datatable").bootstrapTable('refresh', { url: "/Product/AsyncList?key=" + $("#txt_SearchStr").val() });
+            });
+
+            //添加商品
+            $("#btn_addProduct").click(function () {
+                location.href = "@Url.Action("Create")";
+            });
+
+            //导入商品
+            $("#btn_importProduct").click(function () {
+                $("#hidCategoryId").val('');
+                var categoryId = $("#hid_CategoryId").val();
+                if (categoryId == "") {
+                    $(this).showToastr('请选择商品类别！');
+                    return false;
+                }
+
+                $("#hidCategoryId").val(categoryId);
+                $('#FileForm').modal('show');
+            });
+
+            //导出商品
+            $("#btn_expoertProduct").click(function () {
+                window.location.href = "/Product/Export?productStatus=" + $("#ProductStatus option:selected").val() + "&key=" + $("#txt_SearchStr").val() + "&categoryId=" + $("#ProductCategoryId").val() + "&stockQtyMoreThan=false";
+            });
+
+            //编辑商品
+            $("#btn_editProduct").click(function () {
+
+            });
+
+            //删除商品
+            $("#btn_deleteProduct").click(function () {
+
+            });
+            //批量匹配简称
+            $("#btn_setMnemonicCode").click(function () {
+                $(this).remoteSubmit("post", "/Product/BatchSetMnemonicCode", null, null, function () {
+                    $("#datatable").bootstrapTable('refresh');
+                });
+            });
+            //批量禁用商品
+            $("#btn_disableProduct").click(function ()
+            {
+                var selections = $("#datatable").bootstrapTable('getSelections');
+                var ids = [];
+                $.each(selections, function (i, p) {
+                    ids.push(p.Id);
+                });
+                if (ids.length == 0) {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                $(this).remoteSubmit("post", "/Product/BatchDisableProducts", { ids: ids }, null, function ()
+                {
+                    $("#datatable").bootstrapTable('refresh');
+                });
+            });
+            //批量解禁商品
+            $("#btn_enableProduct").click(function () {
+                var selections = $("#datatable").bootstrapTable('getSelections');
+                var ids = [];
+                $.each(selections, function (i, p) {
+                    ids.push(p.Id);
+                });
+                if (ids.length == 0) {
+                    $(this).showToastr('请选择有效数据');
+                    return;
+                }
+                $(this).remoteSubmit("post", "/Product/BatchEnableProducts", { ids: ids }, null, function () {
+                    $("#datatable").bootstrapTable('refresh');
+                });
+            });
+        });
+
+        //初始化操作按钮的方法
+        window.operateEvents = {
+            'click .rowLook': function (e, value, row, index) {
+            },
+            'click .rowadd': function (e, value, row, index) {
+                var actionUrl = "/Product/AlterHistory";
+                var param = { id: row.Id };
+                $(this).showModalV2($("#CatagoryWindow"), actionUrl, param, "修改记录", $("#CatagoryForm"), null);
+            },
+            'click .rowdel': function (e, value, row, index) {
+                //var $tb = $("#datatable");
+                //var actionUrl = "/Product/Delete";
+                //$(this).signDelete($tb, row.Id, actionUrl, $("#CatagoryForm"));
+                WinMsg.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                    if (!e) {
+                        return;
+                    }
+                    $(this).remoteSubmit("post", "/Product/Delete", { ids: row.Id }, $("#datatable"), null);
+                });
+            },
+            'click .rowedit': function (e, value, row, index) {
+                //console.log("row.Id:" + row.Id);
+                var actionUrl = "/Product/Edit?id=" + row.Id;
+                //window.location.href = actionUrl;
+                window.open(actionUrl,"_blank");
+            }
+        };
+
+    </script>
+}

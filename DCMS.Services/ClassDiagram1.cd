@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="DCMS.Services.Installation.DCMSInstallationDefaults">
+    <Position X="4.75" Y="0.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAAAAAABAAAAAAAAAAAAAAAAAAAEAA=</HashCode>
+      <FileName>Installation\DCMSInstallationDefaults.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DCMS.Services.Installation.InstallationService">
+    <Position X="9.25" Y="2.5" Width="3.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAQQEEAAAAAAAAAAAAAAIAAAACAAAQAABAAAEAJAA=</HashCode>
+      <FileName>Installation\InstallationService.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Left" Position="0.147" />
+  </Class>
+  <Class Name="DCMS.Services.BaseService" Collapsed="true">
+    <Position X="8.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>99///////////+//e////////3v//n///+////v///8=</HashCode>
+      <FileName>BaseService.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="DCMS.Services.Installation.IInstallationService">
+    <Position X="4.75" Y="2.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAAAAAAAAAAAIAAAACAAAQAABAAAEAJAA=</HashCode>
+      <FileName>Installation\IInstallationService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

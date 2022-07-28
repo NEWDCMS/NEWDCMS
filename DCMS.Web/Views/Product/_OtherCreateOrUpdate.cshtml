@@ -1,0 +1,176 @@
+﻿@using System.Reflection;
+@using DCMS.Web.Framework.UI;
+@using DCMS.Web.Framework;
+
+
+@using DCMS.ViewModel.Models.Products;
+
+@model ProductModel
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-warning alert-dismissable mt10">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+<div class="form-group">
+    <label asp-for="ProductCode" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="ProductCode" class="form-control" readonly="readonly" placeholder="ERP商品编码..." />
+    </div>
+    <div class="col-lg-4">
+     
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="Sku" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="Sku" class="form-control" placeholder="SKU编码..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Sku)
+    </div>
+</div>
+
+
+
+<div class="form-group">
+    <label asp-for="Specification" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        @*<input asp-for="Specification" class="form-control" placeholder="规格..." />*@
+        <select id="Specification" name="Specification" class="form-control">
+            <option value="其它">其它</option>
+            <option value="600ML">600ML</option>
+            <option value="500ML">500ML</option>
+            <option value="350ML">350ML</option>
+            <option value="330ML">330ML</option>
+            <option value="300ML">300ML</option>
+            <option value="250ML">250ML</option>
+            <option value="200ML">200ML</option>
+            <option value="150ML">150ML</option>
+            <option value="100ML">100ML</option>
+        </select>
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Specification)
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="Number" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="Number" class="form-control" placeholder="序号..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Number)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="CountryOrigin" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="CountryOrigin" class="form-control" placeholder="原产地..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.CountryOrigin)
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="Supplier" asp-postfix=":" class="col-lg-3 control-label" />
+    @Html.HiddenFor(m => m.Supplier)
+    <div class="col-lg-4">
+        <div class="input-group">
+            <input asp-for="SupplierName" class="form-control" placeholder="主供应商..." />
+            <span class="input-group-btn">
+                <button id="btn_search_Supplier" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.Supplier)
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="OtherBarCode" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="OtherBarCode" class="form-control" placeholder="条码..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.OtherBarCode)
+    </div>
+</div>
+<div class="form-group">
+    <label asp-for="OtherBarCode1" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="OtherBarCode1" class="form-control" placeholder="条码..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.OtherBarCode1)
+    </div>
+</div>
+
+<div class="form-group">
+    <label asp-for="OtherBarCode2" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <input asp-for="OtherBarCode2" class="form-control" placeholder="条码..." />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.OtherBarCode2)
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="StatisticalType" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <dcms-select asp-for="StatisticalType" asp-items="@Model.StatisticalTypes" class="form-control" />
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.StatisticalType)
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="ExpirationDays" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <div class="input-group">
+            <input asp-for="ExpirationDays" class="form-control" placeholder="保质期..." />
+            <span class="input-group-addon">
+                <i class="fa fa-clock-o"></i>
+            </span>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.ExpirationDays)
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label asp-for="AdventDays" asp-postfix=":" class="col-lg-3 control-label" />
+    <div class="col-lg-4">
+        <div class="input-group">
+            <input asp-for="AdventDays" class="form-control" placeholder="距离过期时间还剩余的天数..." />
+            <span class="input-group-addon">
+                <i class="fa fa-clock-o"></i>
+            </span>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        @Html.DCMSValidationMessageFor(model => model.AdventDays)
+    </div>
+</div>
+
+
+

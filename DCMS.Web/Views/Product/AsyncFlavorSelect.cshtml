@@ -1,0 +1,135 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+@using DCMS.ViewModel.Models.Products;
+
+@model ProductFlavorListModel
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="input-group mb5">
+			<input type="text" id="txt_SearchFlavorStr" class="form-control" placeholder="请输入品味名称、助记名..." onkeydown="if(event.keyCode==13){event.keyCode=0;event.returnValue=false;}">
+			<input asp-for="ParentId" type="hidden" />
+			<span class="input-group-btn">
+				<button id="btn_query" type="button" class="btn btn-primary" style="border:1px solid #dddddd;"><span class="glyphicon glyphicon-search"></span> 搜索</button>
+			</span>
+		</div>
+		<table class="table table-striped table-hover" id="flavors_datatable"></table>
+	</div>
+</div>
+
+<script type="text/javascript">
+
+    $(function () {
+
+        //促销活动商品列表
+		$("#flavors_datatable").bootstrapTable({
+			url: "/Product/AsyncProductFlavors",
+			method: 'get',
+			striped: true,
+			cache: false,
+			pagination: true,
+			queryParams: function (params) {
+				var temp =
+				{
+					key: $("#txt_SearchFlavorStr").val(),
+					parentId: $("#ParentId").val(),
+					pageSize: params.limit,
+					pageIndex: (params.offset / params.limit)
+				};
+				return temp;
+			},
+			sidePagination: "server",
+			idField: 'Id',
+			pageNumber: 1,
+			pageSize: 10,
+			search: false,
+			strictSearch: true,
+			showRefresh: false,
+			clickToSelect: false,
+			uniqueId: "Id",
+			showToggle: false,
+			cardView: false,
+			detailView: false,
+			columns: [
+				{ checkbox: true },
+				{ field: 'Id', visible: false },
+				{ field: 'ParentId', visible: false },
+				{ field: 'ProductId', visible: false },
+				{ field: 'Name', title: '口味名称' },
+				{ field: 'SmallUnitBarCode', title: '小单位条码' },
+				{ field: 'StrokeUnitBarCode', title: '中单位条码' },
+				{ field: 'BigUnitBarCode', title: '大单位条码' },
+				{ field: 'Quantity', title: '数量' },
+				{
+					field: 'operate', title: '操作', align: 'center', width: '100',
+					events: operateEventsPopFlavor,
+					formatter: function (value, row, index) {
+						return [
+							'<button type="button" class="btn btn-sm btn-info rowSelect" data-id="@Model.RowIndex" data-target="@Model.Target"><i class="fa fa-pencil-square-o"></i>&nbsp;选择</button>'
+						].join('');
+					}
+				}
+			],
+			onClickCell: function (field, value, row, $element) {
+
+				if (field == "Operate") {
+					return false;
+				}
+
+				var input = $($element).find("input");
+				var select = $($element).find("select");
+				if (input.length > 0 || select.length > 0)
+					return false;
+
+				//当前列所在行的索引
+				var index = $element.parent().attr("data-index");
+				if (field == "Quantity") {
+					var html = '<input type="text" class="form-control input-sm onlyNum" value="' + (typeof (value) == 'undefined' ? "0" : value) + '" id="' + field + "_" + row.Id + '">';
+
+					$($element).html(html);
+					var inputObj = $("#" + $(html).attr("id"));
+
+					inputObj.focus();
+					inputObj.select();
+
+					inputObj.bind("focusout", function () {
+						if ($(this).val() == "") {
+							$(this).val(0);
+						}
+						//数量转整数
+						row[field] = parseInt($(this).val());
+						$("#flavors_datatable").bootstrapTable('updateRow', { index: index, row: row });
+						$($element).html("" + value + "");
+					});
+
+					inputObj.bind("change", function () {
+						if (!isNaN($(this).val())) {
+							if ($(this).val() == "") {
+								$(this).val(0);
+							}
+						}
+						else {
+							$(this).val(0);
+							$(this).showToastr("只能输入数字!");
+						}
+					});
+				}
+
+			},
+
+            onPageChange: function (number, size) {
+                m_pagerow = (number - 1) * size;
+            },
+            onLoadSuccess: function (data) {
+                //console.log('load');
+            }
+        });
+
+        //查询
+        $("#btn_query").on('click', function () {
+			var keys = $("#txt_SearchFlavorStr").val();
+			$("#flavors_datatable").bootstrapTable('refresh');
+        });
+
+    });
+</script>

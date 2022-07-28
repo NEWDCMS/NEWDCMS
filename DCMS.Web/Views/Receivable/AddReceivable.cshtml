@@ -1,0 +1,51 @@
+﻿@using DCMS.Web.Extensions;
+@using DCMS.Web.Framework.UI;
+
+@model DCMS.Core.Domain.Terminals.Receivable
+@Html.HiddenFor(model => model.Id)
+
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        终端
+        <i class="fa fa-exclamation-circle text-warning fa-lg ml10 mr10" data-placement="top" data-toggle="tooltip" title="" data-original-title="终端列表"></i>
+    </lable>
+    <div class="col-lg-8">
+        @*@Html.DropDownListFor(model => model.TerminalId, ViewBag.item1 as List<SelectListItem>,"- 请选择 -"" class = "form-control"/>*@
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        初始欠款
+        <i class="fa fa-exclamation-circle text-warning fa-lg ml10 mr10" data-placement="top" data-toggle="tooltip" title="" data-original-title="初始欠款"></i>
+    </lable>
+    <div class="col-lg-8">
+        <dcms-editor asp-for="OweCash" />
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        业务员
+        <i class="fa fa-exclamation-circle text-warning fa-lg ml10 mr10" data-placement="top" data-toggle="tooltip" title="" data-original-title="业务员"></i>
+    </lable>
+    <div class="col-lg-8">
+        @*@Html.DropDownListFor(model => model.OperationUserId, ViewBag.item2 as List<SelectListItem> , "-请选择 -"" class = "form-control"/>*@
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        欠款时间
+        <i class="fa fa-exclamation-circle text-warning fa-lg ml10 mr10" data-placement="top" data-toggle="tooltip" title="" data-original-title="欠款时间"></i>
+    </lable>
+    <div class="col-lg-8">
+        <dcms-editor asp-for="BalanceDate" />
+    </div>
+</div>
+<div class="form-group">
+    <lable class="col-lg-3 control-label">
+        备注
+        <i class="fa fa-exclamation-circle text-warning fa-lg ml10 mr10" data-placement="top" data-toggle="tooltip" title="" data-original-title="备注"></i>
+    </lable>
+    <div class="col-lg-8">
+        <dcms-editor asp-for="Remark" />
+    </div>
+</div>

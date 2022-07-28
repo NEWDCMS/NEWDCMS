@@ -1,0 +1,217 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<Copyright>Copyright © DCMS</Copyright>
+		<Company>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Company>
+		<Authors>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Authors>
+		<Version>3.0.0.1</Version>
+		<Description>China Resources Snow Beer (China) Co., Ltd. Xi'an Branch</Description>
+		<PackageLicenseUrl>http://www.jsdcms.com/</PackageLicenseUrl>
+		<PackageProjectUrl>http://www.jsdcms.com/</PackageProjectUrl>
+		<RepositoryUrl></RepositoryUrl>
+		<RepositoryType></RepositoryType>
+
+		<!--将此参数设置为true，以将从NuGet缓存复制的dll复制到项目的输出-->
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+
+		<!--Razor动态编译-->
+		<RazorCompileOnBuild>false</RazorCompileOnBuild>
+		<MvcRazorCompileOnPublish>false</MvcRazorCompileOnPublish>
+
+		<!--禁用在MsBuild中生成PDB文件(Disable generating PDB files in MsBuild)-->
+		<!--<DebugSymbols>true</DebugSymbols>
+	<DebugType>None</DebugType>-->
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\DCMS.Core\DCMS.Core.csproj" />
+		<ProjectReference Include="..\DCMS.Data\DCMS.Data.csproj" />
+		<ProjectReference Include="..\DCMS.Services\DCMS.Services.csproj" />
+		<ProjectReference Include="..\DCMS.ViewModel\DCMS.ViewModel.csproj" />
+		<ProjectReference Include="..\DCMS.Web.Framework\DCMS.Web.Framework.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- 我们复制整个\App\数据目录。但是我们忽略了JSON文件和数据保护密钥  -->
+		<Content Include="App_Data\**"
+				 CopyToPublishDirectory="PreserveNewest"
+				 Exclude="App_Data\*.json" />
+		<Content Update="App_Data\*.json"
+				 CopyToPublishDirectory="Never" />
+		<Content Update="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="Web.config"
+				 CopyToPublishDirectory="Never" />
+		<Content Include="Themes\**"
+				 CopyToPublishDirectory="PreserveNewest"
+				 Exclude="Themes\**\*.config;Themes\**\*.cshtml;Themes\**\*.json" />
+		<Compile Remove="logs\**" />
+		<!-- 复制\Logs目录 -->
+
+		<Compile Remove="Views\Catalog\**" />
+		<Compile Remove="Views\News\**" />
+		<!--<Compile Remove="Views\Product\**" />-->
+		<Compile Remove="Views\Stock\**" />
+		<Compile Remove="Views\Test\**" />
+		<Content Remove="logs\**" />
+		<Content Remove="Views\Catalog\**" />
+		<Content Remove="Views\News\**" />
+		<Content Remove="Views\Stock\**" />
+		<Content Remove="Views\Test\**" />
+		<EmbeddedResource Remove="logs\**" />
+		<EmbeddedResource Remove="Views\Test\**" />
+		<None Remove="logs\**" />
+		<None Remove="Views\Test\**" />
+		<None Remove="Views\WareHouseStock\**" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<Content Remove="appsettings - dev.json" />
+		<Content Remove="App_Data\TempUploads\PermissionRecordRoleMapping.json" />
+		<Content Remove="App_Data\TempUploads\PermissionRecordRoleMapping.json" />
+		<Content Remove="App_Data\TempUploads\RoleMouleMappingConfig.json" />
+		<Content Remove="App_Data\TempUploads\RoleMouleMappingConfig.json" />
+		<Content Remove="Views\Permission\Report.cshtml" />
+		<Content Remove="Views\Terminal\BatchAssignDistrict-bak.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="aspnetcore-stdout_20200330011751_13124.log" />
+		<None Remove="aspnetcore-stdout_20200401022655_4080.log" />
+		<None Remove="aspnetcore-stdout_20200420005834_14820.log" />
+		<None Remove="index.html" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<Folder Include="App_Data\TempUploads\" />
+		<Folder Include="Validators\Common\" />
+		<Folder Include="Validators\PrivateMessages\" />
+		<Folder Include="Validators\WareHouse\" />
+		<Folder Include="Views\Shared\Components\ContactUs\" />
+	</ItemGroup>
+
+	<!--<ItemGroup>
+	<Content Include="Views\Product\AsyncFlavorSelect.cshtml" />
+	<Content Include="Views\Product\AsyncGiveQuotaSelect.cshtml" />
+	<Content Include="Views\Product\AsyncSearch.cshtml" />
+	<Content Include="Views\Product\AsyncSearchCom.cshtml" />
+	<Content Include="Views\Product\Create.cshtml" />
+	<Content Include="Views\Product\CreateCombination.cshtml" />
+	<Content Include="Views\Product\CreateFlavor.cshtml" />
+	<Content Include="Views\Product\Edit.cshtml" />
+	<Content Include="Views\Product\EditCombination.cshtml" />
+	<Content Include="Views\Product\EditFlavor.cshtml" />
+	<Content Include="Views\Product\List.cshtml" />
+	<Content Include="Views\Product\_CombinationProducts.cshtml" />
+	<Content Include="Views\Product\_CreateOrUpdate.cshtml" />
+	<Content Include="Views\Product\_CreateOrUpdateCombination.cshtml" />
+	<Content Include="Views\Product\_CreateOrUpdateFlavor.cshtml" />
+	<Content Include="Views\Product\_FlavorCreateOrUpdate.cshtml" />
+	<Content Include="Views\Product\_OtherCreateOrUpdate.cshtml" />
+	<Content Include="Views\Product\_ProductTierPrice.cshtml" />
+	<Content Include="Views\Product\_Scripts.cshtml" />
+  </ItemGroup>-->
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer"
+						  Version="6.0.2" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json"
+						  Version="6.0.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets"
+						  Version="1.14.0" />
+		<PackageReference Include="System.Net.Http"
+						  Version="4.3.4" />
+		<!--<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.3" Condition="'$(Configuration)' == 'Debug'" />-->
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Update="Views\UserRole\Create.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Views\UserRole\Edit.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Views\UserRole\List.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Views\UserRole\_CreateOrUpdate.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Views\UserRole\_SetAuthorization.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
+	<PropertyGroup>
+		<!--公共语言运行库（CLR）支持两种类型的垃圾收集：
+	工作站垃圾收集（在所有系统上都可用）和 服务器垃圾收集（在多处理器系统上可用） 
+	对于单处理器计算机，默认的工作站垃圾收集应该是最快的选项。工作站或服务器均可用于两台处理器计算机。
+	对于两个以上的处理器，服务器垃圾回收应该是最快的选择-->
+		<ServerGarbageCollection>false</ServerGarbageCollection>
+		<!--在工作站或服务器垃圾收集中，可以启用并发垃圾收集，这使线程能够与执行垃圾收集的专用线程在收集的大部分时间内并发运行-->
+		<ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+		<DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+		<UserSecretsId>bc3ed774-a6dd-428e-ad7f-241777f2fe1e</UserSecretsId>
+		<ApplicationIcon>dcms.ico</ApplicationIcon>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<NoWarn>1701;1702;IDE0060;</NoWarn>
+	</PropertyGroup>
+
+	<ProjectExtensions>
+		<VisualStudio>
+			<UserProperties appsettings_1json__JsonSchema="" />
+		</VisualStudio>
+	</ProjectExtensions>
+
+	<ItemGroup>
+		<UpToDateCheckInput Remove="Views\User\_AreasCreateOrUpdate.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<_ContentIncludedByDefault Remove="Views\User\Create.cshtml" />
+		<_ContentIncludedByDefault Remove="Views\User\Edit.cshtml" />
+		<_ContentIncludedByDefault Remove="Views\User\List.cshtml" />
+		<_ContentIncludedByDefault Remove="Views\User\UserSetting.cshtml" />
+		<_ContentIncludedByDefault Remove="Views\User\_AreasCreateOrUpdate.cshtml" />
+		<_ContentIncludedByDefault Remove="Views\User\_CreateOrUpdate.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<UpToDateCheckInput Remove="Views\User\_CreateOrUpdate.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<UpToDateCheckInput Remove="Views\User\Create.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<UpToDateCheckInput Remove="Views\User\Edit.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<UpToDateCheckInput Remove="Views\User\List.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<UpToDateCheckInput Remove="Views\User\UserSetting.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="index.html" />
+	</ItemGroup>
+
+</Project>
