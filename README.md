@@ -62,7 +62,13 @@ DCMS基于Saas的经销商快消解决方案，皆在满足区域营销管理业
 |DCMS|[GitHub](https://github.com/dorisoy/DCMS) | 经销商管家门户|
 |DCMS.Client|[GitHub](https://github.com/dorisoy/DCMS.Client) | 基于Xamarin.Forms5.0+ 支持Android 5.0+/IOS|
 |DCMS.Light|[GitHub](https://github.com/dorisoy/DCMS.Light) | 微信小程序客户端|
+|DCMS.Blazor|[GitHub](https://github.com/dorisoy/DCMS.Blazor) | 基于Blazor实现的前后端分离的经销商管家门户版本|
 
+## Blazor 版
+
+<img align="left"  src="https://raw.githubusercontent.com/dorisoy/DCMS.Blazor/main/1.png" width="260" vspace="20"/>
+<img align="left"  src="https://raw.githubusercontent.com/dorisoy/DCMS.Blazor/main/2.png" width="260" vspace="20"/>
+<img src="https://raw.githubusercontent.com/dorisoy/DCMS.Blazor/main/3.png width="260" vspace="20"/>
 
 ## APP截屏
 
