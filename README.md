@@ -68,7 +68,7 @@ DCMS基于Saas的经销商快消解决方案，皆在满足区域营销管理业
 
 <img align="left"  src="https://raw.githubusercontent.com/dorisoy/DCMS.Blazor/main/1.png" width="260" vspace="20"/>
 <img align="left"  src="https://raw.githubusercontent.com/dorisoy/DCMS.Blazor/main/2.png" width="260" vspace="20"/>
-<img src="https://raw.githubusercontent.com/dorisoy/DCMS.Blazor/main/3.png width="260" vspace="20"/>
+<img src="https://raw.githubusercontent.com/dorisoy/DCMS.Blazor/main/3.png" width="260" vspace="20"/>
 
 ## APP截屏
 
