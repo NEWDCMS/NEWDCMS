@@ -1,7 +1,7 @@
 # NEWDCMS
-注意：Wesley 已经正式更名为 DCMS啦！
+注意：Wesley 已经正式更名为 NEWDCMS啦！
 
-NEWDCMS基于Saas的经销商快消解决方案，皆在满足区域营销管理业务快速变化需求，系统基于Docker + .Net core + Mysql Inner db cluster 的分布式微服务框架,提供高性能RPC远程服务调用，采用Zookeeper、Consul作为surging服务的注册中心，集成了哈希，随机，轮询，压力最小优先作为负载均衡的算法，RPC集成采用的是netty框架，采用异步传输，客户端APP 采用 Android Xamarin/ Xamarin.Forms 支持Android 5.0 以上 所有Android 最新版本。,DCMS 基于Saas的轻量级新零售快消CRM/ERP系统， 系统为经销商量身定制的全业务流程渠道分销管理系统（手机APP称为经销商管家），帮助经销商解决 业务信息化和数据化问题，提升管理效率，实现减员增效。
+NEWDCMS基于Saas的经销商快消解决方案，皆在满足区域营销管理业务快速变化需求，系统基于Docker + .Net core + Mysql Inner db cluster 的分布式微服务框架,提供高性能RPC远程服务调用，采用Zookeeper、Consul作为surging服务的注册中心，集成了哈希，随机，轮询，压力最小优先作为负载均衡的算法，RPC集成采用的是netty框架，采用异步传输，客户端APP 采用 Android Xamarin/ Xamarin.Forms 支持Android 5.0 以上 所有Android 最新版本。基于Saas的轻量级新零售快消CRM/ERP系统， 系统为经销商量身定制的全业务流程渠道分销管理系统（手机APP称为经销商管家），帮助经销商解决 业务信息化和数据化问题，提升管理效率，实现减员增效。
 
 ## 目标:
 
@@ -59,10 +59,10 @@ NEWDCMS基于Saas的经销商快消解决方案，皆在满足区域营销管理
 
 |项目|库|描述|
 |-------------|-----|-----------|
-|DCMS|[GitHub](https://github.com/dorisoy/DCMS) | 经销商管家门户|
-|DCMS.Client|[GitHub](https://github.com/dorisoy/DCMS.Client) | 基于Xamarin.Forms5.0+ 支持Android 5.0+/IOS|
-|DCMS.Light|[GitHub](https://github.com/dorisoy/DCMS.Light) | 微信小程序客户端|
-|DCMS.Blazor|[GitHub](https://github.com/dorisoy/DCMS.Blazor) | 基于Blazor实现的前后端分离的经销商管家门户版本|
+|NEWDCMS|[GitHub](https://github.com/dorisoy/NEWDCMS) | 经销商管家门户|
+|NEWDCMS.Client|[GitHub](https://github.com/dorisoy/NEWDCMS.Client) | 基于Xamarin.Forms5.0+ 支持Android 5.0+/IOS|
+|NEWDCMS.Light|[GitHub](https://github.com/dorisoy/NEWDCMS.Light) | 微信小程序客户端|
+|NEWDCMS.Blazor|[GitHub](https://github.com/dorisoy/NEWDCMS.Blazor) | 基于Blazor实现的前后端分离版本|
 
 ## Blazor 版
 
